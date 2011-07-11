@@ -3,6 +3,8 @@ import socket
 import glob
 import os
 import time
+import pickle
+import math
 
 class ardustat:
 	def __init__(self):	
@@ -45,12 +47,12 @@ class ardustat:
 		message = ""
 		possibles = self.findPorts()
 		if len(possibles)>=1:
-			for i in range(len(possibles)):
-				isardresult = self.isArdustat(possibles[i])
+			for port in possibles:
+				isardresult = self.isArdustat(port)
 				message = message + isardresult["message"]
 				if isardresult["success"] == True:
-					message = message + "\nArdustat found on "+possibles[i]+"."
-					return {"success":True,"port":possibles[i],"message":message}
+					message = message + "\nArdustat found on "+port+"."
+					return {"success":True,"port":port,"message":message}
 		else:
 			return {"success":False,"message":message+"\nCouldn't find any ardustats."}
 	
@@ -91,7 +93,7 @@ class ardustat:
 		self.rawwrite("s0000")
 		time.sleep(.01)
 		if self.mode == "serial":
-			return self.ser.readlines()
+			return self.ser.readlines()[-1] #If readlines returns a list, get the last element in the list
 		if self.mode == "socket":
 			a = ""
 			while 1:
@@ -108,38 +110,171 @@ class ardustat:
 		   (reading from pot as a value between 0 and 1023, reference value in V (e.g. 2.5))"""
 		return round((float(reading)/float(ref))*2.5,3)
 	
-	def resbasis(self,reading,pot):
+	def resbasis(self,pot,id=None):
 		"""returns the value for the givening potentiometer setting 
 			(reading as value between 0 and 255, pot lookup variable)"""
-		return round(10+(float(reading)/255.0)*pot,2)
+		message = ""
+		if isinstance(id,int):
+			try:
+				f = open("resistances.pickle","r")
+				resdict = pickle.load(f)
+				f.close()
+				res = resdict[str(id)] #This variable stores the resistance data for the Ardustat with that specific ID number
+				message = message + "Calibration data found for id#"+str(id)
+				calibrated = True
+			except: #If there's no resistance data
+				message = message + "Calibration data not found for id #"+str(id)
+				res = []
+				for i in range(256):
+					res.append(i/255.*10000)
+				calibrated = False
+		else:
+			message = message + "No ID # passed to this function. Using non-calibrated resistances."
+			res = []
+			for i in range(256):
+				res.append(i/255.*10000)
+			calibrated = False
+		return {"success":True,"message":message,"resistance":res[pot],"calibrated":calibrated}
 		
-	def parseReading(self,reading):
+	def parse(self,reading,id=None):
 		outdict = {}
 		#format GO,1023,88,88,255,0,1,-0000,0,0,510,ST 
-			#splitline[0] -> "GO"
-			#splitline[1] -> DAC Setting
-			#splitline[2] -> Cell Voltage
-			#splitline[3] -> DAC Measurement
-			#splitline[4] -> DVR Setting
-			#splitline[5] -> "setout" variable in firmware. Don't know what this represents
-			#splitline[6] -> Mode (0 = manual, 1 = OCV, 2 = potentiostat, 3 = galvanostat)
-			#splitline[7] -> Last command received
-			#splitline[8] -> GND Measurement
-			#splitline[9] -> Reference Electrode
-			#splitline[10] -> Reference Voltage
-			#splitline[11] -> "ST"
+		#0 -> "GO"
+		#1 -> DAC Setting
+		#2 -> Cell Voltage
+		#3 -> DAC Measurement
+		#4 -> DVR Setting
+		#5 -> Setting that potentiostat or galvanostat functions are using
+		#6 -> Mode (0 = manual, 1 = OCV, 2 = potentiostat, 3 = galvanostat)
+		#7 -> Last command received
+		#8 -> GND Measurement
+		#9 -> Reference Electrode
+		#10 -> Reference Voltage
+		#11 -> "ST"
 		if reading.find("GO") == 0 and reading.find("ST") and reading.rfind("GO") == 0:
-			outdict['valid'] = True
+			outdict['success'] = True
 			outdict['raw'] = reading
 			outdict['time'] = time.time()
 			parts = reading.split(",")
-			outdict['ref'] = float(parts[len(parts)-2])
+			outdict['ref'] = int(parts[len(parts)-2])
+			outdict['DAC0_setting'] = int(parts[2]) / 1023.0 * 5.0
 			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])
-			outdict['pot_step'] = parts[4]
-			outdict['res'] = self.resbasis(outdict['pot_step'],10000.0)
-			outdict['current'] = (float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['res']			
+			outdict['pot_step'] = int(parts[4])
+			outdict['resistance'] = self.resbasis(outdict['pot_step'],id)["resistance"]
+			try:
+				current = (float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['resistance']
+			except: #Divide by 0
+				current = False
+			outdict['current'] = current
+			try:
+				cellresistance = (outdict['cell_ADC']/outdict['DAC0_ADC'])*outdict['resistance']/(1-(outdict['cell_ADC']/outdict['DAC0_ADC']))
+			except:
+				cellresistance = False
+			outdict['cell_resistance'] = cellresistance
+			outdict['GND'] = self.refbasis(parts[8],outdict['ref'])
+			outdict['reference_electrode'] = self.refbasis(parts[9],outdict['ref'])
+			if parts[6] == "0":
+				mode = "Manual"
+			elif parts[6] == "1":
+				mode = "OCV"
+			elif parts[6] == "2":
+				mode = "Potentiostat"
+			elif parts[6] == "3":
+				mode = "Galvanostat"
+			else:
+				mode = "Unknown"
+			outdict['mode'] = mode
+			outdict['last_command'] = parts[7]
+			outdict['calibration'] = self.resbasis(outdict['pot_step'],id)["calibrated"]
 		else:
-			outdict['valid'] = False
+			outdict['success'] = False
 		return outdict
-			
+	
+	def viewData(self,id=None):
+		p = self.parse(self.rawread(),id)
+		printstring = 'Data Loaded:\nDAC 0 arduino setting.............: ' + str(p["DAC0_setting"])
+		printstring += ' V\nDAC 0 reading..............(ADC 1): ' + str(p["DAC0_ADC"])  
+		printstring += ' V\nCell Voltage reading.......(ADC 0): ' + str(p["cell_ADC"]) 
+		printstring += ' V\nResistor arduino setting..........: ' + str(p["resistance"]) 
+		printstring += ' Ohm\nCurrent calculation...............: ' + str(p["current"]) 
+		printstring += ' A\nCell resistance calculation.......: ' + str(p["cell_resistance"]) 
+		printstring += ' Ohm\nGND reading................(ADC 2): ' + str(p["GND"]) 
+		printstring += " V\nReference electrode reading(ADC 3): " + str(p["reference_electrode"]) 
+		printstring += " V\nVoltage reference value....(ADC 5): " + str(p["ref"]) 
+		printstring += " V\nMode..............................: " +str(p["mode"])
+		printstring += "\nLast command sent.................: " + str(p["last_command"]) 
+		printstring += "\nRaw data: " + str(p["raw"]).replace("\n","")
+		printstring += "\nCalibrated: " + str(p["calibration"])
+		print printstring
+	
+	def setGNDDAC(self,potential):
+		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
+		self.rawwrite("d"+potential)
+	
+	def setDAC(self,potential):
+		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
+		self.rawwrite("+"+potential)
+		
+	def setResistance(self,resistance,id=None):
+		for i in range(1,256):
+			if math.fabs(resistance - self.resbasis(i)["resistance"]) < math.fabs(resistance - self.resbasis(closestvalue)["resistance"]): #If the absolute value of the difference between this resistance and the ideal resistance is less than the absolute value of the other closest difference...
+				closestvalue = i
+		closestvalue = str(closestvalue).rjust(4,"0")
+		self.rawwrite("r"+closestvalue)
+		print "Set resistance to",res[int(closestvalue)]
+		
+	def calibrate(self, resistance, id):
+		message = ""
+		message = message + "Beginning calibration for ardustat with ID #"+str(id)
+		print message
+		self.rawwrite("+1023")
+		time.sleep(0.2)
+		self.rawwrite("R")
+		time.sleep(0.2)
+		rescount = 0
+		reslist = [[] for x in range(256)]
+		while rescount <= (256 * 5):
+			line = self.rawread()
+			parsedict = self.parse(line,id)
+			if parsedict["success"] == True:
+				line = line.split(",")
+				try:
+					reslist[int(line[4])].append((resistance*int(line[3]))/int(line[2]) - resistance) #Add calculated resistance for that potentiometer setting ( equal to (R(in)*DAC)/ADC - R(in) )
+					rescount +=1
+				except:
+					self.ocv()
+					message = message + "\nUnexpected error in calibration with serial input "+str(line)
+					print message.split("\n")[-1]
+					return {"success":False,"message":message}
+				print "Calibration: " + str(float(rescount)/(256*5)*100)[:4]+"%"
+		self.ocv()
+		#calculate average
+		res = [sum(x)/len(x) for x in reslist]
+		try:
+			f = open("resistances.pickle","r")
+			resdict = pickle.load(f)
+			f.close()
+		except:
+			pass
+		try:
+			resdict[str(id)] = res
+		except: #There is no existing resistance data; create the initial dictionary
+			resdict = {str(id):res}
+		try:
+			f = open("resistances.pickle",'w')
+		except:
+			message = message + "\nCouldn't open resistances.pickle file for writing. It may be open in another program. Couldn't save calibration data."
+			print message.split("\n")[-1]
+			return {"success":False,"message":message}
+		try:
+			pickle.dump(resdict,f)
+		except:
+			message = message + "\nCouldn't write data to resistances.pickle. Couldn't save calibration data."
+			print message.split("\n")[-1]
+			return {"success":False,"message":message}
+		else:
+			message = message + "\nCalibration completed and saved for Ardustat #"+str(id)
+			print message.split("\n")[-1]
+			return {"success":True,"message":message}
+		f.close()

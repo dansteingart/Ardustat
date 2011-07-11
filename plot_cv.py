@@ -19,7 +19,7 @@ for d in data:
 	cee = ""
 	for i in c:
 		cee += i+","
-	b = a.parseReading(cee.strip(","))
+	b = a.parse(cee.strip(","))
 	if cycle != this_cycle:
 		potential.append(pot)
 		current.append(cur)

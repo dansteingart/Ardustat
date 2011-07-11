@@ -13,23 +13,23 @@ a.ocv()
 time_limit = time()+30
 while time() < time_limit:
 	sleep(.5)
-	write_log(a.parseReading(a.rawread()))
+	write_log(a.parse(a.rawread()))
 
 a.potentiostat(0.5)
 time_limit = time()+40
 while time() < time_limit:
 	sleep(1)
-	write_log(a.parseReading(a.rawread()))
+	write_log(a.parse(a.rawread()))
 
 a.potentiostat(1.5)
 time_limit = time()+3600*8
 while time() < time_limit:
 	sleep(.5)
-	write_log(a.parseReading(a.rawread()))
+	write_log(a.parse(a.rawread()))
 	
 a.ocv()
 time_limit = time()+30
 while time() < time_limit:
 	sleep(.5)
-	write_log(a.parseReading(a.rawread()))
+	write_log(a.parse(a.rawread()))
 

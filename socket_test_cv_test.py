@@ -30,7 +30,7 @@ time_limit = time()+10
 print "OCV Portion"
 while time() < time_limit:
 	sleep(.5)
-	write_log(a.parseReading(a.rawread()))
+	write_log(a.parse(a.rawread()))
 	
 
 #CV portion
@@ -43,14 +43,14 @@ for cycle in range(1,cycles+1):
 		a.potentiostat(this_potential)
 		while time() < time_limit:
 			sleep(.2)
-			write_log_cv(cycle,a.parseReading(a.rawread()))
+			write_log_cv(cycle,a.parse(a.rawread()))
 	while this_potential > initial_potential:
 		time_limit = time() + calc_step_time(scan_rate)
 		this_potential += -1*step_size
 		a.potentiostat(this_potential)
 		while time() < time_limit:
 			sleep(.2)
-			write_log_cv(cycle,a.parseReading(a.rawread()))
+			write_log_cv(cycle,a.parse(a.rawread()))
 		
 #OCV			
 a.ocv()
@@ -58,4 +58,4 @@ time_limit = time()+10
 print "OCV Portion"
 while time() < time_limit:
 	sleep(.5)
-	write_log(a.parseReading(a.rawread()))
+	write_log(a.parse(a.rawread()))
