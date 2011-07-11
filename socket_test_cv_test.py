@@ -23,6 +23,7 @@ end_potential = 2.5
 cycles = 5
 this_potential = initial_potential
 step_size = 0.005
+
 #record 30 seconds of OCV
 a.ocv()
 time_limit = time()+10
