@@ -2,9 +2,9 @@
 
 Authors:
 
-	- Barry Van Tassell <bajavata@gmail.com>
-	- Eddie Nolan <tapd260@gmail.com>
-	- Dan Steingart <dan.steingart@gmail.com>
+- Barry Van Tassell <bajavata@gmail.com>
+- Eddie Nolan <tapd260@gmail.com>
+- Dan Steingart <dan.steingart@gmail.com>
 	
 
 ##Overview
