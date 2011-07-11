@@ -1,7 +1,7 @@
 from pylab import *
 import numpy
 from glob import glob
-from simpardlib import ardustat as ard
+from simpardlibnet import ardustat as ard
 
 asa = glob("raw_data*")
 a = ard()
