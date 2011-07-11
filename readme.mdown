@@ -1,0 +1,27 @@
+#Ardustat Code
+
+##Overview
+Two tools here for the Ardustat V7 Board Specification
+
+1. Firmware 
+	- Big change from previous versions: does _not_ automatically send data.  Must receive an "s0000" to send data.
+2. Python scripts
+	- Allow for either direct through the serial port connection or forwarded through a serial forward (included in code) 
+		- ardustat.mode = "serial"
+		- ardustat.mode = "socket" (default)
+			- socket code courtesy of Ben Kempke <bpkempke@umich.edu> and Chris Liechti <cliechti@gmx.net>
+
+
+##Functions That Work
+- Potentiostat
+- OCV 
+
+##Quick Test
+
+- Attach your ardustat to a system of choice
+- Start a serial forwarder session
+	- python tcp_serial_redirect.py -p SERIAL_PORT -b 57600 
+- In another terminal try
+	- python socket_test_inject_ocv.py
+
+Then play with the socket_test_long_test.py code
