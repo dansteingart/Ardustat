@@ -1,7 +1,8 @@
 import serial 
 import socket
 import glob
-from time import sleep,time
+import os
+import time
 
 class ardustat:
 	def __init__(self):	
@@ -11,8 +12,58 @@ class ardustat:
 		self.mode = "socket"
 
 	def findPorts(self):
-		return glob.glob("/dev/tty.u*")
-
+		if os.name == "posix": #Mac OS X and Linux
+			return glob.glob("/dev/tty.u*")+glob.glob("/dev/ttyU*")+glob.glob("/dev/ttyA*")
+		elif os.name == "nt": #Windows
+			ports = []
+			for i in range(1,100):
+				ports.append("COM"+str(i))
+			return ports
+			
+	#isArdustat() and guessUSB() lifted from the old ardustatlibrary.py with slight modifications to enable an autoConnect function
+	def isArdustat(self,port): #Tests whether an ardustat is connected to a given port
+		message = ""
+		message = message + "\nTesting for ardustat on port "+str(port)+"."
+		try:
+			ser=serial.Serial(port,57600,timeout=5) #The ardustat uses a baudrate of 57600. This can be changed in the firmware
+		except:
+			return {"success":False,"message":message}
+		time.sleep(0.1)
+		ser.write("s0000\n")
+		time.sleep(0.1)
+		line = ser.readline()
+		time.sleep(0.1)
+		ser.write("s0000\n")#For some reason it won't return any data until the second time this command is sent. Probably the 1st command initializes the serial connection but doesn't actually let the arduino respond
+		time.sleep(0.1)
+		line = ser.readline()
+		if line.find("GO") !=-1 or line.find("ST") !=-1: #These are the start and end markers of the serial lines that the ardustat spits out
+			ser.close()
+			return {"success":True,"message":message}
+		else:
+			ser.close()
+			message = message + "\nNo ardustat on port "+port+"."
+			return {"success":False,"message":message}
+		
+	def guessUSB(self): #This finds out what the possible serial ports are and runs isArdustat on them. Mac OS X and Linux handle serial ports differently than Windows, so we split the code up for each OS
+		message = ""
+		possibles = self.findPorts()
+		if len(possibles)>=1:
+			for i in range(len(possibles)):
+				isardresult = self.isArdustat(possibles[i])
+				message = message + isardresult["message"]
+				if isardresult["success"] == True:
+					message = message + "\nArdustat found on "+possibles[i]+"."
+					return {"success":True,"port":possibles[i],"message":message}
+		else:
+			return {"success":False,"message":message+"\nCouldn't find any ardustats."}
+	
+	def autoConnect(self):
+		guessusbresult = self.guessUSB()
+		if guessusbresult["success"] == True:
+			self.mode = "serial"
+			print self.connect(guessusbresult["port"])
+		else:
+			print guessusbresult["message"]
 
 	def connect(self,port):
 		if self.mode == "serial":
@@ -41,7 +92,7 @@ class ardustat:
 	
 	def rawread(self):
 		self.rawwrite("s0000")
-		sleep(.01)
+		time.sleep(.01)
 		if self.mode == "serial":
 			return self.ser.readlines()
 		if self.mode == "socket":
@@ -83,7 +134,7 @@ class ardustat:
 		if reading.find("GO") == 0 and reading.find("ST") and reading.rfind("GO") == 0:
 			outdict['valid'] = True
 			outdict['raw'] = reading
-			outdict['time'] = time()
+			outdict['time'] = time.time()
 			parts = reading.split(",")
 			outdict['ref'] = float(parts[len(parts)-2])
 			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])
