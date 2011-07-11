@@ -1,7 +1,13 @@
 #Ardustat Code
 
+Authors:
+	- Barry Van Tassell <bajavata@gmail.com>
+	- Eddie Nolan <tapd260@gmail.com>
+	- Dan Steingart <dan.steingart@gmail.com>
+	
+
 ##Overview
-Two tools here for the Ardustat V7 Board Specification
+Two tools here for the Ardustat V7 Board Specification.
 
 1. Firmware 
 	- Big change from previous versions: does _not_ automatically send data.  Must receive an "s0000" to send data.
@@ -25,3 +31,13 @@ Two tools here for the Ardustat V7 Board Specification
 	- python socket_test_inject_ocv.py
 
 Then play with the socket_test_long_test.py code
+
+##To Do
+- Add calibration code
+	-Get rid of very hacky code in resistor sections
+- Add galvanostat code
+- Enable DoubleDac
+
+##Not To Do (yet)
+- Logging Code
+- Web Code
