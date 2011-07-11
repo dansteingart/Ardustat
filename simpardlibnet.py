@@ -29,11 +29,8 @@ class ardustat:
 		except:
 			return {"success":False,"message":message}
 		time.sleep(0.1)
+		ser.readline() #Somehow this initializes the connection or something
 		ser.write("s0000\n")
-		time.sleep(0.1)
-		line = ser.readline()
-		time.sleep(0.1)
-		ser.write("s0000\n")#For some reason it won't return any data until the second time this command is sent. Probably the 1st command initializes the serial connection but doesn't actually let the arduino respond
 		time.sleep(0.1)
 		line = ser.readline()
 		if line.find("GO") !=-1 or line.find("ST") !=-1: #These are the start and end markers of the serial lines that the ardustat spits out
