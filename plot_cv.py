@@ -19,7 +19,7 @@ for d in data:
 	cee = ""
 	for i in c:
 		cee += i+","
-	b = a.parse(cee.strip(","))
+	b = a.parseReading(cee.strip(","))
 	if cycle != this_cycle:
 		potential.append(pot)
 		current.append(cur)
@@ -28,7 +28,7 @@ for d in data:
 		cycle = this_cycle
 		pot.append(b['cell_ADC'])
 		cur.append(b['current'])
-	elif b['current'] < .01 and b['current'] > -.01:
+	elif b['current'] < .001:
 		pot.append(b['cell_ADC'])
 		cur.append(b['current'])
 
@@ -38,7 +38,7 @@ current.append(cur)
 
 
 for i in range(0,len(potential)):
-	plot(potential[i],numpy.array(current[i])*1000,'.',label="Cycle "+str(i+1))
+	plot(potential[i],numpy.array(current[i])*1000,'.-',label="Cycle "+str(i+1))
 
 xlabel("Potential (V)")
 ylabel("Current (mA/cm^2)")

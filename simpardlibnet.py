@@ -123,16 +123,17 @@ class ardustat:
 				message = message + "Calibration data found for id#"+str(id)
 				calibrated = True
 			except: #If there's no resistance data
+				raise
 				message = message + "Calibration data not found for id #"+str(id)
 				res = []
 				for i in range(256):
-					res.append(i/255.*10000)
+					res.append(i/255.*10000 + 100)
 				calibrated = False
 		else:
 			message = message + "No ID # passed to this function. Using non-calibrated resistances."
 			res = []
 			for i in range(256):
-				res.append(i/255.*10000)
+				res.append(i/255.*10000 + 100)
 			calibrated = False
 		return {"success":True,"message":message,"resistance":res[pot],"calibrated":calibrated}
 		
@@ -156,7 +157,7 @@ class ardustat:
 			outdict['raw'] = reading
 			outdict['time'] = time.time()
 			parts = reading.split(",")
-			outdict['ref'] = int(parts[len(parts)-2])
+			outdict['ref'] = float(parts[len(parts)-2])
 			outdict['DAC0_setting'] = int(parts[2]) / 1023.0 * 5.0
 			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])
@@ -164,7 +165,10 @@ class ardustat:
 			outdict['resistance'] = self.resbasis(outdict['pot_step'],id)["resistance"]
 			try:
 				current = (float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['resistance']
+						 #(float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['res']			
 			except: #Divide by 0
+				print reading,outdict['pot_step'],outdict['resistance'],resbasisresult
+				raise
 				current = False
 			outdict['current'] = current
 			try:

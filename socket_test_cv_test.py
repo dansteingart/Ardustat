@@ -3,10 +3,10 @@ from time import sleep,time
 
 filename = "raw_data_"+str(int(time()))+".dat"
 def write_log(data):
-	if(data['valid']):open(filename,"a").write(str(data['time'])+","+data['raw']+"\n")
+	if(data['success']):open(filename,"a").write(str(data['time'])+","+data['raw']+"\n")
 
 def write_log_cv(cyc,data):
-	if(data['valid']):open("cv_"+filename,"a").write(str(data['time'])+","+str(cyc)+","+data['raw']+"\n")
+	if(data['success']):open("cv_"+filename,"a").write(str(data['time'])+","+str(cyc)+","+data['raw']+"\n")
 
 
 def calc_step_time(rate):

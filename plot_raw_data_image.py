@@ -17,7 +17,7 @@ for d in data:
 	cee = ""
 	for i in c:
 		cee += i+","
-	b = a.parse(cee.strip(","))
+	b = a.parseReading(cee.strip(","))
 	time.append(float(d.split(",")[0])-time_start)
 	potential.append(b['cell_ADC'])
 	current.append(b['current'])
