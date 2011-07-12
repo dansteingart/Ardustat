@@ -18,7 +18,7 @@ a.connect(7777)
 
 #parameters
 scan_rate = 1 #mV/s
-initial_potential = 0.3
+initial_potential = 1.3
 end_potential = 2.5
 cycles = 5
 this_potential = initial_potential
