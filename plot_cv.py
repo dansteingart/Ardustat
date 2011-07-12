@@ -19,7 +19,7 @@ for d in data:
 	cee = ""
 	for i in c:
 		cee += i+","
-	b = a.parseReading(cee.strip(","))
+	b = a.parse(cee.strip(","))
 	if cycle != this_cycle:
 		potential.append(pot)
 		current.append(cur)
@@ -28,7 +28,7 @@ for d in data:
 		cycle = this_cycle
 		pot.append(b['cell_ADC'])
 		cur.append(b['current'])
-	elif b['current'] < .001:
+	else:
 		pot.append(b['cell_ADC'])
 		cur.append(b['current'])
 
