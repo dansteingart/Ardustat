@@ -56,11 +56,14 @@ class ardustat:
 		else:
 			return {"success":False,"message":message+"\nCouldn't find any ardustats."}
 	
-	def autoConnect(self):
+	def autoConnect(self,mode="serial"):
 		guessusbresult = self.guessUSB()
 		if guessusbresult["success"] == True:
-			self.mode = "serial"
-			print self.connect(guessusbresult["port"])
+			if mode == "serial":
+				self.mode = "serial"
+				print self.connect(guessusbresult["port"])
+			elif mode == "socket":
+				print "Socket autoconnection not supported yet"
 		else:
 			print guessusbresult["message"]
 
@@ -123,7 +126,6 @@ class ardustat:
 				message = message + "Calibration data found for id#"+str(id)
 				calibrated = True
 			except: #If there's no resistance data
-				raise
 				message = message + "Calibration data not found for id #"+str(id)
 				res = []
 				for i in range(256):
@@ -167,8 +169,6 @@ class ardustat:
 				current = (float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['resistance']
 						 #(float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['res']			
 			except: #Divide by 0
-				print reading,outdict['pot_step'],outdict['resistance'],resbasisresult
-				raise
 				current = False
 			outdict['current'] = current
 			try:
