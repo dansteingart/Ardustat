@@ -438,16 +438,6 @@ long powerOfTen(char digit, int power) {
   }
 }
 
-int resgainer(int whatitis, int whatitshouldbe)
-{
-      int move = 0;
-      int diff = abs(whatitis-whatitshouldbe); 
-      if (diff > 20) move = 20;
-      else move = 1;
-      //move = constrain(move,1,100);
-      return move;
-} 
-
 void potentiostat()
 {
   //read in values
@@ -460,13 +450,13 @@ void potentiostat()
   for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
   lastData[10] = err;
   //PID
-  //float p = 1*err;
-  //float i = 0;
-  //float d = 0;
-  //move = int(p+i+d);
-  //outvolt = outvolt + move;
+  float p = 1*err;
+  float i = 0;
+  float d = 0;
+  move = int(p+i+d);
+  outvolt = outvolt + move;
 
-  /*if (outvolt>1023)
+  if (outvolt>1023)
   {
     res = res - (outvolt-1023)/1024.*255./2;
     outvolt = 1023;
@@ -484,9 +474,8 @@ void potentiostat()
   }
   write_pot(0,resistance1,res);
   write_dac(0,outvolt);
-  */
 
-  //if potential is too high
+  /* //if potential is too high
   if ((diff_adc_ref > setting) && (outvolt > 0))
   {
     move = gainer(diff_adc_ref,setting);
@@ -530,28 +519,7 @@ void potentiostat()
     res = res+1;
     write_pot(pot,resistance1,res);
     delay(waiter);
-  }
-  
-  
-    if (outvolt>1023)
-  {
-    res = res - (outvolt-1023)/1024.*255./2;
-    outvolt = 1023;
-    //res = res-res/6;
-    if (res<0) res=0;
-  }else if (outvolt<0){
-    res = res+(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
-    outvolt = 20;
-    //res = res - res/6;
-    if (res<0) res=0;
-  }
-  if (abs(outvolt-diff_adc_ref)<100){
-    res = res + abs(outvolt-diff_adc_ref)/10.;
-    if (res>255) res = 255;
-  }
-  write_pot(0,resistance1,res);
-  write_dac(0,outvolt);
-
+  }*/
 
 }
 
