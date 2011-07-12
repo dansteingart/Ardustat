@@ -28,7 +28,7 @@ for d in data:
 		cycle = this_cycle
 		pot.append(b['cell_ADC'])
 		cur.append(b['current'])
-	elif b['current'] < .03 and b['current'] > -.01:
+	elif b['current'] < .01 and b['current'] > -.01:
 		pot.append(b['cell_ADC'])
 		cur.append(b['current'])
 
