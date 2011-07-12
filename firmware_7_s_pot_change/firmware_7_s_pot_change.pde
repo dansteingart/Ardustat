@@ -440,10 +440,11 @@ long powerOfTen(char digit, int power) {
 
 int resgainer(int whatitis, int whatitshouldbe)
 {
-      int move = 0;
-      int diff = abs(whatitis-whatitshouldbe); 
-      if (diff > 20) move = 20;
-      else move = 1;
+      //int move = 0;
+      int move = 1;
+      //int diff = abs(whatitis-whatitshouldbe); 
+      //if (diff > 20) move = 20;
+      //else move = 1;
       //move = constrain(move,1,100);
       return move;
 } 
@@ -535,13 +536,14 @@ void potentiostat()
   
     if (outvolt>1023)
   {
-    res = res - (outvolt-1023)/1024.*255./2;
+    res = res - 1;//(outvolt-1023)/1024.*255./2;
     outvolt = 1023;
     //res = res-res/6;
     if (res<0) res=0;
   }else if (outvolt<0){
-    res = res+(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
-    outvolt = 20;
+    res = res + 1;//(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
+    //outvolt = 20;
+    outvolt = 0
     //res = res - res/6;
     if (res<0) res=0;
   }
