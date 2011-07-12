@@ -52,9 +52,9 @@ potentiometer.append(res)
 dacsetting.append(dac)
 
 for i in range(0,len(potential)):
-	plot(potential[i],numpy.array(current[i])*1000,'.',label="Cycle "+str(i+1))
+	plot(potential[i])#potential[i],numpy.array(current[i])*1000,'.',label="Cycle "+str(i+1))
 
 xlabel("Potential (V)")
 ylabel("Current (mA/cm^2)")
 legend(loc="best")
-savefig("out_cv.png")
+savefig("out_cv_2.png")
