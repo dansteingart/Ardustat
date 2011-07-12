@@ -542,8 +542,7 @@ void potentiostat()
     if (res<0) res=0;
   }else if (outvolt<0){
     res = res + 1;//(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
-    //outvolt = 20;
-    outvolt = 0
+    outvolt = 20;
     //res = res - res/6;
     if (res<0) res=0;
   }
