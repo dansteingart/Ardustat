@@ -84,7 +84,6 @@ class ardustat:
 	def potentiostat(self,potential):
 		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
 		self.rawwrite("p"+potential)
-	
 		
 	def rawwrite(self,command):
 		if self.mode == "serial":
@@ -233,13 +232,16 @@ class ardustat:
 			self.rawwrite("+"+potential)
 		
 	def setResistance(self,resistance,id=None):
+		message = ""
 		closestvalue = 0
 		for i in range(1,256):
 			if math.fabs(resistance - self.resbasis(i,id)["resistance"]) < math.fabs(resistance - self.resbasis(closestvalue,id)["resistance"]): #If the absolute value of the difference between this resistance and the ideal resistance is less than the absolute value of the other closest difference...
 				closestvalue = i
 		closestvalue = str(closestvalue).rjust(4,"0")
 		self.rawwrite("r"+closestvalue)
-		print "Set resistance to",self.resbasis(int(closestvalue),id)["resistance"]
+		message = "Set resistance to "+str(self.resbasis(int(closestvalue),id)["resistance"])
+		print message.split("\n")[-1]
+		return {"success":True,"message":message,"setting":self.resbasis(int(closestvalue),id)["resistance"]}
 		
 	def calibrate(self, resistance, id):
 		message = ""
@@ -295,3 +297,61 @@ class ardustat:
 			print message.split("\n")[-1]
 			return {"success":True,"message":message}
 		f.close()
+
+	def setVoltageDifference(self,potential):
+		setting = str(int(1023*(potential/5.0))).rjust(4,"0")
+		self.rawwrite("g"+setting)
+
+	def galvanostat(self,current,id=None): #This takes a specified current as input and calculates the right resistor setting and voltage difference to set it. See http://steingart.ccny.cuny.edu/ardustat-theory
+		message = ""
+		if current < 0 or current > 0.02:  #Current out of range
+			message = message + "\nCurrent "+str(current)+" out of range (0-0.02)."
+			print message.split("\n")[-1]
+			return {"success":False,"message":message}
+		
+		if current == 0:  #Current is zero; set voltage difference to 0 and resistance to max. If we use the normal method with an input of 0 it just throws a divide by 0 error
+			self.rawwrite("r0255")
+			time.sleep(0.1)
+			self.rawwrite("g0000")
+			message = message + "\nSuccessfully set galvanostat. Set voltage differance as 0 and resistance as "+str(self.resbasis(255,id)["resistance"])+"."
+			print message.split("\n")[-1]
+			return {"success":True,"message":message}
+		
+		else:
+			parseddict = self.parse(self.rawread(),id)
+			if parseddict["success"] != False: #If parsing the data was successful
+				voltagedifference = current * 1000 #1 milliamp corresponds to 1V, 1 microamp corresponds to 1 millivolt, etc
+				minvoltagedifference = 0.00489 #DAC has 4.89-millivolt resolution
+				maxvoltagedifference = 5 - parseddict["cell_ADC"]
+				if voltagedifference < minvoltagedifference: voltagedifference = minvoltagedifference
+				if voltagedifference > maxvoltagedifference: voltagedifference = maxvoltagedifference
+				resistancevalue = voltagedifference / current
+				minresistance = self.resbasis(0,id)["resistance"]
+				maxresistance = self.resbasis(255,id)["resistance"]
+				while resistancevalue < minresistance: #If resistor can't go that low for that voltage setting...
+					voltagedifference = voltagedifference + 0.00489 #Tick DAC up a setting
+					if voltagedifference < maxvoltagedifference:
+						resistancevalue = voltagedifference / current #Recalculate resistor setting
+					else: #Voltage is maxed out and resistor still can't go low enough to source current...
+						message = message + "\nYou connected a "+str(parseddict["cell_ADC"])+" cell. Max current for that cell is "+str(maxvoltagedifference/minresistance)+" A. Cannot set current as "+str(current)+" A."
+						print message.split("\n")[-1]
+						return {"success":False,"message":message}
+				
+				if resistancevalue > maxresistance: #If resistor can't go that high for that voltage setting...
+					resistancevalue = maxresistance
+					voltagedifference = resistancevalue * current #Recalculate voltage difference
+					if voltagedifference < minvoltagedifference: #Voltage difference is so low at max resistance that the closest DAC setting is 0.
+						message = message + "\nYour current is lower than the maximum resistance of the potentiometer * the minimum voltage difference of the DAC."
+						print message.split("\n")[-1]
+						return {"success":False,"message":message}
+				#If we are at this point, then we find the resistor setting that corresponds to the resistance value
+				resistanceresult = self.setResistance(resistancevalue, id)
+				time.sleep(0.1)
+				self.setVoltageDifference(voltagedifference)
+				message = message + "\nSuccessfully set galvanostat. Set voltage difference to "+str(voltagedifference)+" V. Set resistance to "+str(resistanceresult["setting"])+" Ohm."
+				print message.strip("\n")[-1]
+				return {"success":True,"message":message}
+			else:	#Issue parsing data
+				message = message + "\nError parsing data! Galvanostat not set."
+				print message.split("\n")[-1]
+				return {"success":False,"message":message}
