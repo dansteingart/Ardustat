@@ -51,6 +51,7 @@ boolean gstat = false;
 boolean pstat = false;
 boolean ocv = true;
 boolean cv = false;
+int dactoset = 0;
 int setting = 0;
 int speed = 100;
 int countto = 0;
@@ -121,10 +122,10 @@ void loop()
     holdString[4] = serInString[4];
 
     //try to print out collected information. it will do it only if there actually is some info.
-    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100)
+    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100 || serInString[0] == 88)
     {
-      if (serInString[0] == 43) positive = true;
-      else if (serInString[0] == 45) positive = false;
+      if (serInString[0] == 43) positive = true; //"+"
+      else if (serInString[0] == 45) positive = false; //"-"
       pstat = false;
       if (serInString[0] != 114) gstat = false;
       dactest = false;
@@ -141,24 +142,23 @@ void loop()
      {
       pMode = 0;
      } 
-      if (serInString[0] == 43)
+      if (serInString[0] == 43) //"+"
       {
         outvolt = out;
-
         send_dac(0,outvolt);
         digitalWrite(3,HIGH);
-        speed = 5;
-        countto = 10;
+        //speed = 5;
+        //countto = 10;
       }
-      if (serInString[0] == 100)
+      if (serInString[0] == 100) //"d"
       {
         outvolt = out;
         send_dac(1,outvolt);
         digitalWrite(3,HIGH);
-        speed = 5;
-        countto = 10;
+        //speed = 5;
+        //countto = 10;
       }
-      if (serInString[0] == 45)
+      if (serInString[0] == 45) //"-"
       {
         //outvolt = -1;
         ocv = true;
@@ -169,7 +169,7 @@ void loop()
 
       }
 
-      if (serInString[0] == 80)
+      if (serInString[0] == 80) //"P"
       {
         dactest = true;
         testcounter = 0;
@@ -178,7 +178,7 @@ void loop()
         //countto = 10;
       }
 
-      if (serInString[0] == 82)
+      if (serInString[0] == 82) //"R"
       {
         rtest = true;
         testcounter = 0;
@@ -188,14 +188,14 @@ void loop()
       }
 
 
-      if (serInString[0] == 114)
+      if (serInString[0] == 114) //"r"
       {
 
         res = out;
         write_pot(pot,resistance1,res);
       }
 
-      if (serInString[0] == 103)
+      if (serInString[0] == 103) //"g"
       {
         dacon();
         gstat = true;
@@ -206,7 +206,7 @@ void loop()
         //countto = 20;
 
 
-        if (out > 2000)
+        if (out >= 2000)
         {
 
           out = out - 2000;
@@ -225,7 +225,7 @@ void loop()
         digitalWrite(3,HIGH);
 
       }
-      if (serInString[0] == 112)
+      if (serInString[0] == 112) //"p"
       {
         if (pMode == 0)
         {
@@ -241,7 +241,7 @@ void loop()
         write_dac(0,setting);
       }
 
-      if (serInString[0] == 99)
+      if (serInString[0] == 99) //"c"
       {
         pstat = true;
         //speed = 5;
@@ -251,9 +251,26 @@ void loop()
         dacon();
         digitalWrite(3,HIGH);
       }
+      //New command: If X0000-X1023, set DAC 0, if X2000-X3023, set DAC 1
+      if (serInString[0] == 88) //"X"
+      {
+        if (out >= 2000)
+        {
+          out = out - 2000;
+          dactoset = 1;
+        }
+        else if (out < 2000)
+        {
+          out = out;
+          dactoset = 0;
+        }
+        outvolt = out;
+        send_dac(dactoset,outvolt);
+        digitalWrite(3,HIGH);
+      }
     }
 
-    else if (serInString[0] == 32)
+    else if (serInString[0] == 32) //Space
     {
       digitalWrite(5,HIGH);
       digitalWrite(6,LOW);
@@ -264,11 +281,10 @@ void loop()
     }
     
     
-    else if (serInString[0] == 115)
+    else if (serInString[0] == 115) //"s"
     {
       sendout();
     }
-
 
 
     flushSerialString(serInString);
