@@ -212,13 +212,20 @@ class ardustat:
 		printstring += "\nCalibrated: " + str(p["calibration"])
 		print printstring
 	
-	def setGNDDAC(self,potential):
-		potential = str(int(1023*(potential/5.0)) + 2000).rjust(4,"0")
-		self.rawwrite("X"+potential)
+	def setGNDDAC(self,potential,auto_set_other_dac_to_zero=True):
+		if auto_set_other_dac_to_zero == True:
+			potential = str(int(1023*(potential/5.0)) + 2000).rjust(4,"0")
+			self.rawwrite("X"+potential)
+		else:
+			potential = str(int(1023*(potential/5.0))).rjust(4,"0")
+			self.rawwrite("d"+potential)
 	
-	def setDAC(self,potential):
+	def setDAC(self,potential,auto_set_other_dac_to_zero=True):
 		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
-		self.rawwrite("X"+potential)
+		if auto_set_other_dac_to_zero==True:
+			self.rawwrite("X"+potential)
+		else:
+			self.rawwrite("+"+potential)
 		
 	def setResistance(self,resistance,id=None):
 		for i in range(1,256):

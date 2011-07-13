@@ -258,11 +258,13 @@ void loop()
         {
           out = out - 2000;
           dactoset = 1;
+          send_dac(0,0);
         }
         else if (out < 2000)
         {
           out = out;
           dactoset = 0;
+          send_dac(1,0);
         }
         outvolt = out;
         send_dac(dactoset,outvolt);
