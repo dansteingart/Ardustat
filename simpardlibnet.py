@@ -5,6 +5,8 @@ import os
 import time
 import pickle
 import math
+import json
+import matplotlib.pyplot
 
 class ardustat:
 	def __init__(self):	
@@ -358,3 +360,48 @@ class ardustat:
 				message = message + "\nError parsing data! Galvanostat not set."
 				print message.split("\n")[-1]
 				return {"success":False,"message":message}
+	
+	def simplelog(self,timetoruninseconds=False,id=False):
+		initialtime = time.time()
+		rawdatafile = open(str(time.time())+".csv","w")
+		rawdatafile.close()
+		rawdatafile = open(str(time.time())+".csv","a")
+		jsondatafile = open(str(time.time())+".jsondata","w")
+		jsondatafile.close()
+		jsondatafile = open(str(time.time())+".jsondata","a")
+		while time.time() < (initialtime + timetoruninseconds):
+			thedata = self.rawread()
+			rawdatafile.write(thedata+"\n")
+			parsedict = self.parse(thedata,id)
+			if parsedict["success"] == True:
+				jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
+	
+	def plotdata(self,filename, yaxis, xaxis="thetime"):
+		f = open(filename,"r")
+		data = f.readlines()
+		f.close()
+		thetime = []
+		ref = []
+		DAC0_setting = []
+		DAC0_ADC = []
+		cell_ADC = []
+		pot_step = []
+		resistance = []
+		GND = []
+		cell_resistance = []
+		current = []
+		for i in range(len(data)):
+			data[i] = json.loads(data[i].replace("\n","").replace("\r",""))
+			thetime.append(data[i]['time'])
+			ref.append(data[i]['ref'])
+			DAC0_setting.append(data[i]['DAC0_setting'])
+			DAC0_ADC.append(data[i]['DAC0_ADC'])
+			cell_ADC.append(data[i]['cell_ADC'])
+			pot_step.append(data[i]['pot_step'])
+			resistance.append(data[i]['resistance'])
+			GND.append(data[i]['GND'])
+			cell_resistance.append(data[i]['cell_resistance'])
+			current.append(data[i]['current'])
+		thedict = {"thetime":thetime,"ref":ref,"DAC0_setting":DAC0_setting,"DAC0_ADC":DAC0_ADC,"cell_ADC":cell_ADC,"pot_step":pot_step,"resistance":resistance,"GND":GND,"cell_resistance":cell_resistance,"current":current}
+		matplotlib.pyplot.plot(thedict[xaxis],thedict[yaxis])
+		matplotlib.pyplot.savefig("image.png")
