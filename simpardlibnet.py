@@ -165,6 +165,7 @@ class ardustat:
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])
 			outdict['pot_step'] = int(parts[4])
 			outdict['resistance'] = self.resbasis(outdict['pot_step'],id)["resistance"]
+			outdict['GND'] = self.refbasis(parts[8],outdict['ref'])
 			try:
 				current = (float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['resistance']
 						 #(float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['res']			
@@ -172,11 +173,15 @@ class ardustat:
 				current = False
 			outdict['current'] = current
 			try:
-				cellresistance = (outdict['cell_ADC']/outdict['DAC0_ADC'])*outdict['resistance']/(1-(outdict['cell_ADC']/outdict['DAC0_ADC']))
+				if outdict['DAC0_ADC'] == 0: #DAC 1 is set...
+					cellresistance = (outdict['cell_ADC']/outdict['GND'])*outdict['resistance']/(1-(outdict['cell_ADC']/outdict['GND']))
+				elif outdict['GND'] == 0:
+					cellresistance = (outdict['cell_ADC']/outdict['DAC0_ADC'])*outdict['resistance']/(1-(outdict['cell_ADC']/outdict['DAC0_ADC']))
+				else:
+					cellresistance = False
 			except:
 				cellresistance = False
 			outdict['cell_resistance'] = cellresistance
-			outdict['GND'] = self.refbasis(parts[8],outdict['ref'])
 			outdict['reference_electrode'] = self.refbasis(parts[9],outdict['ref'])
 			if parts[6] == "0":
 				mode = "Manual"
