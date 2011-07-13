@@ -233,6 +233,7 @@ class ardustat:
 			self.rawwrite("+"+potential)
 		
 	def setResistance(self,resistance,id=None):
+		closestvalue = 0
 		for i in range(1,256):
 			if math.fabs(resistance - self.resbasis(i)["resistance"]) < math.fabs(resistance - self.resbasis(closestvalue)["resistance"]): #If the absolute value of the difference between this resistance and the ideal resistance is less than the absolute value of the other closest difference...
 				closestvalue = i
