@@ -239,7 +239,7 @@ class ardustat:
 				closestvalue = i
 		closestvalue = str(closestvalue).rjust(4,"0")
 		self.rawwrite("r"+closestvalue)
-		print "Set resistance to",res[int(closestvalue)]
+		print "Set resistance to",resbasis(int(closestvalue),id)["resistance"]
 		
 	def calibrate(self, resistance, id):
 		message = ""
