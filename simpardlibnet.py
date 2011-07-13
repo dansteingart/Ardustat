@@ -320,7 +320,10 @@ class ardustat:
 		else:
 			parseddict = self.parse(self.rawread(),id)
 			if parseddict["success"] != False: #If parsing the data was successful
-				voltagedifference = current * 1000 #1 milliamp corresponds to 1V, 1 microamp corresponds to 1 millivolt, etc
+				if current > 0.001:
+					voltagedifference = current * 1000 #1 milliamp corresponds to 1V, 1 microamp corresponds to 1 millivolt, etc
+				else:
+					voltagedifference = current * 10000
 				minvoltagedifference = 0.00489 #DAC has 4.89-millivolt resolution
 				maxvoltagedifference = 5 - parseddict["cell_ADC"]
 				if voltagedifference < minvoltagedifference: voltagedifference = minvoltagedifference
