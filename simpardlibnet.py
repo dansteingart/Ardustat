@@ -213,12 +213,12 @@ class ardustat:
 		print printstring
 	
 	def setGNDDAC(self,potential):
-		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
-		self.rawwrite("d"+potential)
+		potential = str(int(1023*(potential/5.0)) + 2000).rjust(4,"0")
+		self.rawwrite("X"+potential)
 	
 	def setDAC(self,potential):
 		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
-		self.rawwrite("+"+potential)
+		self.rawwrite("X"+potential)
 		
 	def setResistance(self,resistance,id=None):
 		for i in range(1,256):
