@@ -235,11 +235,11 @@ class ardustat:
 	def setResistance(self,resistance,id=None):
 		closestvalue = 0
 		for i in range(1,256):
-			if math.fabs(resistance - self.resbasis(i)["resistance"]) < math.fabs(resistance - self.resbasis(closestvalue)["resistance"]): #If the absolute value of the difference between this resistance and the ideal resistance is less than the absolute value of the other closest difference...
+			if math.fabs(resistance - self.resbasis(i,id)["resistance"]) < math.fabs(resistance - self.resbasis(closestvalue,id)["resistance"]): #If the absolute value of the difference between this resistance and the ideal resistance is less than the absolute value of the other closest difference...
 				closestvalue = i
 		closestvalue = str(closestvalue).rjust(4,"0")
 		self.rawwrite("r"+closestvalue)
-		print "Set resistance to",resbasis(int(closestvalue),id)["resistance"]
+		print "Set resistance to",self.resbasis(int(closestvalue),id)["resistance"]
 		
 	def calibrate(self, resistance, id):
 		message = ""
