@@ -24,14 +24,15 @@ while time() < time_limit:
 	write_log(a.parse(a.rawread()))
 	
 
-a.galvanostat(0.0005)
+a.potentiostat(1)
 time_limit = time() + 10
 while time() < time_limit:
 	sleep(.5)
 	write_log(a.parse(a.rawread()))
 	
-a.galvanostat(0.002)
-while 1:
+a.potentiostat(1.5)
+time_limit = time() + 3600
+while time() < time_limit:
 	sleep(.5)
 	write_log(a.parse(a.rawread()))
 
