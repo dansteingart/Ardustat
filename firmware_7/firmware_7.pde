@@ -7,6 +7,16 @@
 #define LED 5
 #define LEDGND 6
 #define CLPIN 2
+//If you are using a version 8 ardustat, comment out the above lines and uncomment the following:
+//#define DATAOUT 12//MOSI
+//#define DATAIN 11//MISO - not used, but part of builtin SPI
+//#define SPICLOCK 10//sck
+//#define SLAVESELECTD 13//ss
+//#define SLAVESELECTP 3//ss
+//#define RELAYPIN 4
+//#define LED 2
+//#define LEDGND 1
+//#define CLPIN 5
 
 int adc;    //out of pot
 int dac;    //out of main dac
@@ -308,16 +318,48 @@ char spi_transfer(volatile char data)
 
 byte send_dac(int address, int value)
 {
-  SPCR = B01010000;
-  firstdac = (address << 6) + (3 << 4) + (value >> 6);
-  seconddac = (value << 2 )&255;
-  digitalWrite(SLAVESELECTD,LOW);
+  byte val2 = (value >> 8) & 0x03;
+  byte val1 = (value >> 2)& 255;
+
+  digitalWrite(SLAVESELECTP, HIGH);
+  digitalWrite(SLAVESELECTD, LOW);
+  delayMicroseconds(10);
+  if (address==0){
+    for (int i=0;i<2;i++){
+      sendBit(false);
+    }
+         
+    for (int i=0;i<2;i++){
+      sendBit(true);
+    }
+  }
+  else if(address==1){
+          
+    sendBit(LOW);
+    sendBit(HIGH);
+      
+    for (int i=0;i<2;i++){
+      sendBit(true);
+    }  
+  }
   //2 byte opcode
-  spi_transfer(firstdac);
-  spi_transfer(seconddac);
+  //spi_transfer(firstdac);
+  sendBit(HIGH && (val1 & B10000000));
+  sendBit(HIGH && (val1 & B01000000));
+  sendBit(HIGH && (val1 & B00100000));
+  sendBit(HIGH && (val1 & B00010000));
+  sendBit(HIGH && (val1 & B00001000));
+  sendBit(HIGH && (val1 & B00000100));
+  sendBit(HIGH && (val1 & B00000010));
+  sendBit(HIGH && (val1 & B00000001));
+  //spi_transfer(seconddac);
+  sendBit(HIGH && (val2 & B00000010));
+  sendBit(HIGH && (val2 & B00000001));
+      
+  for (int i=0;i<2;i++){
+    sendBit(false);
+  }
   digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
-  //delay(3000);*/
-  SPCR = B00010000;
 }
 
 byte dacoff()
