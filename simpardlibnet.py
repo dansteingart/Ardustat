@@ -381,6 +381,19 @@ class ardustat:
 			jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
 		rawdatafile.close()
 		jsondatafile.close()
+<<<<<<< HEAD
+=======
+		jsondatafile = open(str(time.time())+".jsondata","a")
+		if timetoruninseconds:
+			while time.time() < (initialtime + timetoruninseconds):
+				thedata = self.rawread()
+				rawdatafile.write(thedata+"\n")
+				parsedict = self.parse(thedata,id)
+				if parsedict["success"] == True:
+					jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
+
+			
+>>>>>>> changes all around
 	
 	def plotdata(self,filename, yaxis, xaxis="thetime"):
 		f = open(filename,"r")
