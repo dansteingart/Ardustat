@@ -371,9 +371,9 @@ class ardustat:
 		try:
 			rawdatafile = open(filename+".jsondata","a")
 		except: #File does not exist
-			rawdatafile = open(filename+".jsondata","w") #Make new empty file
-			rawdatafile.close()
-			rawdatafile = open(filename+".jsondata","a")
+			jsondatafile = open(filename+".jsondata","w") #Make new empty file
+			jsondatafile.close()
+			jsondatafile = open(filename+".jsondata","a")
 		thedata = self.rawread()
 		rawdatafile.write(thedata+"\n")
 		parsedict = self.parse(thedata,id)
