@@ -201,7 +201,6 @@ void loop()
         send_dac(0,outvolt);
         if (out >= 2000)
         {
-
           out = out - 2000;
           sign = -1;
         }
@@ -318,6 +317,10 @@ char spi_transfer(volatile char data)
 
 byte send_dac(int address, int value)
 {
+  if (value > 1023)
+  {
+    value = 1023;
+  }
   byte val2 = (value >> 8) & 0x03;
   byte val1 = (value >> 2)& 255;
 
