@@ -315,9 +315,9 @@ class ardustat:
 			return {"success":False,"message":message}
 		
 		if current == 0:  #Current is zero; set voltage difference to 0 and resistance to max. If we use the normal method with an input of 0 it just throws a divide by 0 error
+			self.ocv()
+			time.sleep(0.3)
 			self.rawwrite("r0255")
-			time.sleep(0.1)
-			self.rawwrite("g0000")
 			message = message + "\nSuccessfully set galvanostat. Set voltage differance as 0 and resistance as "+str(self.resbasis(255,id)["resistance"])+"."
 			print message.split("\n")[-1]
 			return {"success":True,"message":message}
@@ -354,7 +354,7 @@ class ardustat:
 						return {"success":False,"message":message}
 				#If we are at this point, then we find the resistor setting that corresponds to the resistance value
 				resistanceresult = self.setResistance(resistancevalue, id)
-				time.sleep(0.1)
+				time.sleep(0.3)
 				self.setVoltageDifference(voltagedifference)
 				message = message + "\nSuccessfully set galvanostat. Set voltage difference to "+str(voltagedifference)+" V. Set resistance to "+str(resistanceresult["setting"])+" Ohm."
 				print message.split("\n")[-1]
@@ -384,19 +384,7 @@ class ardustat:
 			jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
 		rawdatafile.close()
 		jsondatafile.close()
-<<<<<<< HEAD
-=======
-		jsondatafile = open(str(time.time())+".jsondata","a")
-		if timetoruninseconds:
-			while time.time() < (initialtime + timetoruninseconds):
-				thedata = self.rawread()
-				rawdatafile.write(thedata+"\n")
-				parsedict = self.parse(thedata,id)
-				if parsedict["success"] == True:
-					jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
 
-			
->>>>>>> changes all around
 	
 	def plotdata(self,filename, yaxis, xaxis="thetime"):
 		f = open(filename,"r")
