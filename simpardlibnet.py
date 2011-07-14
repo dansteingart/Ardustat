@@ -354,7 +354,7 @@ class ardustat:
 				time.sleep(0.1)
 				self.setVoltageDifference(voltagedifference)
 				message = message + "\nSuccessfully set galvanostat. Set voltage difference to "+str(voltagedifference)+" V. Set resistance to "+str(resistanceresult["setting"])+" Ohm."
-				print message.strip("\n")[-1]
+				print message.split("\n")[-1]
 				return {"success":True,"message":message}
 			else:	#Issue parsing data
 				message = message + "\nError parsing data! Galvanostat not set."
