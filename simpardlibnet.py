@@ -306,6 +306,9 @@ class ardustat:
 
 	def galvanostat(self,current,id=None): #This takes a specified current as input and calculates the right resistor setting and voltage difference to set it. See http://steingart.ccny.cuny.edu/ardustat-theory
 		message = ""
+		if id == None:
+			message = message + "\nWarning: No ID # passed to this function!"
+			print message.split("\n")[-1]
 		if current < 0 or current > 0.02:  #Current out of range
 			message = message + "\nCurrent "+str(current)+" out of range (0-0.02)."
 			print message.split("\n")[-1]
