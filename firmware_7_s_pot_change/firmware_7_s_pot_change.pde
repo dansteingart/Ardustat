@@ -3,6 +3,7 @@
 #define SPICLOCK  13//sck
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
+#define RELAYPIN 3
 
 
 int adc;    //out of pot
@@ -64,14 +65,11 @@ void setup()
 
   //Startup Serial
   Serial.begin(57600);
-//  Serial.println("Hi Dan!");
-
-
   //SPI
   byte i;
   //byte clr;
   pinMode(DATAOUT, OUTPUT);
-  pinMode(3,OUTPUT);
+  pinMode(RELAYPIN,OUTPUT);
   pinMode(DATAIN, INPUT);
   pinMode(SPICLOCK,OUTPUT);
   pinMode(SLAVESELECTD,OUTPUT);
@@ -136,37 +134,30 @@ void loop()
       {
         sendString [i] = serInString[i+1];
       }
-      int out =  stringToNumber(sendString,4);
-      //Serial.print(out,DEC);
-      if (serInString[0] != 112)
-     {
-      pMode = 0;
-     } 
+      int out = stringToNumber(sendString,4);
+      if (serInString[0] != 112) //"p"
+      {
+        pMode = 0;
+      }
+      
       if (serInString[0] == 43) //"+"
       {
         outvolt = out;
         send_dac(0,outvolt);
-        digitalWrite(3,HIGH);
-        //speed = 5;
-        //countto = 10;
+        digitalWrite(RELAYPIN,HIGH);
       }
+      
       if (serInString[0] == 100) //"d"
       {
         outvolt = out;
         send_dac(1,outvolt);
-        digitalWrite(3,HIGH);
-        //speed = 5;
-        //countto = 10;
+        digitalWrite(RELAYPIN,HIGH);
       }
+      
       if (serInString[0] == 45) //"-"
       {
-        //outvolt = -1;
         ocv = true;
-        //if(out >= 1) write_dac(1,out);
-        digitalWrite(3,LOW);
-        //speed = 5;
-        //countto = 10;
-
+        digitalWrite(RELAYPIN,LOW);
       }
 
       if (serInString[0] == 80) //"P"
@@ -174,8 +165,6 @@ void loop()
         dactest = true;
         testcounter = 0;
         testlimit = 1023;
-        //speed = 5;
-        //countto = 10;
       }
 
       if (serInString[0] == 82) //"R"
@@ -183,14 +172,10 @@ void loop()
         rtest = true;
         testcounter = 0;
         testlimit = 255;
-        //speed = 10;
-        //countto = 10;
       }
-
 
       if (serInString[0] == 114) //"r"
       {
-
         res = out;
         write_pot(pot,resistance1,res);
       }
@@ -201,11 +186,7 @@ void loop()
         gstat = true;
 
         outvolt = analogRead(0);
-        write_dac(0,outvolt);
-        //speed = 5;
-        //countto = 20;
-
-
+        send_dac(0,outvolt);
         if (out >= 2000)
         {
 
@@ -220,11 +201,12 @@ void loop()
 
         setting = out;
         outvolt = analogRead(0)+(sign*out);
-        write_dac(0,outvolt);
+        send_dac(0,outvolt);
 
-        digitalWrite(3,HIGH);
+        digitalWrite(RELAYPIN,HIGH);
 
       }
+      
       if (serInString[0] == 112) //"p"
       {
         if (pMode == 0)
@@ -233,23 +215,17 @@ void loop()
         }
         pstat = true;
         pMode = 1;
-        //speed = 5;
-        //countto = 20;
         setting = out;
-        //outvolt = setting; //initial guess
-        digitalWrite(3,HIGH);
-        write_dac(0,setting);
+        digitalWrite(RELAYPIN,HIGH);
+        send_dac(0,setting);
       }
 
       if (serInString[0] == 99) //"c"
       {
         pstat = true;
-        //speed = 5;
-        //countto = 20;
         setting = out;
-        //outvolt = setting; //initial guess
         dacon();
-        digitalWrite(3,HIGH);
+        digitalWrite(RELAYPIN,HIGH);
       }
       //New command: If X0000-X1023, set DAC 0, if X2000-X3023, set DAC 1
       if (serInString[0] == 88) //"X"
@@ -268,7 +244,7 @@ void loop()
         }
         outvolt = out;
         send_dac(dactoset,outvolt);
-        digitalWrite(3,HIGH);
+        digitalWrite(RELAYPIN,HIGH);
       }
     }
 
@@ -281,7 +257,6 @@ void loop()
       digitalWrite(6,LOW);
 
     }
-    
     
     else if (serInString[0] == 115) //"s"
     {
@@ -311,7 +286,6 @@ void loop()
 
     adc = adcrun/counter;
 
-    //sendout();
     counter = 0;
     adcrun =0;
     dacrun = 0;
@@ -330,12 +304,6 @@ char spi_transfer(volatile char data)
   return SPDR;                    // return the received byte
 }
 
-void write_dac(int address, int value)
-{
-  //This function replaces the old write_dac, which
-  //is named send_dac now.
-  send_dac(address,value);
-}
 byte send_dac(int address, int value)
 {
   SPCR = B01010000;
@@ -478,39 +446,13 @@ void potentiostat()
   int move = 0;
   for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
   lastData[10] = err;
-  //PID
-  //float p = 1*err;
-  //float i = 0;
-  //float d = 0;
-  //move = int(p+i+d);
-  //outvolt = outvolt + move;
-
-  /*if (outvolt>1023)
-  {
-    res = res - (outvolt-1023)/1024.*255./2;
-    outvolt = 1023;
-    //res = res-res/6;
-    if (res<0) res=0;
-  }else if (outvolt<0){
-    res = res+(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
-    outvolt = 20;
-    //res = res - res/6;
-    if (res<0) res=0;
-  }
-  if (abs(outvolt-diff_adc_ref)<100){
-    res = res + abs(outvolt-diff_adc_ref)/10.;
-    if (res>255) res = 255;
-  }
-  write_pot(0,resistance1,res);
-  write_dac(0,outvolt);
-  */
-
+  
   //if potential is too high
   if ((diff_adc_ref > setting) && (outvolt > 0))
   {
     move = gainer(diff_adc_ref,setting);
     outvolt=outvolt-move;
-    write_dac(0,outvolt);
+    send_dac(0,outvolt);
 
   }
 
@@ -519,14 +461,14 @@ void potentiostat()
   {
     move = gainer(diff_adc_ref,setting);
     outvolt=outvolt+move;
-    write_dac(0,outvolt);
+    send_dac(0,outvolt);
   }
 
   // if range is limited decrease R
   if ((outvolt > 1022) && (res > 0))
   {
     outvolt = 1000;
-    write_dac(0,outvolt);
+    send_dac(0,outvolt);
     resmove = resgainer(adc,setting);
     res = res - resmove;
     write_pot(pot,resistance1,res);
@@ -535,7 +477,7 @@ void potentiostat()
   else if ((outvolt < 1) && (res > 0))
   {
     outvolt = 23;
-    write_dac(0,outvolt);
+    send_dac(0,outvolt);
     resmove = resgainer(adc,setting);
     res = res - resmove;
     write_pot(pot,resistance1,res);
@@ -569,9 +511,7 @@ void potentiostat()
     if (res>255) res = 255;
   }
   write_pot(0,resistance1,res);
-  write_dac(0,outvolt);
-
-
+  send_dac(0,outvolt);
 }
 
 void galvanostat()
@@ -594,8 +534,7 @@ void galvanostat()
      
       move = gainer(diff,setting);
       outvolt = outvolt-move;
-      write_dac(0,outvolt);
-
+      send_dac(0,outvolt);
     }
 
     //if under current step dac up
@@ -603,7 +542,7 @@ void galvanostat()
     {
       move = gainer(diff,setting);
       outvolt = outvolt+move;
-      write_dac(0,outvolt);
+      send_dac(0,outvolt);
 
     }
   }
@@ -617,7 +556,7 @@ void galvanostat()
     {
       move = gainer(diff,setting);
       outvolt =outvolt+move;
-      write_dac(0,outvolt);
+      send_dac(0,outvolt);
     }
 
     //if under current step dac down
@@ -625,7 +564,7 @@ void galvanostat()
     {
       move = gainer(diff,setting);
       outvolt = outvolt-move;
-      write_dac(0,outvolt);
+      send_dac(0,outvolt);
 
     }
   }
@@ -669,27 +608,21 @@ void sendout()
   Serial.print(",");
   Serial.print(refvolt);
   Serial.println(",ST");
-  //res=res+1;
-  //if (res > 255) res = 0;
-  //sendValue(0,1);
-  //sendValue(0,255);
 }
 
 void testdac ()
 {
-  digitalWrite(3,LOW);
-  write_dac(0,testcounter);
+  digitalWrite(RELAYPIN,LOW);
+  send_dac(0,testcounter);
   outvolt = testcounter;
   testcounter = testcounter + 1;
   if (testcounter > testlimit) testcounter = 0;
-
-
 }
 
 void testr ()
 {
-  digitalWrite(3,HIGH);
-  write_dac(0,1023);
+  digitalWrite(RELAYPIN,HIGH);
+  send_dac(0,1023);
   outvolt = 1023;
   res = testcounter;
   write_pot(pot,resistance1,res);
@@ -704,16 +637,6 @@ int gainer(int whatitis, int whatitshouldbe)
       move = constrain(move,1,100);
       return move;
 }
-
-/*int resgainer(int whatitis, int whatitshouldbe)
-{
-      int move = 0;
-      int diff = abs(whatitis-whatitshouldbe); 
-      if (diff > 20) move = 30;
-      else move = 10;
-      //move = constrain(move,1,100);
-      return move;
-} */
 
 //Barry's hacky functions
 
