@@ -4,7 +4,9 @@
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
 #define RELAYPIN 3
-
+#define LED 5
+#define LEDGND 6
+#define CLPIN 2
 
 int adc;    //out of pot
 int dac;    //out of main dac
@@ -25,7 +27,7 @@ int temp;
 byte resistance1=0;
 int res=0;
 int fixedres=0;
-int cl=2;
+int cl=CLPIN;
 int pdl = 4;
 int counter = 0;
 int sign = 1;
@@ -73,8 +75,8 @@ void setup()
   pinMode(DATAIN, INPUT);
   pinMode(SPICLOCK,OUTPUT);
   pinMode(SLAVESELECTD,OUTPUT);
-  pinMode(5,OUTPUT);
-  pinMode(6,OUTPUT);
+  pinMode(LED,OUTPUT);
+  pinMode(LEDGND,OUTPUT);
   pinMode(SLAVESELECTP,OUTPUT);
   pinMode(cl, OUTPUT);
   digitalWrite(SLAVESELECTD,HIGH); //disable device
@@ -250,11 +252,11 @@ void loop()
 
     else if (serInString[0] == 32) //Space
     {
-      digitalWrite(5,HIGH);
-      digitalWrite(6,LOW);
+      digitalWrite(LED,HIGH);
+      digitalWrite(LEDGND,LOW);
       delay(100);
-      digitalWrite(5,LOW);
-      digitalWrite(6,LOW);
+      digitalWrite(LED,LOW);
+      digitalWrite(LEDGND,LOW);
 
     }
     
