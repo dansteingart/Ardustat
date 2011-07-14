@@ -369,7 +369,7 @@ class ardustat:
 			rawdatafile.close()
 			rawdatafile = open(filename+".csv","a")
 		try:
-			rawdatafile = open(filename+".jsondata","a")
+			jsondatafile = open(filename+".jsondata","a")
 		except: #File does not exist
 			jsondatafile = open(filename+".jsondata","w") #Make new empty file
 			jsondatafile.close()
