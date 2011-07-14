@@ -302,6 +302,7 @@ class ardustat:
 
 	def setVoltageDifference(self,potential):
 		setting = str(int(1023*(potential/5.0))).rjust(4,"0")
+		print setting
 		self.rawwrite("g"+setting)
 
 	def galvanostat(self,current,id=None): #This takes a specified current as input and calculates the right resistor setting and voltage difference to set it. See http://steingart.ccny.cuny.edu/ardustat-theory
