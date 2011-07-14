@@ -361,20 +361,26 @@ class ardustat:
 				print message.split("\n")[-1]
 				return {"success":False,"message":message}
 	
-	def simplelog(self,timetoruninseconds=False,id=False):
-		initialtime = time.time()
-		rawdatafile = open(str(time.time())+".csv","w")
+	def logappend(self,filename="ardustatlog",id=False):
+		try:
+			rawdatafile = open(filename+".csv","a")
+		except: #File does not exist
+			rawdatafile = open(filename+".csv","w") #Make new empty file
+			rawdatafile.close()
+			rawdatafile = open(filename+".csv","a")
+		try:
+			rawdatafile = open(filename+".jsondata","a")
+		except: #File does not exist
+			rawdatafile = open(filename+".jsondata","w") #Make new empty file
+			rawdatafile.close()
+			rawdatafile = open(filename+".jsondata","a")
+		thedata = self.rawread()
+		rawdatafile.write(thedata+"\n")
+		parsedict = self.parse(thedata,id)
+		if parsedict["success"] == True:
+			jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
 		rawdatafile.close()
-		rawdatafile = open(str(time.time())+".csv","a")
-		jsondatafile = open(str(time.time())+".jsondata","w")
 		jsondatafile.close()
-		jsondatafile = open(str(time.time())+".jsondata","a")
-		while time.time() < (initialtime + timetoruninseconds):
-			thedata = self.rawread()
-			rawdatafile.write(thedata+"\n")
-			parsedict = self.parse(thedata,id)
-			if parsedict["success"] == True:
-				jsondatafile.write(str(json.dumps(parsedict))+"\r\n")
 	
 	def plotdata(self,filename, yaxis, xaxis="thetime"):
 		f = open(filename,"r")
