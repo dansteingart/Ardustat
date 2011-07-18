@@ -5,7 +5,7 @@ import json
 filename = "raw_data_"+str(int(time()))+".dat"
 def write_log(data):
 	if(data['success']):
-		print data
+		print a.viewData(data)
 		open(filename,"a").write(json.dumps(data)+"\n")
 
 

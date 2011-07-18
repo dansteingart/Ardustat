@@ -495,48 +495,48 @@ void potentiostat()
   lastData[10] = err;
   
   //If potential is too high, decrease DAC setting
-  if ((diff_adc_ref > setting) && (outvolt > 0))
+  if ((adc > setting) && (outvolt >= 1))
   {
-    move = gainer(diff_adc_ref,setting);
-    outvolt=outvolt-move;
+    outvolt=outvolt-1;
     send_dac(0,outvolt);
-
+    //Serial.print("Potential too high, decreasing DAC setting\n");
   }
 
   //If potential is too low, increase DAC setting
-  else if ((diff_adc_ref < setting) && (outvolt < 1023))
+  else if ((adc < setting) && (outvolt <= 1022))
   {
-    move = gainer(diff_adc_ref,setting);
-    outvolt=outvolt+move;
+    outvolt=outvolt+1;
     send_dac(0,outvolt);
+    //Serial.print("Potential too low, increasing DAC setting\n");
   }
 
   //If DAC setting is maxed out, decrease resistor setting
-  if ((outvolt > 1022) && (res > 0))
+  if ((outvolt > 1022) && (res > 1))
   {
-    outvolt = 1000;
+    outvolt = 1022;
     send_dac(0,outvolt);
-    resmove = resgainer(adc,setting);
-    res = res - resmove;
+    res = res - 1;
     write_pot(pot,resistance1,res);
+    //Serial.print("DAC maxed out, decreasing resistor\n");
   }
   //If DAC setting is at a minimum, decrease resistor setting
-  else if ((outvolt < 1) && (res > 0))
+  else if ((outvolt < 1) && (res > 1))
   {
-    outvolt = 23;
+    outvolt = 1;
     send_dac(0,outvolt);
-    resmove = resgainer(adc,setting);
-    res = res - resmove;
+    res = res - 1;
     write_pot(pot,resistance1,res);
     delay(waiter);
+    //Serial.print("DAC min'ed out, decreasing resistor\n");
   }
-  //If the difference between the DAC and the ADC is < 100, increase resistor setting
-  int dude = abs(dac-adc);
-  if ((dude < 100) && (res < 255))
+  //If the difference between the DAC setting and the ADC is < 50, increase resistor setting
+  int dude = abs(setting-adc);
+  if ((dude == 0) && (res < 255))
   {
     res = res+1;
     write_pot(pot,resistance1,res);
     delay(waiter);
+    //Serial.print("Increasing resistor\n");
   }
   write_pot(0,resistance1,res);
   send_dac(0,outvolt);
