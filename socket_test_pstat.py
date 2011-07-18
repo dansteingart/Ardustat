@@ -17,18 +17,13 @@ a = ard()
 a.connect(7777)
 
 a.ocv()
-print "OCV Portion"
-time_limit = time() + 10
-while time() < time_limit:
-	sleep(.5)
-	write_log(a.parse(a.rawread()))
-	
+#print "OCV Portion"
+#time_limit = time() + 30
+#while time() < time_limit:
+#	sleep(.5)
+#	write_log(a.parse(a.rawread()))
 
-a.potentiostat(1)
-time_limit = time() + 10
-while time() < time_limit:
-	sleep(.5)
-	write_log(a.parse(a.rawread()))
+sleep(1)
 	
 a.potentiostat(1.5)
 time_limit = time() + 3600

@@ -84,7 +84,12 @@ class ardustat:
 		self.rawwrite("-0000")
 	
 	def potentiostat(self,potential):
-		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
+		readin = self.rawread().split(",")
+		closestvalue = 0
+		for i in range(1,1023):
+			if math.fabs(potential - self.refbasis(i,int(readin[10]))) < math.fabs(potential - self.refbasis(i-1,int(readin[10]))): #If the absolute value of the difference between this resistance and the ideal resistance is less than the absolute value of the other closest difference...
+				closestvalue = i
+		potential = str(closestvalue).rjust(4,"0")
 		self.rawwrite("p"+potential)
 		
 	def rawwrite(self,command):

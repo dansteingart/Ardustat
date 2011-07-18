@@ -2,6 +2,7 @@ from pylab import *
 import numpy
 from glob import glob
 from simpardlibnet import ardustat as ard
+import json
 
 asa = glob("raw_data*")
 a = ard()
@@ -11,16 +12,11 @@ time = []
 potential = []
 current = []
 
-time_start = float(data[0].split(",")[0])
-for d in data:
-	c = d.split(",")[1:len(d.split(","))]
-	cee = ""
-	for i in c:
-		cee += i+","
-	b = a.parse(cee.strip(","))
-	time.append(float(d.split(",")[0])-time_start)
-	potential.append(b['cell_ADC'])
-	current.append(b['current'])
+for i in data:
+	thedict = json.loads(i.replace("\n",""))
+	time.append(thedict["time"])
+	potential.append(thedict['cell_ADC'])
+	current.append(thedict['current'])
 
 
 subplot(2,1,1)

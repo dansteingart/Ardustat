@@ -1,12 +1,12 @@
-//#define DATAOUT 11//MOSI
-//#define DATAIN 12//MISO - not used, but part of builtin SPI
-//#define SPICLOCK  13//sck
-//#define SLAVESELECTD 10//ss
-//#define SLAVESELECTP 7//ss
-//#define RELAYPIN 3
-//#define LED 5
-//#define LEDGND 6
-//#define CLPIN 2
+/*#define DATAOUT 11//MOSI
+#define DATAIN 12//MISO - not used, but part of builtin SPI
+#define SPICLOCK  13//sck
+#define SLAVESELECTD 10//ss
+#define SLAVESELECTP 7//ss
+#define RELAYPIN 3
+#define LED 5
+#define LEDGND 6
+#define CLPIN 2*/
 //If you are using a version 8 ardustat, comment out the above lines and uncomment the following:
 #define DATAOUT 12//MOSI
 #define DATAIN 11//MISO - not used, but part of builtin SPI
@@ -48,6 +48,7 @@ int lastData[10]; //previous error values for use in pstat's PID algorithm
 int dacrun;
 int adcrun;
 int resmove;
+
 
 //Serial Comm Stuff
 int incomingByte;
@@ -529,9 +530,10 @@ void potentiostat()
     delay(waiter);
     //Serial.print("DAC min'ed out, decreasing resistor\n");
   }
-  //If the difference between the DAC setting and the ADC is < 50, increase resistor setting
+  //If the difference between the DAC setting and the ADC is 0 and the DAC isn't near its max or min, increase resistor setting
   int dude = abs(setting-adc);
-  if ((dude == 0) && (res < 255))
+  
+  if ((dude == 0) && (res < 255) && (outvolt < 900) && (outvolt < 100))
   {
     res = res+1;
     write_pot(pot,resistance1,res);
