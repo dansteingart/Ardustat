@@ -161,7 +161,7 @@ class ardustat:
 			outdict['time'] = time.time()
 			parts = reading.split(",")
 			outdict['ref'] = float(parts[len(parts)-2])
-			outdict['DAC0_setting'] = int(parts[2]) / 1023.0 * 5.0
+			outdict['DAC0_setting'] = int(parts[1]) / 1023.0 * 5.0
 			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])
 			outdict['pot_step'] = int(parts[4])
