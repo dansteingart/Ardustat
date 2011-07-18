@@ -533,7 +533,7 @@ void potentiostat()
   //If the difference between the DAC setting and the ADC is 0 and the DAC isn't near its max or min, increase resistor setting
   int dude = abs(setting-adc);
   
-  if ((dude == 0) && (res < 255) && (outvolt < 900) && (outvolt < 100))
+  if ((dude == 0) && (res < 255) && (outvolt < 900) && (outvolt > 100))
   {
     res = res+1;
     write_pot(pot,resistance1,res);
