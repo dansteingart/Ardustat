@@ -494,7 +494,7 @@ void potentiostat()
   for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
   lastData[10] = err;
   
-  //if potential is too high
+  //If potential is too high, decrease DAC setting
   if ((diff_adc_ref > setting) && (outvolt > 0))
   {
     move = gainer(diff_adc_ref,setting);
@@ -503,7 +503,7 @@ void potentiostat()
 
   }
 
-  //if potential is too low
+  //If potential is too low, increase DAC setting
   else if ((diff_adc_ref < setting) && (outvolt < 1023))
   {
     move = gainer(diff_adc_ref,setting);
@@ -511,7 +511,7 @@ void potentiostat()
     send_dac(0,outvolt);
   }
 
-  // if range is limited decrease R
+  //If DAC setting is maxed out, decrease resistor setting
   if ((outvolt > 1022) && (res > 0))
   {
     outvolt = 1000;
@@ -519,8 +519,8 @@ void potentiostat()
     resmove = resgainer(adc,setting);
     res = res - resmove;
     write_pot(pot,resistance1,res);
-
   }
+  //If DAC setting is at a minimum, decrease resistor setting
   else if ((outvolt < 1) && (res > 0))
   {
     outvolt = 23;
@@ -530,32 +530,13 @@ void potentiostat()
     write_pot(pot,resistance1,res);
     delay(waiter);
   }
-
-  //if range is truncated increase R
+  //If the difference between the DAC and the ADC is < 100, increase resistor setting
   int dude = abs(dac-adc);
   if ((dude < 100) && (res < 255))
   {
     res = res+1;
     write_pot(pot,resistance1,res);
     delay(waiter);
-  }
-  
-  
-    if (outvolt>1023)
-  {
-    res = res - 1;//(outvolt-1023)/1024.*255./2;
-    outvolt = 1023;
-    //res = res-res/6;
-    if (res<0) res=0;
-  }else if (outvolt<0){
-    res = res + 1;//(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
-    outvolt = 20;
-    //res = res - res/6;
-    if (res<0) res=0;
-  }
-  if (abs(outvolt-diff_adc_ref)<100){
-    res = res + abs(outvolt-diff_adc_ref)/10.;
-    if (res>255) res = 255;
   }
   write_pot(0,resistance1,res);
   send_dac(0,outvolt);
