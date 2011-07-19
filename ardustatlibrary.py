@@ -1,4 +1,7 @@
-import socket, serial, os, time, pickle, math, json, glob
+import socket, serial, os, time, pickle, math, json, glob, subprocess
+
+#pycommand = "python" #Uncomment this line if you have a system that uses python 2 as its default
+pycommand = "python2" #Uncomment this line if you have a system that uses python 3 as its default and can use python 2 with the "python2" command (i.e. Arch Linux)
 
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""
@@ -257,35 +260,61 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 		return {"success":True,"message":message}
 	f.close()
 		
-def endcalibrate(port): #Blinks the ardustat LED by sending a space. This is used to see which ardustat commands are being sent to.
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def log(filename,port,id): #This is the actual logging function
 	message = ""
-	try:
-		thesocket.connect(("localhost",port))
-	except:
-		message = message + "\nConnection to socket "+str(port)+" failed."
-		return {"success":False,"message":message}
-	else:
-		thesocket.send("*")
-		time.sleep(0.1)
-		thesocket.send("x") #close serial connection
-		thesocket.close()
-		return {"success":True,"message":"Stopped calibration for ardustat with ID #"+str(id)+"."}
+	socketresult = connecttosocket(port)
+	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	thesocket = socketresult["socket"]
+	
+	initfileio = True
+	calibratecheck = True
+	while 1:
+		line = socketread(thesocket)["reading"]
+		parsedict = parse(line,id)
+		if parsedict["success"] == True:
+			if initfileio == True:
+				message = message + "\nStarting file I/O:"
+				print message.split("\n")[-1]
+				try:
+					rawdatafilename = filename+"-raw.csv"
+					parseddatafilename = filename+"-parsed.csv"
+					rawdatafile = open(rawdatafilename,"w") #If no file exists, make an empty new file. If a file exists, overwrite it.
+					parseddatafile = open(parseddatafilename,"w")
+					rawdatafile.close()
+					parseddatafile.close()
+					rawdatafile = open(rawdatafilename,"a")
+					parseddatafile = open(parseddatafilename,"a")
+				except IOError as errordetail:
+					message = message + "There was an I/O Error opening the files for writing data. The error was: "+errordetail
+					return {"success":False,"message":message}
+				except:
+					message = message + "There was an unknown error opening the files for writing data."
+					return {"success":False,"message":message}
+				message = message + "\n" + rawdatafilename+" and "+parseddatafilename+" are ready to record data."
+				print message.split("\n")[-1]
+				message = message + "\nID # is: "+str(id)
+				print message.split("\n")[-1]
+				rawdatafile.write("Unix Time,Data Start Marker,DAC setting,Cell Voltage (ADC 0),DAC Measurement (ADC 1),DVR Setting,Output Setting Value,Mode,Last Command,GND Measurement,Reference Electrode,Reference Voltage,Data Stop Marker\n")
+				parseddatafile.write("Unix Time,DAC 0 Setting (V),DAC 0 Reading (ADC 1) (V),Cell Voltage (ADC 0) (V),Potentiometer Setting (0-255),Potentiometer Setting (Ohms),GND Reading (ADC 2) (V),Current Calculation (A),Cell Resistance Calculation (Ohms),Reference Electrode Reading (ADC 3) (V),Mode,Last Command Received,Calibrated\n")
+				initfileio = False
 
-
-def begindatalog(filename, port, id): #This tells serialforwarder to start logging data
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	try:
-		thesocket.connect(("localhost",port))
-	except:
-		return {"success":False,"message":"Connection to socket "+str(port)+" failed."}
-	else:
-		logdict = {"filename":filename,"id":id}
-		thesocket.send("l"+json.dumps(logdict))
-		time.sleep(0.1)
-		thesocket.send("x")
-		thesocket.close()
-		return {"success":True,"message":"Started logging data; used filename "+filename+" and ID #"+str(id)}
+			try:
+				rawdatafile.write(str(parsedict["time"])+","+line.replace("\0","")+"\n") #Tack on the unix time to the beginning of the raw data, clean it up, and record it
+				d = lambda x: str(parsedict[x])+"," #Convert dictionary items to CSV format
+				parsestring = d("time")+d("DAC0_setting")+d("DAC0_ADC")+d("cell_ADC")+d("pot_step")+d("resistance")+d("GND")+d("current")+d("cell_resistance")+d("reference_electrode")+d("mode")+d("last_command").replace("\0","")+d("calibration")+"\n"
+				parseddatafile.write(parsestring)
+				if parsedict["calibration"] == False and calibratecheck == True: #Nag the user to calibrate only once if their ardustat isn't calibrated
+					message = message + "\nWarning: Your ardustat is not calibrated. This can lead to highly inaccurate data! Please calibrate your ardustat."
+					print message.split("\n")[-1]
+					calibratecheck = False
+			except:
+				raise
+				message = message + "Error writing data to files!"
+				print message.split("\n")[-1]
+				#Keep going anyway
+		else:
+			message = message + "Error parsing data. Skipping through to get new data..."
+			print message.split("\n")[-1]
 		
 def enddatalog(port):
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
