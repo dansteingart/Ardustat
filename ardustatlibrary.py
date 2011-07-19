@@ -531,3 +531,22 @@ def cyclinginputparse(thestr): #Tells the user what their cycling script will do
 	if thestr[len(thestr)-1] != "1 0 0":
 		returnstr = returnstr + "Warning! Your script does not end with \"1 0 0\". Every script should end with this!\n"
 	return returnstr
+
+def shutdown(id):
+	try:
+		pidfile = open("pidfile"+str(id)+".pickle","r")
+	except:
+		return {"success":False,"message":"Could not read pidfile dictionary; no process ID numbers available"}
+	else:
+		try:
+			piddict = pickle.load(pidfile)
+			pidfile.close()
+		except:
+			return {"success":False,"message":"No processes associated with ardustat ID number "+str(id)+" in pidfile dictionary"}
+		else:
+			for process in piddict:
+				try:
+					os.kill(piddict[process],9)
+				except:
+					pass
+			return {"success":True,"message":"Killed the following processes: "+str(piddict)+"."}

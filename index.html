@@ -104,7 +104,6 @@ ul.tabs a {
               <form id="blink" action="blink" method="post" name="blink">
                 Blink ardustat LED: <input type="submit" value="Submit"><br>
               </form>
-              <!--
 			  <hr>
 			  <form id="ocv" action="rawcmd" method="post" name="ocv">
 				<input type="submit" value="OCV" style="background-color:#FF0000;font-size:250%"><br>
@@ -113,13 +112,9 @@ ul.tabs a {
 			  <form id="killself" action="killself" method="post" name="killself">
 			    Shut down everything, including this application: <input type="submit" value="Submit"><br>
 			  </form>
-			  <form id="killeverything" action="killeverything" method="post" name="killeverything">
+			  <form id="shutdown" action="shutdown" method="post" name="shutdown">
 			    Shut down connection to ardustat: <input type="submit" value="Submit"><br>
 			  </form>
-			  <form id="killcycling" action="killcycling" method="post" name="killcycling">
-				Cancel ardustat cycling: <input type="submit" value="Submit"><br>
-			  </form>
-			  -->
             </td>
             <td>
               <div id="result" style="font-family:courier"></div>
@@ -436,7 +431,7 @@ $(function() {
                           }
                         );
                 });
-                $("#killeverything").submit(function(event) {
+                $("#shutdown").submit(function(event) {
                         event.preventDefault(); 
 						$('input[type=submit]', this).attr('disabled','disabled');
                         var $form = $( this ),
@@ -447,22 +442,7 @@ $(function() {
 								  var thejson = $.parseJSON(data);
                                   var message = new String(thejson.message).replace(/\n/g,"<br>");
                                   $( "#result" ).empty().append( message );
-								  $('input[type=submit]', '#killeverything').removeAttr('disabled');
-                          }
-                        );
-                });
-                $("#killcycling").submit(function(event) {
-                        event.preventDefault(); 
-						$('input[type=submit]', this).attr('disabled','disabled');
-                        var $form = $( this ),
-                                formid = $("body").find( 'input[name="id"]' ).val(),
-                                url = $form.attr( 'action' );
-                        $.post( url, { id: formid },
-                          function( data ) {
-								  var thejson = $.parseJSON(data);
-                                  var message = new String(thejson.message).replace(/\n/g,"<br>");
-                                  $( "#result" ).empty().append( message );
-								  $('input[type=submit]', '#killcycling').removeAttr('disabled');
+								  $('input[type=submit]', '#shutdown').removeAttr('disabled');
                           }
                         );
                 });

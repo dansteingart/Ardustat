@@ -31,8 +31,7 @@ urls = ('/',			'index',
 	'/cyclinginput',	'cyclinginput',
 	'/cyclinginputparse','cyclinginputparse',
 	'/killself',		'killself',
-	'/killeverything',	'killeverything',
-	'/killcycling',		'killcycling',
+	'/shutdown',		'shutdown',
 	'/favicon.ico',		'favicon',
 	'/jquery-tools-full.min.js','jqueryfile')
 
@@ -427,118 +426,26 @@ class favicon:
 		web.header("Content-Type","image/x-icon")
 		return open("favicon.ico", "rb").read()
 		
-class killself: #Run killeverything() and then quit using sys.exit()
+class killself: #Run shutdown() and then quit using sys.exit()
 	def POST(self):
 		data = web.data()
 		id = data[3:]
-		if len(id) < 1: #No ID number given, so just assume nothing was started and quit
-			pass
-		try:
-			id = int(id)
-		except:
-			pass
-		thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		message = ""
-		try:
-			thesocket.connect(("localhost",50000+id))
-			thesocket.send("^") #cleanly close serial connection
-			thesocket.close()
-			print "Cleanly closed serial connection"
-		except:
-			pass
-		try:
-			pidfile = open("pidfile"+str(id)+".pickle","r")
-		except:
-			pass
-		else:
-			try:
-				piddict = pickle.load(pidfile)
-				pidfile.close()
-			except:
-				pass
-			else:
-				try:
-					piddict["serialforwarder.py"]
-				except:
-					pass
-				else:
-					numberofprocesseskilled = 0
-					for process in piddict:
-						print process, piddict[process]
-						try:
-							os.kill(piddict[process],9) #Kill the process with the PID in the dictionary with signal 9
-						except:
-							pass
-		print "Closing application"
+		if len(id) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		id = int(id)
+		ardustatlibrary.shutdown(id)
 		sys.exit()
 		
-class killeverything: #Look in pidfile.pickle for the PIDs related to the ardustat ID # and kill the processes
+class shutdown:
 	def POST(self):
 		data = web.data()
 		id = data[3:]
 		if len(id) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		id = int(id)
-		thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		message = ""
-		try:
-			thesocket.connect(("localhost",50000+id))
-			thesocket.send("^") #cleanly close serial connection
-			thesocket.close()
-			print "Cleanly closed serial connection."
-		except:
-			pass
-		try:
-			pidfile = open("pidfile"+str(id)+".pickle","r")
-		except:
-			return json.dumps({"success":False,"message":"Could not read pidfile dictionary; no process ID numbers available"})
-		else:
-			try:
-				piddict = pickle.load(pidfile)
-				pidfile.close()
-			except:
-				return json.dumps({"success":False,"message":"No processes associated with ardustat ID number "+str(id)+" in pidfile dictionary"})
-			else:
-				try:
-					piddict["serialforwarder.py"]
-				except:
-					return json.dumps({"success":False,"message":"No processes associated with ardustat ID number "+str(id)+" in pidfile dictionary"})
-				else:
-					numberofprocesseskilled = 0
-					for process in piddict:
-						print process, piddict[process]
-						try:
-							os.kill(piddict[process],9) #Kill the process with the PID in the dictionary with signal 9
-							numberofprocesseskilled = numberofprocesseskilled + 1
-						except:
-							pass
-					return json.dumps({"success":True,"message":"Killed "+str(numberofprocesseskilled)+" processes associated with ardustat ID number "+str(id)+"."})
+		result = ardustatlibrary.shutdown(id)
+		return json.dumps({"success":True,"message":result["message"]})
 					
-class killcycling:
-	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		try:
-			pidfile = open("pidfile"+str(id)+".pickle","r")
-		except:
-			return json.dumps({"success":False,"message":"Could not read pidfile dictionary; no process ID numbers available"})
-		else:
-			try:
-				piddict = pickle.load(pidfile)
-				pidfile.close()
-			except:
-				return json.dumps({"success":False,"message":"No processes associated with ardustat ID number "+str(id)+" in pidfile dictionary"})
-			else:
-				try:
-					os.kill(piddict["startcycling.py"],9)
-				except:
-					return json.dumps({"success":False,"message":"Error while attempting to kill cycling process!"})
-				else:
-					return json.dumps({"success":True,"message":"Killed the cycling process."})
-
 if __name__ == "__main__":
 	print "Starting up Ardustat web server. In your browser, go to http://localhost:8080/"
 	print "Note: You must keep this terminal window open for the program to work."
