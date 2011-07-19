@@ -115,7 +115,7 @@ class potentiostat:
 			return json.dumps({"success":False,"message":"Unexpected error setting potentiostat"})
 		else:
 			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Set potentiostat"+result["message"]})
+				return json.dumps({"success":True,"message":"Set potentiostat: "+result["message"]})
 			else:
 				return json.dumps({"success":False,"message":"Setting potentiostat failed: "+result["message"]})
 

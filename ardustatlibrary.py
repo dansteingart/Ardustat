@@ -122,6 +122,14 @@ def setVoltageDifference(potential,port):
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
 	setting = str(int(1023*(potential/5.0))).rjust(4,"0")
 	socketwrite(socketresult["socket"],"g"+setting)
+	return {"success":True,"message":"Sent command g"+setting+"."}
+
+def potentiostat(potential, port):
+	socketresult = connecttosocket(port)
+	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	setting = str(int(1023*(potential/5.0))).rjust(4,"0")
+	socketwrite(socketresult["socket"],"p"+setting)
+	return {"success":True,"message":"Sent command p"+setting+"."}
 
 def galvanostat(current,port,id=None): #This takes a specified current as input and calculates the right resistor setting and voltage difference to set it. See http://steingart.ccny.cuny.edu/ardustat-theory
 	message = ""
@@ -185,31 +193,6 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 		setVoltageDifference(voltagedifference, port)
 		message = message + "\nSuccessfully set galvanostat. Set voltage difference to "+str(voltagedifference)+" V. Set resistance to "+str(resistanceresult["setting"])+" Ohm."
 		return {"success":True,"message":message}
-
-def potentiostat(voltage, port): #Tries to get the cell voltage to a predefined level. Handled in firmware; this function just sanity checks and converts a numerical voltage to a setting that the ardustat understands
-	message = ""
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	try:
-		thesocket.connect(("localhost",port))
-	except:
-		message = message + "\nConnection to socket "+str(port)+" failed."
-		return {"success":False,"message":message}
-	else:
-		if voltage <= 5 and voltage >= 0:
-			value = voltage / 5 * 1023
-			value = str(int(value))
-			while len(value) < 4:
-				value = "0" + value
-			sendresult = thesocket.send("sp"+value)
-			message = message + "\nSet potentiostat to "+str(int(value)/1023.0*5)+"."
-			thesocket.send("x") #shuts down connection
-			thesocket.close()
-			return {"success":True,"message":message}
-		else:
-			message = message + "\nVoltage "+str(voltage)+" out of range (0-5)."
-			thesocket.send("x") #shuts down connection
-			thesocket.close()
-			return {"success":False,"message":message}
 
 def raiseGround(voltage,port):
 	message = ""
