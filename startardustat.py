@@ -147,6 +147,7 @@ class calibrate:
 		try:
 			result = ardustatlibrary.calibrate(float(input),50000+id,id)
 		except:
+			raise
 			return json.dumps({"success":False,"message":"Unexpected error starting calibration"})
 		else:
 			if result["success"] == True:

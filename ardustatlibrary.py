@@ -101,7 +101,7 @@ def ocv(port):
 	message = ""
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
-	socketwrite(socketresult["thesocket"],"-0000\n")
+	socketwrite(socketresult["socket"],"-0000\n")
 
 def setResistance(resistance,port,id=None):
 	message = ""
@@ -203,18 +203,59 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 
 def calibrate(resistance,port,id): #Since the actual resistances for digital potentiometer setting are unknown, we connect a resistor of known resistance and use the voltage divider equation to find the actual resistance of each potentiometer setting, then save it in a pickle
 	message = ""
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	socketresult = connecttosocket(port)
+	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	thesocket = socketresult["socket"]
+	
+	message = message + "Beginning calibration for ardustat with ID #"+str(id)
+	print message
+	socketwrite(thesocket,"X1023")
+	time.sleep(0.2)
+	socketwrite(thesocket,"R")
+	time.sleep(0.2)
+	rescount = 0
+	reslist = [[] for x in range(256)]
+	while rescount <= (256 * 5):
+		line = socketread(thesocket)["reading"]
+		parsedict = parse(line,id)
+		if parsedict["success"] == True:
+			line = line.split(",")
+			try:
+				reslist[int(line[4])].append((resistance*int(line[3]))/int(line[2]) - resistance) #Add calculated resistance for that potentiometer setting ( equal to (R(in)*DAC)/ADC - R(in) )
+				rescount +=1
+			except:
+				self.ocv()
+				message = message + "\nUnexpected error in calibration with serial input "+str(line)
+				print message.split("\n")[-1]
+				return {"success":False,"message":message}
+			print "Calibration: " + str(float(rescount)/(256*5)*100)[:4]+"%"
+	ocv(port)
+	#calculate average
+	res = [sum(x)/len(x) for x in reslist]
 	try:
-		thesocket.connect(("localhost",port))
+		f = open("resistances.pickle","r")
+		resdict = pickle.load(f)
+		f.close()
 	except:
-		message = message + "\nConnection to socket "+str(port)+" failed."
+		pass
+	try:
+		resdict[str(id)] = res
+	except: #There is no existing resistance data; create the initial dictionary
+		resdict = {str(id):res}
+	try:
+		f = open("resistances.pickle",'w')
+	except:
+		message = message + "\nCouldn't open resistances.pickle file for writing. It may be open in another program. Couldn't save calibration data."
+		return {"success":False,"message":message}
+	try:
+		pickle.dump(resdict,f)
+	except:
+		message = message + "\nCouldn't write data to resistances.pickle. Couldn't save calibration data."
 		return {"success":False,"message":message}
 	else:
-		thesocket.send("c"+json.dumps({"resistance":resistance,"id":id}))
-		time.sleep(0.1)
-		thesocket.send("x")
-		thesocket.close()
-		return {"success":True,"message":"Started calibration with a "+str(resistance)+" ohm resistor for ardustat with ID #"+str(id)+"."}
+		message = message + "\nCalibration completed and saved for Ardustat #"+str(id)
+		return {"success":True,"message":message}
+	f.close()
 		
 def endcalibrate(port): #Blinks the ardustat LED by sending a space. This is used to see which ardustat commands are being sent to.
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
