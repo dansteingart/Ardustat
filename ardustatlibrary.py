@@ -316,18 +316,24 @@ def log(filename,port,id): #This is the actual logging function
 			message = message + "Error parsing data. Skipping through to get new data..."
 			print message.split("\n")[-1]
 		
-def enddatalog(port):
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def enddatalog(id):
 	try:
-		thesocket.connect(("localhost",port))
+		pidfile = open("pidfile"+str(id)+".pickle","r")
 	except:
-		return {"success":False,"message":"Connection to socket "+str(port)+" failed."}
+		return {"success":False,"message":"Could not read pidfile dictionary; no process ID numbers available"}
 	else:
-		thesocket.send("~") #Command to stop logging
-		time.sleep(0.1)
-		thesocket.send("x")
-		thesocket.close()
-		return {"success":True,"message":"Told serialforwarder.py to end logging."}
+		try:
+			piddict = pickle.load(pidfile)
+			pidfile.close()
+		except:
+			return {"success":False,"message":"No processes associated with ardustat ID number "+str(id)+" in pidfile dictionary"}
+		else:
+			try:
+				os.kill(piddict["ardustatlogger.py"],9)
+			except:
+				return {"success":False,"message":"Error while attempting to kill logging process!"}
+			else:
+				return {"success":True,"message":"Killed the logging process."}
 
 def cycle(input, repeat, port, id): #Scripted control mechanism for ardustat. To understand the syntax, see the cycling instructions in the 'Instructions' folder
 	input = input.split("\n")

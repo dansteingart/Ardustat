@@ -209,15 +209,9 @@ class enddatalog:
 		id = data[3:]
 		if len(id) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		try:
-			result = ardustatlibrary.enddatalog(50000+int(id))
-		except:
-			return json.dumps({"success":False,"message":"Unexpected error starting log"})
-		else:
-			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Ended logging:"+result["message"]})
-			else:
-				return json.dumps({"success":False,"message":"Ending logging failed: "+result["message"]})
+		id = int(id)
+		result = ardustatlibrary.enddatalog(id)
+		return json.dumps({"success":True,"message":result["message"]})
 
 class datatable: #Generate a data table for the filename the user inputs. No HTTP parsing; chokes on non-alphanumeric characters besides '-'
 	def POST(self):
