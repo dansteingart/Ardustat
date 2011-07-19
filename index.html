@@ -1,0 +1,565 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy for Windows (vers 14 February 2006), see www.w3.org">
+    <title>
+      Ardustat Web Interface
+    </title>
+<script src="jquery-tools-full.min.js"></script>
+<style>
+ul.tabs { 
+	list-style:none; 
+	margin:0 !important; 
+	padding:0;	
+	height:30px;
+}
+
+/* single tab */
+ul.tabs li { 
+	float:left;	 
+	text-indent:0;
+	padding:0;
+	margin:0 !important;
+	list-style-image:none !important; 
+}
+ul.tabs a { 
+	background: white;
+	display:block;
+	height: 30px;  
+	line-height:30px;
+	text-align:center;	
+	text-decoration:none;
+	padding-left:50px;
+	padding-right:50px;
+	margin:0px;	
+	position:relative;
+	top:1px;
+	font-size:15px;
+	font-family:sans-serif;
+}
+
+</style>
+  </head>
+  <body>
+    <ul class="tabs">
+      <li>
+        <a href="#">Connection, Manual Operation, Logging</a>
+      </li>
+      <li>
+        <a href="#">Plot data</a>
+      </li>
+      <li>
+        <a href="#">Cycling</a>
+      </li>
+	  <li>
+		<a href="#">Instructions</a>
+	  </li>
+    </ul>
+	<hr />
+	ID Number:<br />
+        <form id="idinputbox" name="idinputbox">
+          <input type="text" id="id" name="id" class="integersOnly"><br>
+        </form>
+	<hr />
+    <div class="panes">
+      <div>
+		Note: Each ardustat should be controlled in a separate browser window. Trying to start two ardustats in the same browser window may cause problems.<br>
+        <table border="1">
+          <tr>
+            <td>
+              <form id="startardustat" action="startardustat" method="post" name="startardustat">
+                Start Ardustat:<br>
+                Port Value (leave blank to autoconnect):<input type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+              <form id="galvanostat" action="galvanostat" method="post" name="galvanostat">
+                Galvanostat:<br>
+                Current Value (0-0.02): <input class="numbersOnly" type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+             <!--
+              <form id="potentiostat" action="potentiostat" method="post" name="potentiostat">
+                Potentiostat:<br>
+                Voltage Value (0-5): <input class="numbersOnly" type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+			  <form id="raiseground" action="raiseground" method="post" name="raiseground">
+                Raise Ground:<br>
+                Voltage Value (0-5): <input class="numbersOnly" type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+              <form id="calibrate" action="calibrate" method="post" name="calibrate">
+                Calibrate:<br>
+                Resistance Value (0-100000): <input class="numbersOnly" type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+              <form id="endcalibrate" action="endcalibrate" method="post" name="endcalibrate">
+                End calibration: <input type="submit" value="Submit"><br>
+              </form>
+              <form id="rawcmd" action="rawcmd" method="post" name="rawcmd">
+                Send raw command:<br>
+                Command:<input type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+              <form id="begindatalog" action="begindatalog" method="post" name="begindatalog">
+                Start data logging:<br>
+                Filename:<input type="text" name="input"> <input type="submit" value="Submit"><br>
+              </form>
+              <form id="enddatalog" action="enddatalog" method="post" name="enddatalog">
+                End data logging: <input type="submit" value="Submit">
+              </form>
+              <form id="ask" action="ask" method="post" name="ask">
+                Get real-time data information: <input type="submit" value="Submit"><br>
+              </form>
+              <form id="blink" action="blink" method="post" name="blink">
+                Blink ardustat LED: <input type="submit" value="Submit"><br>
+              </form>
+			  <hr>
+			  <form id="ocv" action="rawcmd" method="post" name="ocv">
+				<input type="submit" value="OCV" style="background-color:#FF0000;font-size:250%"><br>
+			  </form>
+			  <hr>
+			  <form id="killself" action="killself" method="post" name="killself">
+			    Shut down everything, including this application: <input type="submit" value="Submit"><br>
+			  </form>
+			  <form id="killeverything" action="killeverything" method="post" name="killeverything">
+			    Shut down connection to ardustat: <input type="submit" value="Submit"><br>
+			  </form>
+			  <form id="killcycling" action="killcycling" method="post" name="killcycling">
+				Cancel ardustat cycling: <input type="submit" value="Submit"><br>
+			  </form>
+			  -->
+            </td>
+            <td>
+              <div id="result" style="font-family:courier"></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <!--
+      <div>
+        <table border="1">
+          <tr>
+            <td>
+              <table border="1">
+                <tr>
+                  <td>
+                    <form name="generateimage" action="generateimage" method="post" id="generateimage">
+                      X Axis:<br>
+                      <input type="radio" name="xaxis" value="unixTime" checked>Unix Time<br>
+                      <input type="radio" name="xaxis" value="DACBArduino">DAC Setting (V)<br>
+                      <input type="radio" name="xaxis" value="DACBReading">DAC Measurement (V)<br>
+                      <input type="radio" name="xaxis" value="cellVoltage">Cell Voltage Measurement (V)<br>
+                      <input type="radio" name="xaxis" value="DVRArduino">Resistor Setting (Ohm)<br>
+                      <input type="radio" name="xaxis" value="current">Current Calculation (A)<br>
+                      <input type="radio" name="xaxis" value="cellResistance">Cell Resistance Calculation (Ohm)<br>
+                      (Ardustat Version 7 Only:)<br>
+                      <input type="radio" name="xaxis" value="GND">GND Measurement (V)<br>
+                      <input type="radio" name="xaxis" value="referenceElectrode">Reference Electrode Measurement (Ohm)<br>
+                      Y Axis:<br>
+                      <input type="radio" name="yaxis" value="unixTime">Unix Time<br>
+                      <input type="radio" name="yaxis" value="DACBArduino">DAC Setting (V)<br>
+                      <input type="radio" name="yaxis" value="DACBReading">DAC Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="cellVoltage">Cell Voltage Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="DVRArduino">Resistor Setting (Ohm)<br>
+                      <input type="radio" name="yaxis" value="current" checked>Current Calculation (A)<br>
+                      <input type="radio" name="yaxis" value="cellResistance">Cell Resistance Calculation (Ohm)<br>
+                      (Ardustat Version 7 Only:)<br>
+                      <input type="radio" name="yaxis" value="GND">GND Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="referenceElectrode">Reference Electrode Measurement (Ohm)<br>
+                      Filename:<br>
+                      <input type="text" name="filename"> Filename<br>
+					  View only the last <input type="text" name="xaxisdatapoints"> points of data on the x-axis<br>
+					  View only the last <input type="text" name="yaxisdatapoints"> points of data on the y-axis<br>
+					  <input type="radio" name="plotstyle" value="." checked> Don't connect data points<br>
+					  <input type="radio" name="plotstyle" value="-"> Connect data points<br>
+                      <input type="submit" value="Submit"><br>
+                    </form>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <form name="listcsvfiles" action="listcsvfiles" method="post" id="listcsvfiles">
+                      <input type="submit" value="View CSV files on server">
+                      <div id="csvresult"></div>
+                    </form>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <form name="datatable" action="datatable" method="post" id="datatable">
+                      <input type="text" name="input"> Filename<br>
+                      <input type="submit" value="Generate Data Table"><br>
+                    </form>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td>
+              <table border="1">
+                <tr>
+                  <td>
+                    <div id="imgresult">
+                      <img id="imgresulttag" src="generateimage">
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div id="msgresult"></div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div>
+        <table border="1">
+          <tr>
+            <td>
+              <form name="cyclinginput" action="cyclinginput" method="post" id="cyclinginput">
+                <textarea name="cyclinginputtextarea" cols="20" rows="20"></textarea><br>
+		Repeat:<input type="checkbox" name="repeatBox" id="repeatBox"><br>
+                <input type="submit" value="Submit">
+              </form>
+              <form name="cyclinginputparse" action="cyclinginputparse" method="post" id="cyclinginputparse">
+                <input type="submit" value="Parse">
+              </form>
+            </td>
+            <td>
+              <div id="cyresult"></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+	  <div>
+	  <p>You can find the instructions in the "Instructions" directory of the software package you downloaded. The text of the software license (BSD license) is in the file license.txt.</p>
+	  </div>
+	  -->
+
+    </div><script type="text/javascript">
+$(function() {
+	// setup ul.tabs to work as tabs for each div directly under div.panes
+	$("ul.tabs").tabs("div.panes > div");
+});
+				$("#idinputbox").submit(function(event) {
+						event.preventDefault();
+				});
+				$("#startardustat").submit(function(event) {
+                        event.preventDefault();
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#startardustat').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#galvanostat").submit(function(event) {
+                        event.preventDefault();
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#galvanostat').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#potentiostat").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#potentiostat').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#raiseground").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#raiseground').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#calibrate").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#calibrate').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#endcalibrate").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { id: formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#endcalibrate').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#rawcmd").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#rawcmd').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#ocv").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = "-"
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#ocv').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#begindatalog").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message);
+								  $('input[type=submit]', '#begindatalog').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#enddatalog").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { id: formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#enddatalog').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#ask").submit(function(event) {
+                        event.preventDefault();
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post("ask", { id:formid },
+                           function(data) {
+                                 var thejson = $.parseJSON(data); //"success":True,"message":"Success","DACBArduino":voltage(splitline[1]),"DACBReading":voltage(splitline[3]),"cellVoltage":voltage(splitline[2]),"DVRArduino":resistance(splitline[4]),"current":currentcalc,"cellResistance":cellresistance,"GND":voltage(splitline[8]),"referenceElectrode":voltage(splitline[9]),"referenceVoltage":splitline[10],"lastCommand":splitline[7],"mode":mode,"version":7,"calibration":calibration
+                                 var DACBArduino = new String(thejson.DACBArduino)
+                                 var DACBReading = new String(thejson.DACBReading)
+                                 var cellVoltage = new String(thejson.cellVoltage)
+                                 var DVRArduino = new String(thejson.DVRArduino)
+                                 var current = new String(thejson.current)
+                                 var cellResistance = new String(thejson.cellResistance)
+                                 var GND = new String(thejson.GND)
+                                 var referenceElectrode = new String(thejson.referenceElectrode)
+                                 var referenceVoltage = new String(thejson.referenceVoltage)
+                                 var lastCommand = new String(thejson.lastCommand)
+                                 var mode = new String(thejson.mode)
+                                 var version = new String(thejson.version)
+                                 var rawData = new String(thejson.rawData)
+                                 var calibration = new String(thejson.calibration)
+                                 
+                                 $( "#result" ).empty().append('<p style="font-family:courier">Data Loaded:<br />DAC B arduino setting.............: ' + DACBArduino + ' V<br />DAC B reading..............(ADC 1): ' + DACBReading + ' V<br />Cell Voltage reading.......(ADC 0): ' + cellVoltage + ' V<br />Resistor arduino setting..........: ' + DVRArduino + ' Ohm<br /> Current calculation...............: ' + current + ' A<br />Cell resistance calculation.......: ' + cellResistance + ' Ohm<br />GND reading................(ADC 2): ' + GND +" V<br />Reference electrode reading(ADC 3): "+ referenceElectrode +" V<br />Reference voltage value....(ADC 5): "+ referenceVoltage +" V<br />Mode..............................: "+mode+"<br />Last command sent.................: "+ lastCommand +"<br />Ardustat version..................: "+version+"<br />Raw data: "+rawData+"<br />Calibrated: "+calibration);
+								 $('input[type=submit]', '#ask').removeAttr('disabled');
+                           }
+                        );
+                });
+                $("#blink").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { id: formid },
+                          function( data ) {
+								  var thejson = $.parseJSON(data);
+                                  var message = new String(thejson.message).replace('\n', '<br />')
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#blink').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#killself").submit(function(event) {
+                        event.preventDefault(); 
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { id: formid },
+                          function( data ) {
+							location.reload()
+                          }
+                        );
+                });
+                $("#killeverything").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { id: formid },
+                          function( data ) {
+								  var thejson = $.parseJSON(data);
+                                  var message = new String(thejson.message).replace('\n', '<br />')
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#killeverything').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#killcycling").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { id: formid },
+                          function( data ) {
+								  var thejson = $.parseJSON(data);
+                                  var message = new String(thejson.message).replace('\n', '<br />')
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#killcycling').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#generateimage").submit(function(event) {
+                        event.preventDefault();
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+								formxaxis = $form.find( 'input[name="xaxis"]:checked' ).val(),
+								formyaxis = $form.find( 'input[name="yaxis"]:checked' ).val(),
+								formxpoints = $form.find( 'input[name="xaxisdatapoints"]' ).val(),
+								formypoints = $form.find( 'input[name="yaxisdatapoints"]' ).val(),
+								formplotstyle = $form.find( 'input[name="plotstyle"]:checked' ).val()
+								formfilename = $form.find( 'input[name="filename"]' ).val()
+                                url = $form.attr( 'action' );
+                        $.post( url, { xaxis: formxaxis, yaxis:formyaxis, xpoints:formxpoints, ypoints: formypoints, plotstyle: formplotstyle, filename:formfilename },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+								  $( "#msgresult" ).empty().append( message );
+								  var timestamp = new Date().getTime();
+								  $( "#imgresulttag" ).attr('src','generateimage?'+timestamp);
+								  $('input[type=submit]', '#generateimage').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#listcsvfiles").submit(function(event) {
+                        event.preventDefault(); 
+                        var $form = $( this ),
+                                url = $form.attr( 'action' );
+                        $.post( url,
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#csvresult" ).empty().append( message );
+                          }
+                        );
+                });
+                $("#cyclinginput").submit(function(event) {
+                        event.preventDefault(); 
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+								formid = $("body").find( 'input[name="id"]' ).val();
+                                forminput = $("body").find( 'textarea[name="cyclinginputtextarea"]' ).val();
+				if($('#repeatBox').attr('checked')) {
+					formrepeatbox = '1'
+				}
+				else {
+					formrepeatbox = '0'
+				}
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, repeat:formrepeatbox, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#cyresult" ).empty().append( message );
+								  $('input[type=submit]', '#cyclinginput').removeAttr('disabled');
+                          },"html"
+                        );
+                });
+                $("#cyclinginputparse").submit(function(event) {
+                        event.preventDefault();
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                forminput = $("body").find( 'textarea[name="cyclinginputtextarea"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#cyresult" ).empty().append( message );
+								  $('input[type=submit]', '#cyclinginputparse').removeAttr('disabled');
+                          }
+                        );
+                });
+                $('.integersOnly').keyup(function () { 
+                        this.value = this.value.replace(/[^0-9]/g,'');
+                });
+				$('.numbersOnly').keyup(function (evt) {
+						this.value = this.value.replace(/[^0-9\.\-]/g,'');
+				});
+    </script>
+  </body>
+</html>
