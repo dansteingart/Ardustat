@@ -98,10 +98,10 @@ ul.tabs a {
               <form id="enddatalog" action="enddatalog" method="post" name="enddatalog">
                 End data logging: <input type="submit" value="Submit">
               </form>
-              <!--
               <form id="ask" action="ask" method="post" name="ask">
                 Get real-time data information: <input type="submit" value="Submit"><br>
               </form>
+              <!--
               <form id="blink" action="blink" method="post" name="blink">
                 Blink ardustat LED: <input type="submit" value="Submit"><br>
               </form>
@@ -396,32 +396,18 @@ $(function() {
                         );
                 });
                 $("#ask").submit(function(event) {
-                        event.preventDefault();
+						event.preventDefault(); 
 						$('input[type=submit]', this).attr('disabled','disabled');
                         var $form = $( this ),
                                 formid = $("body").find( 'input[name="id"]' ).val(),
                                 url = $form.attr( 'action' );
-                        $.post("ask", { id:formid },
-                           function(data) {
-                                 var thejson = $.parseJSON(data); //"success":True,"message":"Success","DACBArduino":voltage(splitline[1]),"DACBReading":voltage(splitline[3]),"cellVoltage":voltage(splitline[2]),"DVRArduino":resistance(splitline[4]),"current":currentcalc,"cellResistance":cellresistance,"GND":voltage(splitline[8]),"referenceElectrode":voltage(splitline[9]),"referenceVoltage":splitline[10],"lastCommand":splitline[7],"mode":mode,"version":7,"calibration":calibration
-                                 var DACBArduino = new String(thejson.DACBArduino)
-                                 var DACBReading = new String(thejson.DACBReading)
-                                 var cellVoltage = new String(thejson.cellVoltage)
-                                 var DVRArduino = new String(thejson.DVRArduino)
-                                 var current = new String(thejson.current)
-                                 var cellResistance = new String(thejson.cellResistance)
-                                 var GND = new String(thejson.GND)
-                                 var referenceElectrode = new String(thejson.referenceElectrode)
-                                 var referenceVoltage = new String(thejson.referenceVoltage)
-                                 var lastCommand = new String(thejson.lastCommand)
-                                 var mode = new String(thejson.mode)
-                                 var version = new String(thejson.version)
-                                 var rawData = new String(thejson.rawData)
-                                 var calibration = new String(thejson.calibration)
-                                 
-                                 $( "#result" ).empty().append('<p style="font-family:courier">Data Loaded:<br />DAC B arduino setting.............: ' + DACBArduino + ' V<br />DAC B reading..............(ADC 1): ' + DACBReading + ' V<br />Cell Voltage reading.......(ADC 0): ' + cellVoltage + ' V<br />Resistor arduino setting..........: ' + DVRArduino + ' Ohm<br /> Current calculation...............: ' + current + ' A<br />Cell resistance calculation.......: ' + cellResistance + ' Ohm<br />GND reading................(ADC 2): ' + GND +" V<br />Reference electrode reading(ADC 3): "+ referenceElectrode +" V<br />Reference voltage value....(ADC 5): "+ referenceVoltage +" V<br />Mode..............................: "+mode+"<br />Last command sent.................: "+ lastCommand +"<br />Ardustat version..................: "+version+"<br />Raw data: "+rawData+"<br />Calibrated: "+calibration);
-								 $('input[type=submit]', '#ask').removeAttr('disabled');
-                           }
+                        $.post( url, { id: formid },
+                          function( data ) {
+								  var thejson = $.parseJSON(data);
+                                  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#ask').removeAttr('disabled');
+                          }
                         );
                 });
                 $("#blink").submit(function(event) {
@@ -433,7 +419,7 @@ $(function() {
                         $.post( url, { id: formid },
                           function( data ) {
 								  var thejson = $.parseJSON(data);
-                                  var message = new String(thejson.message).replace('\n', '<br />')
+                                  var message = new String(thejson.message).replace(/\n/g,"<br>");
                                   $( "#result" ).empty().append( message );
 								  $('input[type=submit]', '#blink').removeAttr('disabled');
                           }
@@ -459,7 +445,7 @@ $(function() {
                         $.post( url, { id: formid },
                           function( data ) {
 								  var thejson = $.parseJSON(data);
-                                  var message = new String(thejson.message).replace('\n', '<br />')
+                                  var message = new String(thejson.message).replace(/\n/g,"<br>");
                                   $( "#result" ).empty().append( message );
 								  $('input[type=submit]', '#killeverything').removeAttr('disabled');
                           }
@@ -474,7 +460,7 @@ $(function() {
                         $.post( url, { id: formid },
                           function( data ) {
 								  var thejson = $.parseJSON(data);
-                                  var message = new String(thejson.message).replace('\n', '<br />')
+                                  var message = new String(thejson.message).replace(/\n/g,"<br>");
                                   $( "#result" ).empty().append( message );
 								  $('input[type=submit]', '#killcycling').removeAttr('disabled');
                           }

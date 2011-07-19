@@ -349,17 +349,9 @@ class ask:
 		id = data[3:]
 		if len(id) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		try:
-			thesocket.connect(("localhost",50000+int(id)))
-		except:
-			return json.dumps({"success":False,"message":"Couldn't connect to serialforwarder.py"})
-		thesocket.send("a")
-		line = thesocket.recv(1023)
-		thesocket.send("x") #shuts down connection
-		thesocket.close()
-		parsedline = ardustatlibrary.parse(line,int(id))
-		return json.dumps(parsedline)
+		id = int(id)
+		result = ardustatlibrary.ask(50000+id,id)
+		return json.dumps({"success":True,"message":result["message"]})
 
 class blink:
 	def POST(self):

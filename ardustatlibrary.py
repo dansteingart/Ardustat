@@ -439,6 +439,27 @@ def blink(port): #Blinks the ardustat LED by sending a space. This is used to se
 		thesocket.send("x") #close serial connection
 		thesocket.close()
 		return {"success":True,"message":"The id number was "+str(id)+". The command sent was  ."}
+
+def ask(port, id=None):
+	socketresult = connecttosocket(port)
+	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	thesocket = socketresult["socket"]
+	p = parse(socketread(socketresult["socket"])["reading"],id)
+	printstring = 'Data Loaded:\nDAC 0 arduino setting.............: ' + str(p["DAC0_setting"])
+	printstring += ' V\nDAC 0 reading..............(ADC 1): ' + str(p["DAC0_ADC"])  
+	printstring += ' V\nCell Voltage reading.......(ADC 0): ' + str(p["cell_ADC"]) 
+	printstring += ' V\nResistor arduino setting..........: ' + str(p["resistance"]) 
+	printstring += ' Ohm\nCurrent calculation...............: ' + str(p["current"]) 
+	printstring += ' A\nCell resistance calculation.......: ' + str(p["cell_resistance"]) 
+	printstring += ' Ohm\nGND reading................(ADC 2): ' + str(p["GND"]) 
+	printstring += " V\nReference electrode reading(ADC 3): " + str(p["reference_electrode"]) 
+	printstring += " V\nVoltage reference value....(ADC 5): " + str(p["ref"]) 
+	printstring += " \nMode..............................: " +str(p["mode"])
+	printstring += "\nLast command sent.................: " + str(p["last_command"]) 
+	printstring += "\nRaw data: " + str(p["raw"]).replace("\n","")
+	printstring += "\nCalibrated: " + str(p["calibration"])
+	return {"success":True,"message":printstring}
+
 		
 def parse(reading,id=None):
 	outdict = {}
