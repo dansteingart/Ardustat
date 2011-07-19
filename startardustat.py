@@ -132,7 +132,7 @@ class raiseground:
 			return json.dumps({"success":False,"message":"Unexpected error raising ground"})
 		else:
 			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Raised ground "+result["message"]})
+				return json.dumps({"success":True,"message":"Raised ground: "+result["message"]})
 			else:
 				return json.dumps({"success":False,"message":"Raising ground failed:\n"+result["message"]})
 

@@ -124,6 +124,13 @@ def setVoltageDifference(potential,port):
 	socketwrite(socketresult["socket"],"g"+setting)
 	return {"success":True,"message":"Sent command g"+setting+"."}
 
+def raiseGround(potential,port):
+	socketresult = connecttosocket(port)
+	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	setting = str(int(1023*(potential/5.0)) + 2000).rjust(4,"0")
+	socketwrite(socketresult["socket"],"X"+setting)
+	return {"success":True,"message":"Sent command X"+setting+"."}
+
 def potentiostat(potential, port):
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
@@ -193,31 +200,6 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 		setVoltageDifference(voltagedifference, port)
 		message = message + "\nSuccessfully set galvanostat. Set voltage difference to "+str(voltagedifference)+" V. Set resistance to "+str(resistanceresult["setting"])+" Ohm."
 		return {"success":True,"message":message}
-
-def raiseGround(voltage,port):
-	message = ""
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	try:
-		thesocket.connect(("localhost",port))
-	except:
-		message = message + "\nConnection to socket "+str(port)+" failed."
-		return {"success":False,"message":message}
-	else:
-		if voltage <= 5 and voltage >= 0:
-			value = voltage / 5 * 1023
-			value = str(int(value))
-			while len(value) < 4:
-				value = "0" + value
-			sendresult = thesocket.send("sd"+value) #The "d" command sets DAC A, which is connected to the auxiliary electrode, as opposed to DAC B, which is connected to the working electrode.
-			message = message + "\nRaised ground to "+str(int(value)/1023.0*5)+"."
-			thesocket.send("x") #shuts down connection
-			thesocket.close()
-			return {"success":True,"message":message}
-		else:
-			message = message + "\nVoltage "+str(voltage)+" out of range (0-5)."
-			thesocket.send("x") #shuts down connection
-			thesocket.close()
-			return {"success":False,"message":message}
 
 def calibrate(resistance,port,id): #Since the actual resistances for digital potentiometer setting are unknown, we connect a resistor of known resistance and use the voltage divider equation to find the actual resistance of each potentiometer setting, then save it in a pickle
 	message = ""
