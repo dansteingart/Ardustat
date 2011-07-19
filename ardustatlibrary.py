@@ -259,6 +259,25 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 		message = message + "\nCalibration completed and saved for Ardustat #"+str(id)
 		return {"success":True,"message":message}
 	f.close()
+
+def begindatalog(filename,port,id):
+	try:
+		ardustatloggerprocess = subprocess.Popen([pycommand,"ardustatlogger.py",filename,str(port),str(id)])
+	except:
+		return {"success":False,"message":"Unexpected error starting ardustatlogger.py."}
+	else:
+		pidfilename = "pidfile" + str(id) + ".pickle"
+		try:
+			pidfileread = open(pidfilename,"r")
+		except: #File doesn't exist, but it should
+			return {"success":False,"message":"Couldn't find a pidfile pickle database, which indicates that the connection to the ardustat wasn't initialized properly."}
+		piddict = pickle.load(pidfileread)
+		pidfileread.close()
+		pidfilewrite = open(pidfilename,"w")
+		piddict["ardustatlogger.py"] = ardustatloggerprocess.pid
+		pickle.dump(piddict, pidfilewrite)
+		pidfilewrite.close()
+		return {"success":True,"message":"Started to log data with filename "+filename+"."}
 		
 def log(filename,port,id): #This is the actual logging function
 	message = ""

@@ -184,24 +184,8 @@ class begindatalog:
 		if len(id) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		id = int(id)
-		try:
-			ardustatloggerprocess = subprocess.Popen([pycommand,"ardustatlogger.py",input,str(50000+id),str(id)])
-		except:
-			raise
-			return json.dumps({"success":False,"message":"Unexpected error starting ardustatlogger.py."})
-		else:
-			filename = "pidfile" + str(id) + ".pickle"
-			try:
-				pidfileread = open(filename,"r")
-			except: #File doesn't exist, but it should
-				return json.dumps ({"success":False,"message":"Couldn't find a pidfile pickle database, which indicates that the connection to the ardustat wasn't initialized properly."})
-			piddict = pickle.load(pidfileread)
-			pidfileread.close()
-			pidfilewrite = open(filename,"w")
-			piddict["ardustatlogger.py"] = ardustatloggerprocess.pid
-			pickle.dump(piddict, pidfilewrite)
-			pidfilewrite.close()
-			return json.dumps({"success":True,"message":"Started to log data with filename "+input+"."})
+		result = ardustatlibrary.begindatalog(input,50000+id,id)
+		return json.dumps({"success":True,"message":result["message"]})
 				
 class enddatalog:
 	def POST(self):
