@@ -18,7 +18,6 @@ urls = ('/',			'index',
 	'/galvanostat',		'galvanostat',
 	'/potentiostat',	'potentiostat',
 	'/calibrate',		'calibrate',
-	'/endcalibrate',	'endcalibrate',
 	'/rawcmd',			'rawcmd',
 	'/begindatalog',	'begindatalog',
 	'/enddatalog',		'enddatalog',
@@ -147,23 +146,12 @@ class calibrate:
 		try:
 			result = ardustatlibrary.calibrate(float(input),50000+id,id)
 		except:
-			raise
 			return json.dumps({"success":False,"message":"Unexpected error starting calibration"})
 		else:
 			if result["success"] == True:
 				return json.dumps({"success":True,"message":"Started calibration:\n"+result["message"]})
 			else:
 				return json.dumps({"success":False,"message":"Starting calibration failed:\n"+result["message"]})
-
-class endcalibrate:
-	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		result = ardustatlibrary.endcalibrate(50000+id)
-		return json.dumps({"success":True,"message":result["message"]})
 
 class rawcmd: #Sends a command directly over socket interface to the ardustat. No sanity checking. Fix this later
 	def POST(self):
@@ -172,21 +160,21 @@ class rawcmd: #Sends a command directly over socket interface to the ardustat. N
 		id = data[data.find("&id=")+4:]
 		if len(id) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		while input.find("%") != -1:
+		id = int(id)
+		while input.find("%") != -1: #Parse HTML encoding of input. Necessary for, for example, the '/'s in /dev/usbtty0
 			char = int(input[input.find("%")+1:input.find("%")+3],16)
-			char = chr(char)
-			input = input[:input.find("%")] + char + input[input.find("%")+3:]
-	
-		thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			char = chr(char) #  '%##' is the ascii character corresponding to the hex value ##
+			input = input[:input.find("%")] + char + input[input.find("%")+3:] #Insert the character back into the input string
 		try:
-			thesocket.connect(("localhost",50000+int(id)))
+			connsocket = ardustatlibrary.connecttosocket(50000+id)
+			result = ardustatlibrary.socketwrite(connsocket["socket"],input)
 		except:
-			return json.dumps({"success":False,"message":"Couldn't connect to ardustat socket interface! Did you start the serial connection to the ardustat with id #"+str(id)+"?"})
-		thesocket.send("s"+input)
-		time.sleep(0.1)
-		thesocket.send("x") #shuts down connection
-		thesocket.close()
-		return json.dumps({"success":True,"message":"Your input was "+str(input)+". The ID number was "+str(id)+". The command sent was s"+str(input)+".</p>"})
+			return json.dumps({"success":False,"message":"Unexpected error starting calibration"})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Sent command "+input+"."})
+			else:
+				return json.dumps({"success":False,"message":"Error sending command:\n"+result["message"]})
 
 class begindatalog:
 	def POST(self):
