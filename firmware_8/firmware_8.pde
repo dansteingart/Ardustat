@@ -494,54 +494,78 @@ void potentiostat()
   int move = 0;
   for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
   lastData[10] = err;
-  
-  //If potential is too high, decrease DAC setting
-  if ((adc > setting) && (outvolt >= 1))
+  //PID
+  float p = 1*err;
+  float i = 0;
+  float d = 0;
+  move = int(p+i+d);
+  outvolt = outvolt + move;
+
+  if (outvolt>1023)
   {
-    outvolt=outvolt-1;
-    send_dac(0,outvolt);
-    //Serial.print("Potential too high, decreasing DAC setting\n");
+    res = res - (outvolt-1023)/1024.*255./2;
+    outvolt = 1023;
+    //res = res-res/6;
+    if (res<0) res=0;
+  }else if (outvolt<0){
+    res = res+(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
+    outvolt = 20;
+    //res = res - res/6;
+    if (res<0) res=0;
+  }
+  if (abs(outvolt-diff_adc_ref)<100){
+    res = res + abs(outvolt-diff_adc_ref)/10.;
+    if (res>255) res = 255;
+  }
+  write_pot(0,resistance1,res);
+  send_dac(0,outvolt);
+
+  /* //if potential is too high
+  if ((diff_adc_ref > setting) && (outvolt > 0))
+  {
+    move = gainer(diff_adc_ref,setting);
+    outvolt=outvolt-move;
+    write_dac(0,outvolt);
+
   }
 
-  //If potential is too low, increase DAC setting
-  else if ((adc < setting) && (outvolt <= 1022))
+  //if potential is too low
+  else if ((diff_adc_ref < setting) && (outvolt < 1023))
   {
-    outvolt=outvolt+1;
-    send_dac(0,outvolt);
-    //Serial.print("Potential too low, increasing DAC setting\n");
+    move = gainer(diff_adc_ref,setting);
+    outvolt=outvolt+move;
+    write_dac(0,outvolt);
   }
 
-  //If DAC setting is maxed out, decrease resistor setting
-  if ((outvolt > 1022) && (res > 1))
+  // if range is limited decrease R
+  if ((outvolt > 1022) && (res > 0))
   {
-    outvolt = 1022;
-    send_dac(0,outvolt);
-    res = res - 1;
+    outvolt = 1000;
+    write_dac(0,outvolt);
+    resmove = resgainer(adc,setting);
+    res = res - resmove;
     write_pot(pot,resistance1,res);
-    //Serial.print("DAC maxed out, decreasing resistor\n");
+
   }
-  //If DAC setting is at a minimum, decrease resistor setting
-  else if ((outvolt < 1) && (res > 1))
+  else if ((outvolt < 1) && (res > 0))
   {
-    outvolt = 1;
-    send_dac(0,outvolt);
-    res = res - 1;
+    outvolt = 23;
+    write_dac(0,outvolt);
+    resmove = resgainer(adc,setting);
+    res = res - resmove;
     write_pot(pot,resistance1,res);
     delay(waiter);
-    //Serial.print("DAC min'ed out, decreasing resistor\n");
   }
-  //If the difference between the DAC setting and the ADC is 0 and the DAC isn't near its max or min, increase resistor setting
-  int dude = abs(setting-adc);
-  
-  if ((dude == 0) && (res < 255) && (outvolt < 900) && (outvolt > 100))
+
+  //if range is truncated increase R
+  int dude = abs(dac-adc);
+  if ((dude < 100) && (res < 255))
   {
     res = res+1;
     write_pot(pot,resistance1,res);
     delay(waiter);
-    //Serial.print("Increasing resistor\n");
-  }
-  write_pot(0,resistance1,res);
-  send_dac(0,outvolt);
+  }*/
+
 }
 
 void galvanostat()
