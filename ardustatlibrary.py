@@ -426,19 +426,11 @@ def cycle(input, repeat, port, id): #Scripted control mechanism for ardustat. To
 		return {"success":True,"message":"Cycling functions completed."}
 		
 def blink(port): #Blinks the ardustat LED by sending a space. This is used to see which ardustat commands are being sent to.
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	message = ""
-	try:
-		thesocket.connect(("localhost",port))
-	except:
-		message = message + "\nConnection to socket "+str(port)+" failed."
-		return {"success":False,"message":message}
-	else:
-		thesocket.send("s ")
-		time.sleep(0.1)
-		thesocket.send("x") #close serial connection
-		thesocket.close()
-		return {"success":True,"message":"The id number was "+str(id)+". The command sent was  ."}
+	socketresult = connecttosocket(port)
+	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	socketwrite(socketresult["socket"]," ")
+	return {"success":True,"message":"The id number was "+str(id)+". The command sent was  ."}
 
 def ask(port, id=None):
 	socketresult = connecttosocket(port)
