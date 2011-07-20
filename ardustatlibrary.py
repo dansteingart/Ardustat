@@ -3,6 +3,8 @@ import socket, serial, os, time, pickle, math, json, glob, subprocess
 #pycommand = "python" #Uncomment this line if you have a system that uses python 2 as its default
 pycommand = "python2" #Uncomment this line if you have a system that uses python 3 as its default and can use python 2 with the "python2" command (i.e. Arch Linux)
 
+portconstant = 50000 #The port that the ardustat connects to is equal to this constant + the ID #.
+
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""
 	message = message + "\nTesting for ardustat on port "+str(port)+"."
@@ -52,7 +54,7 @@ def guessUSB(): #This finds out what the possible serial ports are and runs isAr
 
 def connecttoardustat(serialport,id):
 	try:
-		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(50000+id),"-b","57600"])
+		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(portconstant+id),"-b","57600"])
 	except:
 		return {"success":False,"message":"Unexpected error starting serialforwarder.py."}
 	else:
@@ -80,19 +82,33 @@ def connecttosocket(port):
 	else:
 		return {"success":True,"socket":thesocket}
 
-def socketwrite(socketinstance,message):
+def socketwrite(socketinstance,message,id=None):
+	#Stop log, send command, start log again.
+	if not isinstance(id,int):
+		port = socketinstance.getpeername()[1]
+		id = port - portconstant
+	else:
+		port = id + portconstant
+	enddatalog(id)
 	socketinstance.send(message+"\n")
+	try:
+		pidfile = open("pidfile"+str(id)+".pickle","r")
+		piddict = pickle.load(pidfile)
+		pidfile.close()
+		begindatalog(piddict["logfilename"],port,id)
+	except:
+		return {"success":True,"message":"Couldn't restart log"}
 	return {"success":True}
 
 def socketread(socketinstance):
-	socketwrite(socketinstance, "s0000")
+	socketinstance.send("s0000\n")
 	time.sleep(0.01)
 	a = ""
 	while 1:
 		try:
 			a += socketinstance.recv(1024)
 		except:
-			socketwrite(socketinstance, "s0000")
+			socketinstance.send("s0000\n")
 		if a.find("ST\r\n") > 1:
 			return {"success":True,"reading":a.strip()}
 
@@ -298,16 +314,18 @@ def begindatalog(filename,port,id):
 		pidfileread.close()
 		pidfilewrite = open(pidfilename,"w")
 		piddict["ardustatlogger.py"] = ardustatloggerprocess.pid
+		piddict["logfilename"] = filename
 		pickle.dump(piddict, pidfilewrite)
 		pidfilewrite.close()
 		return {"success":True,"message":"Started to log data with filename "+filename+"."}
 		
 def log(filename,port,id): #This is the actual logging function
+	print "Initializing logging function"
 	message = ""
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
+	print "Connected to socket"
 	thesocket = socketresult["socket"]
-	
 	initfileio = True
 	calibratecheck = True
 	while 1:
@@ -358,11 +376,11 @@ def log(filename,port,id): #This is the actual logging function
 					print message.split("\n")[-1]
 					calibratecheck = False
 			except:
-				message = message + "Error writing data to files!"
+				message = message + "\nError writing data to files!"
 				print message.split("\n")[-1]
 				#Keep going anyway
 		else:
-			message = message + "Error parsing data. Skipping through to get new data..."
+			message = message + "\nError parsing data. Skipping through to get new data..."
 			print message.split("\n")[-1]
 		
 def enddatalog(id):
