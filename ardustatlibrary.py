@@ -54,7 +54,6 @@ def connecttoardustat(serialport,id):
 	try:
 		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(50000+id),"-b","57600"])
 	except:
-		raise
 		return {"success":False,"message":"Unexpected error starting serialforwarder.py."}
 	else:
 		filename = "pidfile" + str(id) + ".pickle"
@@ -347,7 +346,6 @@ def log(filename,port,id): #This is the actual logging function
 					print message.split("\n")[-1]
 					calibratecheck = False
 			except:
-				raise
 				message = message + "Error writing data to files!"
 				print message.split("\n")[-1]
 				#Keep going anyway
@@ -535,7 +533,6 @@ def parse(reading,id=None):
 
 def cyclinginputparse(thestr): #Tells the user what their cycling script will do in plain english
 	thestr = thestr.split("\n")
-	print thestr
 	returnstr = ""
 	for line in thestr:
 		newline = line.split(" ")

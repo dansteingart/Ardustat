@@ -131,7 +131,6 @@ class rawcmd: #Sends a command directly over socket interface to the ardustat. N
 			connsocket = ardustatlibrary.connecttosocket(50000+data["id"])
 			result = ardustatlibrary.socketwrite(connsocket["socket"],data["input"])
 		except:
-			raise
 			return json.dumps({"success":False,"message":"Unexpected error sending raw command"})
 		else:
 			if result["success"] == True:
