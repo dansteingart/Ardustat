@@ -317,27 +317,35 @@ def log(filename,port,id): #This is the actual logging function
 			if initfileio == True:
 				message = message + "\nStarting file I/O:"
 				print message.split("\n")[-1]
+				rawdatafilename = filename+"-raw.csv"
+				parseddatafilename = filename+"-parsed.csv"
 				try:
-					rawdatafilename = filename+"-raw.csv"
-					parseddatafilename = filename+"-parsed.csv"
-					rawdatafile = open(rawdatafilename,"w") #If no file exists, make an empty new file. If a file exists, overwrite it.
-					parseddatafile = open(parseddatafilename,"w")
-					rawdatafile.close()
-					parseddatafile.close()
+					a = open(rawdatafilename,"r")
+					b = open(parseddatafilename,"r")
+					a.close()
+					b.close()
+				except:
+					message = message + "\nCreating new files "+rawdatafilename+" and "+parseddatafilename+"."
+					print message.split("\n")[-1]
+					a = open(rawdatafilename,"w") #If no file exists, make an empty new file. If a file exists, just append to it.
+					b = open(parseddatafilename,"w")
+					a.close()
+					b.close()
 					rawdatafile = open(rawdatafilename,"a")
 					parseddatafile = open(parseddatafilename,"a")
-				except IOError as errordetail:
-					message = message + "There was an I/O Error opening the files for writing data. The error was: "+errordetail
-					return {"success":False,"message":message}
-				except:
-					message = message + "There was an unknown error opening the files for writing data."
-					return {"success":False,"message":message}
+				else:
+					message = message + "\nFiles already exist; continuing log"
+					print message.split("\n")[-1]
+					rawdatafile = open(rawdatafilename,"a")
+					parseddatafile = open(parseddatafilename,"a")
+					initfileio = False
 				message = message + "\n" + rawdatafilename+" and "+parseddatafilename+" are ready to record data."
 				print message.split("\n")[-1]
 				message = message + "\nID # is: "+str(id)
 				print message.split("\n")[-1]
-				rawdatafile.write("Unix Time,Data Start Marker,DAC setting,Cell Voltage (ADC 0),DAC Measurement (ADC 1),DVR Setting,Output Setting Value,Mode,Last Command,GND Measurement,Reference Electrode,Reference Voltage,Data Stop Marker\n")
-				parseddatafile.write("Unix Time,DAC 0 Setting (V),DAC 0 Reading (ADC 1) (V),Cell Voltage (ADC 0) (V),Potentiometer Setting (0-255),Potentiometer Setting (Ohms),GND Reading (ADC 2) (V),Current Calculation (A),Cell Resistance Calculation (Ohms),Reference Electrode Reading (ADC 3) (V),Mode,Last Command Received,Calibrated\n")
+				if initfileio == True:
+					rawdatafile.write("Unix Time,Data Start Marker,DAC setting,Cell Voltage (ADC 0),DAC Measurement (ADC 1),DVR Setting,Output Setting Value,Mode,Last Command,GND Measurement,Reference Electrode,Reference Voltage,Data Stop Marker\n")
+					parseddatafile.write("Unix Time,DAC 0 Setting (V),DAC 0 Reading (ADC 1) (V),Cell Voltage (ADC 0) (V),Potentiometer Setting (0-255),Potentiometer Setting (Ohms),GND Reading (ADC 2) (V),Current Calculation (A),Cell Resistance Calculation (Ohms),Reference Electrode Reading (ADC 3) (V),Mode,Last Command Received,Calibrated\n")
 				initfileio = False
 
 			try:
