@@ -50,6 +50,26 @@ def guessUSB(): #This finds out what the possible serial ports are and runs isAr
 	else:
 		return {"success":False,"message":message+"\nCouldn't find any ardustats."}
 
+def connecttoardustat(serialport,id):
+	try:
+		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(50000+id),"-b","57600"])
+	except:
+		raise
+		return {"success":False,"message":"Unexpected error starting serialforwarder.py."}
+	else:
+		filename = "pidfile" + str(id) + ".pickle"
+		pidfile = open(filename,"w") #Create an empty new file
+		piddict = {}
+		piddict["serialforwarder.py"] = serialforwarderprocess.pid
+		pickle.dump(piddict, pidfile)
+		pidfile.close()
+		try:
+			result["message"]
+		except:
+			return {"success":True,"message":"Started to open ardustat on port "+serialport+"."}
+		else:
+			return {"success":True,"message":"Started to open ardustat on port "+serialport+". guessUSB() returned:"+result["message"]}
+
 def connecttosocket(port):
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
@@ -430,7 +450,7 @@ def blink(port): #Blinks the ardustat LED by sending a space. This is used to se
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
 	socketwrite(socketresult["socket"]," ")
-	return {"success":True,"message":"The id number was "+str(id)+". The command sent was  ."}
+	return {"success":True,"message":"Sent command \" \"."}
 
 def ask(port, id=None):
 	socketresult = connecttosocket(port)

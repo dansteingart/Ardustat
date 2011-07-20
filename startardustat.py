@@ -8,6 +8,7 @@ import socket
 import json
 import pickle
 import matplotlib.pyplot
+import webdotpyparselib
 
 #The port used for communication between the python functions and socketserver.py is always 50000 + (the id # of the ardustat)
 #We don't use templates because web.py's templating language conflicts with jquery
@@ -28,7 +29,6 @@ urls = ('/',			'index',
 	'/raiseground',		'raiseground',
 	'/makenewimage',	'makenewimage',
 	'/listcsvfiles',	'listcsvfiles',
-	'/cyclinginput',	'cyclinginput',
 	'/cyclinginputparse','cyclinginputparse',
 	'/killself',		'killself',
 	'/shutdown',		'shutdown',
@@ -37,8 +37,6 @@ urls = ('/',			'index',
 
 
 app = web.application(urls, globals())
-#pycommand = "python" #Uncomment this line if you have a system that uses python 2 as its default
-pycommand = "python2" #Uncomment this line if you have a system that uses python 3 as its default and can use python 2 with the "python2" command (i.e. Arch Linux)
 
 class index:
 	def GET(self):
@@ -46,17 +44,11 @@ class index:
 		
 class startardustat: #Open serialforwarder.py as a subprocess so we can use it communicate with the ardustat over sockets. Save a dictionary containing its process ID and the ardustat ID # in a pickle so we can find and kill it later.
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		while input.find("%") != -1: #Parse HTML encoding of input. Necessary for, for example, the '/'s in /dev/usbtty0
-			char = int(input[input.find("%")+1:input.find("%")+3],16)
-			char = chr(char) #  '%##' is the ascii character corresponding to the hex value ##
-			input = input[:input.find("%")] + char + input[input.find("%")+3:] #Insert the character back into the input string
-		if input == "": #If input is left blank, use the guessUSB function to autoconnect to the first ardustat it finds
+		data["id"] = int(data["id"])
+		if data["input"] == "": #If input is left blank, use the guessUSB function to autoconnect to the first ardustat it finds
 			result = ardustatlibrary.guessUSB()
 			if result["success"] == True:
 				port = result["port"]
@@ -64,34 +56,17 @@ class startardustat: #Open serialforwarder.py as a subprocess so we can use it c
 				print result
 				return json.dumps({"success":False,"message":"Couldn't find serial port to autoconnect to. guessUSB() returned:"+result["message"]})
 		else:
-			port = input
-		try:
-			serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",port,"-P",str(50000+id),"-b","57600"])
-		except:
-			return json.dumps({"success":False,"message":"Unexpected error starting serialforwarder.py."})
-		else:
-			filename = "pidfile" + str(id) + ".pickle"
-			pidfile = open(filename,"w") #Create an empty new file
-			piddict = {}
-			piddict["serialforwarder.py"] = serialforwarderprocess.pid
-			pickle.dump(piddict, pidfile)
-			pidfile.close()
-			try:
-				result["message"]
-			except:
-				return json.dumps({"success":True,"message":"Started to open ardustat on port "+port+"."})
-			else:
-				return json.dumps({"success":True,"message":"Started to open ardustat on port "+port+". guessUSB() returned:"+result["message"]})
+			port = data["input"]
+		result = ardustatlibrary.connecttoardustat(port,data["id"])
+		return json.dumps(result)
 			
 class galvanostat:
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No id number was passed to this function."})
 		try:
-			result = ardustatlibrary.galvanostat(float(input),50000+int(id),int(id))
+			result = ardustatlibrary.galvanostat(float(data["input"]),50000+int(data["id"]),int(data["id"]))
 		except:
 			return json.dumps({"success":False,"message":"Unexpected error setting galvanostat"})
 		else:
@@ -102,13 +77,11 @@ class galvanostat:
 
 class potentiostat:
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		try:
-			result = ardustatlibrary.potentiostat(float(input),50000+int(id))
+			result = ardustatlibrary.potentiostat(float(data["input"]),50000+int(data["id"]))
 		except:
 			return json.dumps({"success":False,"message":"Unexpected error setting potentiostat"})
 		else:
@@ -119,13 +92,11 @@ class potentiostat:
 
 class raiseground:
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No id number was passed to this function."})
 		try:
-			result = ardustatlibrary.raiseGround(float(input),50000+int(id))
+			result = ardustatlibrary.raiseGround(float(data["input"]),50000+int(data["id"]))
 		except:
 			return json.dumps({"success":False,"message":"Unexpected error raising ground"})
 		else:
@@ -136,14 +107,12 @@ class raiseground:
 
 class calibrate:
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
+		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.calibrate(float(input),50000+id,id)
+			result = ardustatlibrary.calibrate(float(data["input"]),50000+data["id"],data["id"])
 		except:
 			return json.dumps({"success":False,"message":"Unexpected error starting calibration"})
 		else:
@@ -154,47 +123,39 @@ class calibrate:
 
 class rawcmd: #Sends a command directly over socket interface to the ardustat. No sanity checking. Fix this later
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		while input.find("%") != -1: #Parse HTML encoding of input. Necessary for, for example, the '/'s in /dev/usbtty0
-			char = int(input[input.find("%")+1:input.find("%")+3],16)
-			char = chr(char) #  '%##' is the ascii character corresponding to the hex value ##
-			input = input[:input.find("%")] + char + input[input.find("%")+3:] #Insert the character back into the input string
+		data["id"] = int(data["id"])
 		try:
-			connsocket = ardustatlibrary.connecttosocket(50000+id)
-			result = ardustatlibrary.socketwrite(connsocket["socket"],input)
+			connsocket = ardustatlibrary.connecttosocket(50000+data["id"])
+			result = ardustatlibrary.socketwrite(connsocket["socket"],data["input"])
 		except:
-			return json.dumps({"success":False,"message":"Unexpected error starting calibration"})
+			raise
+			return json.dumps({"success":False,"message":"Unexpected error sending raw command"})
 		else:
 			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Sent command "+input+"."})
+				return json.dumps({"success":True,"message":"Sent command "+data["input"]+"."})
 			else:
 				return json.dumps({"success":False,"message":"Error sending command:\n"+result["message"]})
 
 class begindatalog:
 	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&id=")]
-		id = data[data.find("&id=")+4:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		result = ardustatlibrary.begindatalog(input,50000+id,id)
-		return json.dumps({"success":True,"message":result["message"]})
+		data["id"] = int(data["id"])
+		result = ardustatlibrary.begindatalog(data["input"],50000+data["id"],data["id"])
+		return json.dumps(result)
 				
 class enddatalog:
 	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		result = ardustatlibrary.enddatalog(id)
-		return json.dumps({"success":True,"message":result["message"]})
+		data["id"] = int(data["id"])
+		result = ardustatlibrary.enddatalog(data["id"])
+		return json.dumps(result)
 
 class datatable: #Generate a data table for the filename the user inputs. No HTTP parsing; chokes on non-alphanumeric characters besides '-'
 	def POST(self):
@@ -212,22 +173,16 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		return open("image.png","rb").read()
 	
 	def POST(self): #If it's a "post", just return a string saying what the function plotted
-		data = web.data()
-		xaxis = data[6:data.find("&yaxis=")]
-		yaxis = data[data.find("&yaxis=")+7:data.find("&xpoints=")]
-		xpoints = data[data.find("&xpoints=")+9:data.find("&ypoints=")]
-		if len(xpoints) > 0:
-			xpoints = int(xpoints)
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["xpoints"]) > 0:
+			data["xpoints"] = int(data["xpoints"])
 		else:
-			xpoints = False
-		ypoints = data[data.find("&ypoints=")+9:data.find("&plotstyle=")]
-		if len(ypoints) > 0:
-			ypoints = int(ypoints)
+			data["xpoints"] = False
+		if len(data["ypoints"]) > 0:
+			data["ypoints"] = int(data["ypoints"])
 		else:
-			ypoints = False
-		plotstyle = data[data.find("&plotstyle=")+11:data.find("&filename=")]
-		filename = data[data.find("&filename=")+10:]
-		f = open(filename, "r") #ALSO VERY INSECURE
+			data["ypoints"] = False
+		f = open(data["filename"], "r") #ALSO VERY INSECURE
 		csvfile = f.read()
 		f.close()
 		csvfile = csvfile.split("\n")
@@ -331,11 +286,11 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 			ylabel = "Unexpected error!"
 		#The next section only works on EPD!
 		matplotlib.pyplot.clf()
-		if xpoints != False:
-			xaxis = xaxis[(xpoints * -1):] #The last (xpoints) number of points
-		if ypoints != False:
-			yaxis = yaxis[(ypoints * -1):] #Ditto
-		matplotlib.pyplot.plot(xaxis,yaxis,plotstyle)
+		if data["xpoints"] != False:
+			xaxis = xaxis[(data["xpoints"] * -1):] #The last (data["xpoints"]) number of points
+		if data["ypoints"] != False:
+			yaxis = yaxis[(data["ypoints"] * -1):] #Ditto
+		matplotlib.pyplot.plot(xaxis,yaxis,data["plotstyle"])
 		matplotlib.pyplot.xlabel(xlabel)
 		matplotlib.pyplot.ylabel(ylabel)
 		matplotlib.pyplot.savefig("image.png")
@@ -344,22 +299,20 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 	
 class ask:
 	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		result = ardustatlibrary.ask(50000+id,id)
+		data["id"] = int(data["id"])
+		result = ardustatlibrary.ask(50000+data["id"],data["id"])
 		return json.dumps({"success":True,"message":result["message"]})
 
 class blink:
 	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		result = ardustatlibrary.blink(50000+id)
+		data["id"] = int(data["id"])
+		result = ardustatlibrary.blink(50000+data["id"])
 		return json.dumps({"success":True,"message":result["message"]})
 		
 class listcsvfiles:
@@ -373,48 +326,11 @@ class listcsvfiles:
 			return json.dumps({"success":False,"message":"No CSV files found!"})
 		else:
 			return json.dumps({"success":True,"message":filestr})
-
-class cyclinginput:
-	def POST(self):
-		data = web.data()
-		input = data[6:data.find("&repeat=")]
-		repeat = data[data.find("&repeat=")+8:data.find("&id=")]
-		repeat = int(repeat)
-		id = data[data.find("&id=")+4:]
-		id = int(id)
-		while input.find("%") != -1:
-			char = int(input[input.find("%")+1:input.find("%")+3],16)
-			char = chr(char)
-			input = input[:input.find("%")] + char + input[input.find("%")+3:]
-		input = input.replace("+"," ")#HTML parses spaces as '+'
-		try:
-			cyclingprocess = subprocess.Popen([pycommand,"startcycling.py",input,str(repeat),str(50000+id),str(id)])
-		except:
-			return json.dumps({"success":False,"message":"Unexpected error starting startcycling.py."})
-		else:
-			filename = "pidfile" + str(id) + ".pickle"
-			try:
-				pidfileread = open(filename,"r")
-			except: #File doesn't exist, but it should
-				return json.dumps ({"success":False,"message":"Couldn't find a pidfile pickle database, which indicates that the connection to the ardustat wasn't initialized properly."})
-			piddict = pickle.load(pidfileread)
-			pidfileread.close()
-			pidfilewrite = open(filename,"w")
-			piddict["startcycling.py"] = cyclingprocess.pid
-			pickle.dump(piddict, pidfilewrite)
-			pidfilewrite.close()
-			return json.dumps({"success":True,"message":"Started to cycle ardustat with ID #"+str(id)+"."})	
 			
 class cyclinginputparse:
 	def POST(self):
-		data = web.data()
-		input = data[6:]
-		while input.find("%") != -1:
-			char = int(input[input.find("%")+1:input.find("%")+3],16)
-			char = chr(char)
-			input = input[:input.find("%")] + char + input[input.find("%")+3:]
-		input = input.replace("+"," ")#HTML parses spaces as '+'
-		result = ardustatlibrary.cyclinginputparse(input)
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		result = ardustatlibrary.cyclinginputparse(data["input"])
 		return json.dumps({"success":True,"message":result})
 
 class jqueryfile:
@@ -428,22 +344,20 @@ class favicon:
 		
 class killself: #Run shutdown() and then quit using sys.exit()
 	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		ardustatlibrary.shutdown(id)
+		data["id"] = int(data["id"])
+		ardustatlibrary.shutdown(data["id"])
 		sys.exit()
 		
 class shutdown:
 	def POST(self):
-		data = web.data()
-		id = data[3:]
-		if len(id) < 1:
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		id = int(id)
-		result = ardustatlibrary.shutdown(id)
+		data["id"] = int(data["id"])
+		result = ardustatlibrary.shutdown(data["id"])
 		return json.dumps({"success":True,"message":result["message"]})
 					
 if __name__ == "__main__":
