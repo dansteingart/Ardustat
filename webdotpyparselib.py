@@ -1,5 +1,5 @@
 def webdataintoascii(data):
-	data.replace("+"," ")
+	data = data.replace("+"," ")
 	while data.find("%") != -1:
 			char = int(data[data.find("%")+1:data.find("%")+3],16)
 			char = chr(char) #  '%##' is the ascii character corresponding to the hex value ##

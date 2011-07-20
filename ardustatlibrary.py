@@ -535,6 +535,7 @@ def parse(reading,id=None):
 
 def cyclinginputparse(thestr): #Tells the user what their cycling script will do in plain english
 	thestr = thestr.split("\n")
+	print thestr
 	returnstr = ""
 	for line in thestr:
 		newline = line.split(" ")
