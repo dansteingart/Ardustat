@@ -172,7 +172,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		web.header("Content-Type", "images/png")
 		return open("image.png","rb").read()
 	
-	def POST(self): #If it's a "post", just return a string saying what the function plotted
+	def POST(self): #If it's a "post", generate the image and return a string saying what the function plotted
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		if len(data["xpoints"]) > 0:
 			data["xpoints"] = int(data["xpoints"])
@@ -188,109 +188,103 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		csvfile = csvfile.split("\n")
 		for i in range(len(csvfile)):
 			csvfile[i] = csvfile[i].split(",")
-		if len(csvfile[0]) == 9:
-			version = 6
-		elif len(csvfile[0]) == 12:
-			version = 7
-		unixTime = []
-		DACBArduino = []
-		DACBReading = []
-		cellVoltage = []
-		DVRArduino = []
+		timelist = []
+		DAC0_setting = []
+		DAC0_ADC = []
+		cell_ADC = []
+		resistance = []
 		current = []
-		cellResistance = []
-		if version == 7:
-			GND = []
-			referenceElectrode = []
+		cell_resistance = []
+		GND = []
+		reference_electrode = []
 		for row in csvfile:
 			try:
-				if version == 7:
-					for i in range(9):
-						float(row[i])
-				elif version == 6:
-					for i in range(7):
-						float(row[i])
+				for i in range(8):
+					float(row[i])
+				float(row[9])
 			except:
+				
 				pass
 			else:
-				unixTime.append(float(row[0]))
-				DACBArduino.append(float(row[1]))
-				DACBReading.append(float(row[2]))
-				cellVoltage.append(float(row[3]))
-				DVRArduino.append(float(row[4]))
-				current.append(float(row[5]))
-				cellResistance.append(float(row[6]))
-				if version == 7:
-					GND.append(float(row[7]))
-					referenceElectrode.append(float(row[8]))
+				timelist.append(float(row[0]))
+				DAC0_setting.append(float(row[1]))
+				DAC0_ADC.append(float(row[2]))
+				cell_ADC.append(float(row[3]))
+				resistance.append(float(row[5]))
+				GND.append(float(row[6]))
+				current.append(float(row[7]))
+				try:
+					cell_resistance.append(float(row[8]))
+				except:
+					pass #Couldn't calculate cell resistance at that point, so move on
+				reference_electrode.append(float(row[9]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
-		if xaxis == "unixTime":
-			xaxis = unixTime
+		if data["xaxis"] == "time":
+			data["xaxis"] = timelist
 			xlabel = "Unix Time"
-		elif xaxis == "DACBArduino":
-			xaxis = DACBArduino
+		elif data["xaxis"] == "DAC0_setting":
+			data["xaxis"] = DAC0_setting
 			xlabel = "DAC Setting (V)"
-		elif xaxis == "DACBReading":
-			xaxis = DACBReading
+		elif data["xaxis"] == "DAC0_ADC":
+			data["xaxis"] = DAC0_ADC
 			xlabel = "DAC Measurement (V)"
-		elif xaxis == "cellVoltage":
-			xaxis = cellVoltage
+		elif data["xaxis"] == "cell_ADC":
+			data["xaxis"] = cell_ADC
 			xlabel = "Cell Voltage Measurement (V)"
-		elif xaxis == "DVRArduino":
-			xaxis = DVRArduino
+		elif data["xaxis"] == "resistance":
+			data["xaxis"] = resistance
 			xlabel = "Resistor Setting (Ohm)"
-		elif xaxis == "current":
-			xaxis = current
+		elif data["xaxis"] == "current":
+			data["xaxis"] = current
 			xlabel = "Current Calculation (A)"
-		elif xaxis == "cellResistance":
-			xaxis = cellResistance
+		elif data["xaxis"] == "cell_resistance":
+			data["xaxis"] = cell_resistance
 			xlabel = "Cell Resistance Calculation (Ohm)"
-		elif xaxis == "GND":
-			xaxis = GND
+		elif data["xaxis"] == "GND":
+			data["xaxis"] = GND
 			xlabel = "Ground Measurement (V)"
-		elif xaxis == "referenceElectrode":
-			xaxis = referenceElectrode
+		elif data["xaxis"] == "reference_electrode":
+			data["xaxis"] = reference_electrode
 			xlabel = "Reference Electrode"
 		else:
-			xaxis = [0]
+			data["xaxis"] = [0]
 			xlabel = "Unexpected error!"
-		if yaxis == "unixTime":
-			yaxis = unixTime
+		if data["yaxis"] == "time":
+			data["yaxis"] = timelist
 			ylabel = "Unix Time"
-		elif yaxis == "DACBArduino":
-			yaxis = DACBArduino
+		elif data["yaxis"] == "DAC0_setting":
+			data["yaxis"] = DAC0_setting
 			ylabel = "DAC Setting (V)"
-		elif yaxis == "DACBReading":
-			yaxis = DACBReading
+		elif data["yaxis"] == "DAC0_ADC":
+			data["yaxis"] = DAC0_ADC
 			ylabel = "DAC Measurement (V)"
-		elif yaxis == "cellVoltage":
-			yaxis = cellVoltage
+		elif data["yaxis"] == "cell_ADC":
+			data["yaxis"] = cell_ADC
 			ylabel = "Cell Voltage Measurement (V)"
-		elif yaxis == "DVRArduino":
-			yaxis = DVRArduino
+		elif data["yaxis"] == "resistance":
+			data["yaxis"] = resistance
 			ylabel = "Resistor Setting (Ohm)"
-		elif yaxis == "current":
-			yaxis = current
+		elif data["yaxis"] == "current":
+			data["yaxis"] = current
 			ylabel = "Current Calculation (A)"
-		elif yaxis == "cellResistance":
-			yaxis = cellResistance
+		elif data["yaxis"] == "cell_resistance":
+			data["yaxis"] = cell_resistance
 			ylabel = "Cell Resistance Calculation (Ohm)"
-		elif yaxis == "GND":
-			yaxis = GND
+		elif data["yaxis"] == "GND":
+			data["yaxis"] = GND
 			ylabel = "Ground Measurement (V)"
-		elif yaxis == "referenceElectrode":
-			yaxis = referenceElectrode
+		elif data["yaxis"] == "reference_electrode":
+			data["yaxis"] = reference_electrode
 			ylabel = "Reference Electrode"
 		else:
-			yaxis = [0]
+			data["yaxis"] = [0]
 			ylabel = "Unexpected error!"
-		#The next section only works on EPD!
 		matplotlib.pyplot.clf()
 		if data["xpoints"] != False:
 			xaxis = xaxis[(data["xpoints"] * -1):] #The last (data["xpoints"]) number of points
 		if data["ypoints"] != False:
 			yaxis = yaxis[(data["ypoints"] * -1):] #Ditto
-		matplotlib.pyplot.plot(xaxis,yaxis,data["plotstyle"])
+		matplotlib.pyplot.plot(data["xaxis"],data["yaxis"],data["plotstyle"])
 		matplotlib.pyplot.xlabel(xlabel)
 		matplotlib.pyplot.ylabel(ylabel)
 		matplotlib.pyplot.savefig("image.png")

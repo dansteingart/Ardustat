@@ -122,7 +122,6 @@ ul.tabs a {
           </tr>
         </table>
       </div>
-      <!--
       <div>
         <table border="1">
           <tr>
@@ -132,27 +131,25 @@ ul.tabs a {
                   <td>
                     <form name="generateimage" action="generateimage" method="post" id="generateimage">
                       X Axis:<br>
-                      <input type="radio" name="xaxis" value="unixTime" checked>Unix Time<br>
-                      <input type="radio" name="xaxis" value="DACBArduino">DAC Setting (V)<br>
-                      <input type="radio" name="xaxis" value="DACBReading">DAC Measurement (V)<br>
-                      <input type="radio" name="xaxis" value="cellVoltage">Cell Voltage Measurement (V)<br>
-                      <input type="radio" name="xaxis" value="DVRArduino">Resistor Setting (Ohm)<br>
+                      <input type="radio" name="xaxis" value="time" checked>Unix Time<br>
+                      <input type="radio" name="xaxis" value="DAC0_setting">DAC Setting (V)<br>
+                      <input type="radio" name="xaxis" value="DAC0_ADC">DAC Measurement (V)<br>
+                      <input type="radio" name="xaxis" value="cell_ADC">Cell Voltage Measurement (V)<br>
+                      <input type="radio" name="xaxis" value="resistance">Resistor Setting (Ohm)<br>
                       <input type="radio" name="xaxis" value="current">Current Calculation (A)<br>
-                      <input type="radio" name="xaxis" value="cellResistance">Cell Resistance Calculation (Ohm)<br>
-                      (Ardustat Version 7 Only:)<br>
+                      <input type="radio" name="xaxis" value="cell_resistance">Cell Resistance Calculation (Ohm)<br>
                       <input type="radio" name="xaxis" value="GND">GND Measurement (V)<br>
-                      <input type="radio" name="xaxis" value="referenceElectrode">Reference Electrode Measurement (Ohm)<br>
+                      <input type="radio" name="xaxis" value="reference_electrode">Reference Electrode Measurement (Ohm)<br>
                       Y Axis:<br>
-                      <input type="radio" name="yaxis" value="unixTime">Unix Time<br>
-                      <input type="radio" name="yaxis" value="DACBArduino">DAC Setting (V)<br>
-                      <input type="radio" name="yaxis" value="DACBReading">DAC Measurement (V)<br>
-                      <input type="radio" name="yaxis" value="cellVoltage">Cell Voltage Measurement (V)<br>
-                      <input type="radio" name="yaxis" value="DVRArduino">Resistor Setting (Ohm)<br>
-                      <input type="radio" name="yaxis" value="current" checked>Current Calculation (A)<br>
-                      <input type="radio" name="yaxis" value="cellResistance">Cell Resistance Calculation (Ohm)<br>
-                      (Ardustat Version 7 Only:)<br>
+                      <input type="radio" name="yaxis" value="time" checked>Unix Time<br>
+                      <input type="radio" name="yaxis" value="DAC0_setting">DAC Setting (V)<br>
+                      <input type="radio" name="yaxis" value="DAC0_ADC">DAC Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="cell_ADC">Cell Voltage Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="resistance">Resistor Setting (Ohm)<br>
+                      <input type="radio" name="yaxis" value="current">Current Calculation (A)<br>
+                      <input type="radio" name="yaxis" value="cell_resistance">Cell Resistance Calculation (Ohm)<br>
                       <input type="radio" name="yaxis" value="GND">GND Measurement (V)<br>
-                      <input type="radio" name="yaxis" value="referenceElectrode">Reference Electrode Measurement (Ohm)<br>
+                      <input type="radio" name="yaxis" value="reference_electrode">Reference Electrode Measurement (Ohm)<br>
                       Filename:<br>
                       <input type="text" name="filename"> Filename<br>
 					  View only the last <input type="text" name="xaxisdatapoints"> points of data on the x-axis<br>
