@@ -73,6 +73,7 @@ def connecttosocket(port):
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
 		thesocket.connect(("localhost",port))
+		thesocket.settimeout(1)
 	except:
 		message = message + "\nConnection to socket "+str(port)+" failed."
 		return {"success":False,"message":message}
@@ -80,7 +81,7 @@ def connecttosocket(port):
 		return {"success":True,"socket":thesocket}
 
 def socketwrite(socketinstance,message):
-	socketinstance.send(message)
+	socketinstance.send(message+"\n")
 	return {"success":True}
 
 def socketread(socketinstance):
@@ -88,8 +89,11 @@ def socketread(socketinstance):
 	time.sleep(0.01)
 	a = ""
 	while 1:
-		a += socketinstance.recv(1024)
-		if a.find("ST\r\n") > 1: 
+		try:
+			a += socketinstance.recv(1024)
+		except:
+			socketwrite(socketinstance, "s0000")
+		if a.find("ST\r\n") > 1:
 			return {"success":True,"reading":a.strip()}
 
 def refbasis(reading,ref): #Feturns an absolute potential based on the ADC reading against the 2.5 V reference
@@ -123,7 +127,7 @@ def ocv(port):
 	message = ""
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
-	socketwrite(socketresult["socket"],"-0000\n")
+	socketwrite(socketresult["socket"],"-0000")
 
 def setResistance(resistance,port,id=None):
 	message = ""
