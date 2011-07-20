@@ -286,9 +286,9 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 			ylabel = "Unexpected error!"
 		matplotlib.pyplot.clf()
 		if data["xpoints"] != False:
-			xaxis = xaxis[(data["xpoints"] * -1):] #The last (data["xpoints"]) number of points
+			data["xaxis"] = data["xaxis"][(data["xpoints"] * -1):] #The last (data["xpoints"]) number of points
 		if data["ypoints"] != False:
-			yaxis = yaxis[(data["ypoints"] * -1):] #Ditto
+			data["yaxis"] = data["yaxis"][(data["ypoints"] * -1):] #Ditto
 		matplotlib.pyplot.plot(data["xaxis"],data["yaxis"],data["plotstyle"])
 		matplotlib.pyplot.xlabel(xlabel)
 		matplotlib.pyplot.ylabel(ylabel)

@@ -60,9 +60,6 @@ height:1px;
         <a href="#">Connection, Manual Operation, Logging</a>
       </li>
       <li>
-        <a href="#">Plot data</a>
-      </li>
-      <li>
         <a href="#">Cycling</a>
       </li>
     </ul>
@@ -132,8 +129,7 @@ height:1px;
             </td>
           </tr>
         </table>
-      </div>
-      <div>
+        <hr>
         <table>
           <tr>
             <td>
@@ -193,7 +189,7 @@ height:1px;
               <table>
                 <tr>
                   <td>
-                    <div id="imgresult">
+                    <div id="imgresult" class="graph">
                       <img id="imgresulttag" src="generateimage">
                     </div>
                   </td>
@@ -526,6 +522,9 @@ $(function() {
 				$('.numbersOnly').keyup(function (evt) {
 						this.value = this.value.replace(/[^0-9\.\-]/g,'');
 				});
+window.setInterval(function(){
+  $('#generateimage').submit();
+}, 5000);    
     </script>
   </body>
 </html>
