@@ -89,15 +89,17 @@ def socketwrite(socketinstance,message,id=None):
 		id = port - portconstant
 	else:
 		port = id + portconstant
-	enddatalog(id)
+	enddatalogresult = enddatalog(id)
+	time.sleep(0.1)
 	socketinstance.send(message+"\n")
-	try:
-		pidfile = open("pidfile"+str(id)+".pickle","r")
-		piddict = pickle.load(pidfile)
-		pidfile.close()
-		begindatalog(piddict["logfilename"],port,id)
-	except:
-		return {"success":True,"message":"Couldn't restart log"}
+	if enddatalogresult["success"] == True:
+		try:
+			pidfile = open("pidfile"+str(id)+".pickle","r")
+			piddict = pickle.load(pidfile)
+			pidfile.close()
+			begindatalog(piddict["logfilename"],port,id)
+		except:
+			return {"success":True,"message":"Couldn't restart log"}
 	return {"success":True}
 
 def socketread(socketinstance):
