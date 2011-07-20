@@ -204,7 +204,6 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				float(row[2])
 				float(row[3])
 				float(row[6])
-				float(row[7])	
 				float(row[9])
 			except:
 				pass
@@ -215,11 +214,14 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				cell_ADC.append(float(row[3]))
 				resistance.append(float(row[5]))
 				GND.append(float(row[6]))
-				current.append(float(row[7]))
+				try:
+					current.append(float(row[7]))
+				except:
+					current.append(False)
 				try:
 					cell_resistance.append(float(row[8]))
 				except:
-					pass #Couldn't calculate cell resistance at that point, so move on
+					cell_resistance.append(False)
 				reference_electrode.append(float(row[9]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
 		if data["xaxis"] == "time":
