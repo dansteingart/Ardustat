@@ -158,13 +158,14 @@ class enddatalog:
 
 class datatable: #Generate a data table for the filename the user inputs. No HTTP parsing; chokes on non-alphanumeric characters besides '-'
 	def POST(self):
-		filename = web.data()[6:]
-		contents = open(filename, "r").read()	#VERY VERY VERY VERY INSECURE
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		contents = open(data["input"], "r").read()	#VERY VERY VERY VERY INSECURE
 		contents = str(contents)
-		contents = "<table border=1><tr><td>"+contents+"</td></tr></table></p>"
+		contents = "<table><tr><td>"+contents+"</td></tr>"
 		contents = contents.replace("\n","</td></tr><tr><td>")
 		contents = contents.replace(",","</td><td>")
-		return "<p>"+contents+"</p>"
+		contents = "<html><head><style>table{border-collapse:collapse;}table, td, th{border:1px solid black;}</style></head><body>"+contents+"</table></body></html>"
+		return contents
 
 class generateimage: #Generate a graph for input in the parsed data csv file
 	def GET(self): #If it's a "get", just return the image
@@ -198,11 +199,14 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		reference_electrode = []
 		for row in csvfile:
 			try:
-				for i in range(8):
-					float(row[i])
+				float(row[0])
+				float(row[1])
+				float(row[2])
+				float(row[3])
+				float(row[6])
+				float(row[7])	
 				float(row[9])
 			except:
-				
 				pass
 			else:
 				timelist.append(float(row[0]))

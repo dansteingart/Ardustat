@@ -339,7 +339,7 @@ def log(filename,port,id): #This is the actual logging function
 			try:
 				rawdatafile.write(str(parsedict["time"])+","+line.replace("\0","")+"\n") #Tack on the unix time to the beginning of the raw data, clean it up, and record it
 				d = lambda x: str(parsedict[x])+"," #Convert dictionary items to CSV format
-				parsestring = d("time")+d("DAC0_setting")+d("DAC0_ADC")+d("cell_ADC")+d("pot_step")+d("resistance")+d("GND")+d("current")+d("cell_resistance")+d("reference_electrode")+d("mode")+d("last_command").replace("\0","")+d("calibration")+"\n"
+				parsestring = d("time")+d("DAC0_setting")+d("DAC0_ADC")+d("cell_ADC")+d("pot_step")+d("resistance")+d("GND")+d("current")+d("cell_resistance")+d("reference_electrode")+d("mode")+d("last_command").replace("\0","")+d("calibration")[:-1]+"\n"
 				parseddatafile.write(parsestring)
 				if parsedict["calibration"] == False and calibratecheck == True: #Nag the user to calibrate only once if their ardustat isn't calibrated
 					message = message + "\nWarning: Your ardustat is not calibrated. This can lead to highly inaccurate data! Please calibrate your ardustat."

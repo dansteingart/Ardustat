@@ -37,7 +37,14 @@ ul.tabs a {
 	font-size:15px;
 	font-family:sans-serif;
 }
-
+table
+{
+border-collapse:collapse;
+}
+table, td, th
+{
+border:1px solid black;
+}
 </style>
   </head>
   <body>
@@ -61,7 +68,7 @@ ul.tabs a {
     <div class="panes">
       <div>
 		Note: Each ardustat should be controlled in a separate browser window. Trying to start two ardustats in the same browser window may cause problems.<br>
-        <table border="1">
+        <table>
           <tr>
             <td>
               <form id="startardustat" action="startardustat" method="post" name="startardustat">
@@ -120,10 +127,10 @@ ul.tabs a {
         </table>
       </div>
       <div>
-        <table border="1">
+        <table>
           <tr>
             <td>
-              <table border="1">
+              <table>
                 <tr>
                   <td>
                     <form name="generateimage" action="generateimage" method="post" id="generateimage">
@@ -176,7 +183,7 @@ ul.tabs a {
               </table>
             </td>
             <td>
-              <table border="1">
+              <table>
                 <tr>
                   <td>
                     <div id="imgresult">
@@ -195,7 +202,7 @@ ul.tabs a {
         </table>
       </div>
       <div>
-        <table border="1">
+        <table>
           <tr>
             <td>
               <form name="cyclinginput" action="cyclinginput" method="post" id="cyclinginput">
