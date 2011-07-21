@@ -53,6 +53,7 @@ def guessUSB(): #This finds out what the possible serial ports are and runs isAr
 		return {"success":False,"message":message+"\nCouldn't find any ardustats."}
 
 def connecttoardustat(serialport,id):
+	message = ""
 	try:
 		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(portconstant+id),"-b","57600"])
 	except:
@@ -72,6 +73,7 @@ def connecttoardustat(serialport,id):
 			return {"success":True,"message":"Started to open ardustat on port "+serialport+". guessUSB() returned:"+result["message"]}
 
 def connecttosocket(port):
+	message = ""
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
 		thesocket.connect(("localhost",port))
@@ -83,23 +85,9 @@ def connecttosocket(port):
 		return {"success":True,"socket":thesocket}
 
 def socketwrite(socketinstance,message,id=None):
-	#Stop log, send command, start log again.
-	if not isinstance(id,int):
-		port = socketinstance.getpeername()[1]
-		id = port - portconstant
-	else:
-		port = id + portconstant
-	enddatalogresult = enddatalog(id)
-	time.sleep(0.1)
-	socketinstance.send(message+"\n")
-	if enddatalogresult["success"] == True:
-		try:
-			pidfile = open("pidfile"+str(id)+".pickle","r")
-			piddict = pickle.load(pidfile)
-			pidfile.close()
-			begindatalog(piddict["logfilename"],port,id)
-		except:
-			return {"success":True,"message":"Couldn't restart log"}
+	for i in range(5):
+		socketinstance.send(message+"\n")
+		time.sleep(0.05)
 	return {"success":True}
 
 def socketread(socketinstance):
@@ -316,7 +304,7 @@ def begindatalog(filename,port,id):
 		pidfileread.close()
 		pidfilewrite = open(pidfilename,"w")
 		piddict["ardustatlogger.py"] = ardustatloggerprocess.pid
-		piddict["logfilename"] = filename
+		#piddict["logfilename"] = filename
 		pickle.dump(piddict, pidfilewrite)
 		pidfilewrite.close()
 		return {"success":True,"message":"Started to log data with filename "+filename+"."}
@@ -356,6 +344,16 @@ def log(filename,port,id): #This is the actual logging function
 				else:
 					message = message + "\nFiles already exist; continuing log"
 					print message.split("\n")[-1]
+					#Begin script to delete last, possibly corrupted line of data from file
+					a = open(rawdatafilename,"r+")
+					b = open(parseddatafilename,"r+")
+					adata = a.readlines()
+					bdata = b.readlines()
+					a.write("\n".join(a.readlines()[:-2])+"\n")
+					b.write("\n".join(a.readlines()[:-2])+"\n")
+					a.close()
+					b.close()
+					#End script to delete last line of data
 					rawdatafile = open(rawdatafilename,"a")
 					parseddatafile = open(parseddatafilename,"a")
 					initfileio = False
@@ -479,8 +477,8 @@ def blink(port): #Blinks the ardustat LED by sending a space. This is used to se
 	message = ""
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
-	socketwrite(socketresult["socket"]," ")
-	return {"success":True,"message":"Sent command \" \"."}
+	socketwrite(socketresult["socket"]," 0000")
+	return {"success":True,"message":"Sent command \" 0000\"."}
 
 def ask(port, id=None):
 	socketresult = connecttosocket(port)
