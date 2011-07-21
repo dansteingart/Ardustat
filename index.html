@@ -520,6 +520,9 @@ $(function() {
 				$('.numbersOnly').keyup(function (evt) {
 						this.value = this.value.replace(/[^0-9\.\-]/g,'');
 				});
+window.setInterval(function(){
+	$('#generateimage').submit();
+}, 5000); 
     </script>
   </body>
 </html>
