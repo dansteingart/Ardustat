@@ -9,6 +9,7 @@ import json
 import pickle
 import matplotlib.pyplot
 import webdotpyparselib
+import glob
 
 #The port used for communication between the python functions and socketserver.py is always 50000 + (the id # of the ardustat)
 #We don't use templates because web.py's templating language conflicts with jquery
@@ -316,11 +317,10 @@ class blink:
 		
 class listcsvfiles:
 	def POST(self):
-		list = os.listdir(os.getcwd())
+		files = glob.glob("./*-parsed.csv")
 		filestr = ""
-		for file in list:
-			if file[len(file)-4:] == ".csv":
-				filestr = filestr + str(file) + "\n"
+		for string in files:
+			filestr = filestr+string[2:]+"\n"
 		if filestr == "":
 			return json.dumps({"success":False,"message":"No CSV files found!"})
 		else:

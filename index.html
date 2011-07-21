@@ -157,21 +157,18 @@ height:1px;
                       <input type="radio" name="yaxis" value="cell_resistance">Cell Resistance Calculation (Ohm)<br>
                       <input type="radio" name="yaxis" value="GND">GND Measurement (V)<br>
                       <input type="radio" name="yaxis" value="reference_electrode">Reference Electrode Measurement (Ohm)<br>
+                      <div id="filedropdowndiv">
                       Filename:<br>
-                      <input type="text" name="filename"> Filename<br>
+                      No files available yet
+                      </div>
 					  View only the last <input type="text" name="xaxisdatapoints"> points of data on the x-axis<br>
 					  View only the last <input type="text" name="yaxisdatapoints"> points of data on the y-axis<br>
 					  <input type="radio" name="plotstyle" value="." checked> Don't connect data points<br>
 					  <input type="radio" name="plotstyle" value="-"> Connect data points<br>
                       <input type="submit" value="Submit"><br>
                     </form>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
                     <form name="listcsvfiles" action="listcsvfiles" method="post" id="listcsvfiles">
-                      <input type="submit" value="View CSV files on server">
-                      <div id="csvresult"></div>
+                      <input type="submit" value="Update CSV files in dropdown">
                     </form>
                   </td>
                 </tr>
@@ -227,6 +224,9 @@ height:1px;
 $(function() {
 	// setup ul.tabs to work as tabs for each div directly under div.panes
 	$("ul.tabs").tabs("div.panes > div");
+});
+$(function() {
+	$('#listcsvfiles').submit();
 });
 				$("#idinputbox").submit(function(event) {
 						event.preventDefault();
@@ -453,7 +453,7 @@ $(function() {
 								formxpoints = $form.find( 'input[name="xaxisdatapoints"]' ).val(),
 								formypoints = $form.find( 'input[name="yaxisdatapoints"]' ).val(),
 								formplotstyle = $form.find( 'input[name="plotstyle"]:checked' ).val()
-								formfilename = $form.find( 'input[name="filename"]' ).val()
+								formfilename = $form.find( 'select[name="filedropdown"]' ).val()
                                 url = $form.attr( 'action' );
                         $.post( url, { xaxis: formxaxis, yaxis:formyaxis, xpoints:formxpoints, ypoints: formypoints, plotstyle: formplotstyle, filename:formfilename },
                           function( data ) {
@@ -472,8 +472,15 @@ $(function() {
                         $.post( url,
                           function( data ) {
                                   var thejson = $.parseJSON( data )
-								  var message = new String(thejson.message).replace(/\n/g,"<br>");
-                                  $( "#csvresult" ).empty().append( message );
+                                  var csvfilesraw = new String(thejson.message).replace(/\n/g,"<br>")
+                                  var csvfilesarray = csvfilesraw.split("<br>")
+                                  var returnstring = new String("")
+                                  $.each(csvfilesarray, function(index){
+									  csvfilesarray[index] = "<option value=\""+csvfilesarray[index]+"\">"+csvfilesarray[index]+"</option>\n"
+									  returnstring = returnstring + csvfilesarray[index]
+								  });
+								  returnstring = "Filename:<br>\n<select name=\"filedropdown\">"+returnstring+"</select>"
+                                  $( "#filedropdowndiv" ).empty().append( returnstring );
                           }
                         );
                 });
