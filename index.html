@@ -167,6 +167,7 @@ height:1px;
 					  <input type="radio" name="plotstyle" value="-"> Connect data points<br>
                       <input type="submit" value="Submit"><br>
                     </form>
+                    <hr>
                     <form name="listcsvfiles" action="listcsvfiles" method="post" id="listcsvfiles">
                       <input type="submit" value="Update CSV files in dropdown">
                     </form>
@@ -175,8 +176,14 @@ height:1px;
                 <tr>
                   <td>
                     <form name="datatable" action="datatable" method="post" id="datatable">
-                      <input type="text" name="input"> Filename<br>
+                      <div id="filedropdowndiv2">
+                      Filename:<br>
+                      No files available yet
+                      </div>
                       <input type="submit" value="Generate Data Table"><br>
+                    </form>
+                    <form name="removedatatable" id="removedatatable" action="removedatatable" method="post">
+						<input type="submit" value="Remove Data Table"><br>
                     </form>
                   </td>
                 </tr>
@@ -186,7 +193,7 @@ height:1px;
               <table>
                 <tr>
                   <td>
-                    <div id="imgresult" class="graph">
+                    <div id="imgresult" name="imgresult" class="graph">
                       <img id="imgresulttag" src="generateimage">
                     </div>
                   </td>
@@ -210,7 +217,7 @@ height:1px;
 		Repeat:<input type="checkbox" name="repeatBox" id="repeatBox"><br>
                 <input type="submit" value="Submit">
               </form>
-              <form name="cyclinginputparse" action="cyclinginputparse" method="post" id="cyclinginputparse">
+              <form name="cyclinginputparse" action="ERROR" method="post" id="cyclinginputparse">
                 <input type="submit" value="Parse">
               </form>
             </td>
@@ -481,6 +488,7 @@ $(function() {
 								  });
 								  returnstring = "Filename:<br>\n<select name=\"filedropdown\">"+returnstring+"</select>"
                                   $( "#filedropdowndiv" ).empty().append( returnstring );
+                                  $( "#filedropdowndiv2" ).empty().append( returnstring );
                           }
                         );
                 });
@@ -521,6 +529,22 @@ $(function() {
                           }
                         );
                 });
+                $("#datatable").submit(function(event) {
+                        event.preventDefault();
+                        var $form = $( this ),
+                                forminput = $form.find( 'select[name="filedropdown"]' ).val(),
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput },
+                          function( data ) {
+								  var message = new String( data )
+                                  $( "#imgresult" ).empty().append( "<img id=\"imgresulttag\" src=\"generateimage\">"+message );
+                          }
+                        );
+                });
+                $("#removedatatable").submit(function(event) {
+					event.preventDefault();
+					$("#imgresult").empty().append( "<img id=\"imgresulttag\" src=\"generateimage\">" );
+				});
                 $('.integersOnly').keyup(function () { 
                         this.value = this.value.replace(/[^0-9]/g,'');
                 });

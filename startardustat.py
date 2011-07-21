@@ -162,10 +162,9 @@ class datatable: #Generate a data table for the filename the user inputs. No HTT
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		contents = open(data["input"], "r").read()	#VERY VERY VERY VERY INSECURE
 		contents = str(contents)
-		contents = "<table><tr><td>"+contents+"</td></tr>"
+		contents = "<table><tr><td>"+contents+"</td></tr></table>"
 		contents = contents.replace("\n","</td></tr><tr><td>")
 		contents = contents.replace(",","</td><td>")
-		contents = "<html><head><style>table{border-collapse:collapse;}table, td, th{border:1px solid black;}</style></head><body>"+contents+"</table></body></html>"
 		return contents
 
 class generateimage: #Generate a graph for input in the parsed data csv file
@@ -318,6 +317,7 @@ class blink:
 class listcsvfiles:
 	def POST(self):
 		files = glob.glob("./*-parsed.csv")
+		files.sort()
 		filestr = ""
 		for string in files:
 			filestr = filestr+string[2:]+"\n"
