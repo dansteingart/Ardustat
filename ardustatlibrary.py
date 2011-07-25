@@ -4,6 +4,7 @@ import socket, serial, os, time, pickle, math, json, glob, subprocess
 pycommand = "python2" #Uncomment this line if you have a system that uses python 3 as its default and can use python 2 with the "python2" command (i.e. Arch Linux)
 
 portconstant = 50000 #The port that the ardustat connects to is equal to this constant + the ID #.
+loggingpause = 0.5 #Amount of time that the logging function waits during each iteration
 
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""
@@ -325,6 +326,7 @@ def log(filename,port,id): #This is the actual logging function
 	initfileio = True
 	calibratecheck = True
 	while 1:
+		time.sleep(loggingpause)
 		line = socketread(thesocket)["reading"]
 		parsedict = parse(line,id)
 		if parsedict["success"] == True:

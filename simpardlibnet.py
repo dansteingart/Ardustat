@@ -391,6 +391,21 @@ class ardustat:
 		rawdatafile.close()
 		jsondatafile.close()
 
+	def jsondatatocsvfile(self,filename):
+		f = open(filename,"r")
+		data = f.readlines()
+		f.close()
+		thefile = ""
+		for i in json.loads(data[0]):
+			thefile = thefile + str(i) + ","
+		thefile = thefile + "\n"
+		for i in range(len(data)):
+			for term in json.loads(data[i]):
+				thefile = thefile + "\"" + str(json.loads(data[i])[term]) + "\","
+			thefile = thefile + ("\n")
+		g = open(filename+".csv","w")
+		g.write(thefile)
+		g.close()
 	
 	def plotdata(self,filename, yaxis, xaxis="thetime"):
 		f = open(filename,"r")

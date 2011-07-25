@@ -279,13 +279,9 @@ class killself: #Run shutdown() and then quit using sys.exit()
 			result = ardustatlibrary.shutdown(data["id"])
 		except:
 			if enabledebugging == True: raise
-			return json.dumps({"success":False,"message":"Shutting down failed unexpectedly."})
+			return json.dumps({"success":False,"message":"Shutting down failed unexpectedly. (If you are on a unix system, open a terminal and type \"killall "+pycommand+"\". If you are on Windows, press ctrl-alt-del to open up task manager, go to the \"processes\" tab, and kill all the processes that are named \"python.exe\"."})
 		else:
-			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Shutting down:\n"+result["message"]})
-			else:
-				return json.dumps({"success":False,"message":"Shutting down failed with message:\n"+result["message"]})		
-		sys.exit()
+			sys.exit()
 
 #Functions that deal with csv files...
 
