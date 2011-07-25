@@ -146,7 +146,8 @@ height:1px;
                       <input type="radio" name="xaxis" value="current">Current Calculation (A)<br>
                       <input type="radio" name="xaxis" value="cell_resistance">Cell Resistance Calculation (Ohm)<br>
                       <input type="radio" name="xaxis" value="GND">GND Measurement (V)<br>
-                      <input type="radio" name="xaxis" value="reference_electrode">Reference Electrode Measurement (Ohm)<br>
+                      <input type="radio" name="xaxis" value="reference_electrode">Reference Electrode Measurement (V)<br>
+                      <input type="radio" name="xaxis" value="cell_ADC-reference_electrode">Cell Voltage Measurement - Reference Electrode (V)<br>
                       Y Axis:<br>
                       <input type="radio" name="yaxis" value="time" checked>Unix Time<br>
                       <input type="radio" name="yaxis" value="DAC0_setting">DAC Setting (V)<br>
@@ -156,7 +157,8 @@ height:1px;
                       <input type="radio" name="yaxis" value="current">Current Calculation (A)<br>
                       <input type="radio" name="yaxis" value="cell_resistance">Cell Resistance Calculation (Ohm)<br>
                       <input type="radio" name="yaxis" value="GND">GND Measurement (V)<br>
-                      <input type="radio" name="yaxis" value="reference_electrode">Reference Electrode Measurement (Ohm)<br>
+                      <input type="radio" name="yaxis" value="reference_electrode">Reference Electrode Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="cell_ADC-reference_electrode">Cell Voltage Measurement - Reference Electrode (V)<br>
                       <div id="filedropdowndiv">
                       Filename:<br>
                       No files available yet
@@ -175,7 +177,7 @@ height:1px;
                 </tr>
                 <tr>
                   <td>
-                    <form name="datatable" action="ERROR" method="post" id="datatable">
+                    <form name="datatable" action="datatable" method="post" id="datatable">
                       <div id="filedropdowndiv2">
                       Filename:<br>
                       No files available yet

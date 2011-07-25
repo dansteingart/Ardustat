@@ -315,6 +315,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		cell_resistance = []
 		GND = []
 		reference_electrode = []
+		cell_ADCminusreference_electrode = []
 		for row in csvfile:
 			try:
 				float(row[0])
@@ -323,6 +324,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				float(row[3])
 				float(row[6])
 				float(row[9])
+				float(row[13])
 			except:
 				pass
 			else:
@@ -341,6 +343,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				except:
 					cell_resistance.append(False)
 				reference_electrode.append(float(row[9]))
+				cell_ADCminusreference_electrode.append(float(row[13]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
 		if data["xaxis"] == "time":
 			data["xaxis"] = timelist
@@ -368,7 +371,10 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 			xlabel = "Ground Measurement (V)"
 		elif data["xaxis"] == "reference_electrode":
 			data["xaxis"] = reference_electrode
-			xlabel = "Reference Electrode"
+			ylabel = "Reference Electrode (V)"
+		elif data["xaxis"] == "cell_ADC-reference_electrode":
+			data["xaxis"] = cell_ADCminusreference_electrode
+			ylabel = "Cell Voltage Measurement - Reference Electrode (V)"
 		else:
 			data["xaxis"] = [0]
 			xlabel = "Unexpected error!"
@@ -398,7 +404,10 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 			ylabel = "Ground Measurement (V)"
 		elif data["yaxis"] == "reference_electrode":
 			data["yaxis"] = reference_electrode
-			ylabel = "Reference Electrode"
+			ylabel = "Reference Electrode (V)"
+		elif data["yaxis"] == "cell_ADC-reference_electrode":
+			data["yaxis"] = cell_ADCminusreference_electrode
+			ylabel = "Cell Voltage Measurement - Reference Electrode (V)"
 		else:
 			data["yaxis"] = [0]
 			ylabel = "Unexpected error!"
