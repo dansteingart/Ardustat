@@ -1,3 +1,5 @@
+#If the user sends variables to a web.py function, e.g. sets "input" to AB-CD and "filename" to "new file", web.py will send them as "input=AB%2DCD&filename=new+file". Webdataintoascii wil convert that to "input=AB-CD&filename=new file" and webdataintodict will convert it into a python dictionary {"input":"AB-CD","filename":"new file"}.
+
 def webdataintoascii(data):
 	data = data.replace("+"," ")
 	while data.find("%") != -1:

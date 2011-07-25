@@ -52,8 +52,14 @@ def guessUSB(): #This finds out what the possible serial ports are and runs isAr
 	else:
 		return {"success":False,"message":message+"\nCouldn't find any ardustats."}
 
-def connecttoardustat(serialport,id):
+def connecttoardustat(serialport,id,autoconnect=True):
 	message = ""
+	if autoconnect == True:
+		result = guessUSB()
+		if result["success"] == True:
+			serialport = result["port"]
+		else:
+			return {"success":False,"message":"Couldn't find serial port to autoconnect to. guessUSB() returned:"+result["message"]}
 	try:
 		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(portconstant+id),"-b","57600"])
 	except:

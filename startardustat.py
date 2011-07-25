@@ -1,110 +1,117 @@
 import web
-import time
-import os
 import sys
-import subprocess, signal
 import ardustatlibrary
-import socket
 import json
-import pickle
 import matplotlib.pyplot
 import webdotpyparselib
 import glob
 
-#The port used for communication between the python functions and socketserver.py is always 50000 + (the id # of the ardustat)
+#The port used for communication between the python functions and socketserver.py is always <portconstant variable> + (the id # of the ardustat). Ideally, the portconstant variable should be the same in both ardustatlibrary and startardustat and greater than 50000.
 #We don't use templates because web.py's templating language conflicts with jquery
-#We communicate with the HTML/Javascript page using JSON objects, which are like python dictionaries; conversion is as simple as using json.dumps(<dictionary>)
+#We communicate with the HTML/Javascript page using JSON objects, which are like python dictionaries except in string form; conversion to/from json format is as simple as using json.dumps(<dictionary>)/json.loads(<dictionary>).
 
-urls = ('/',			'index',
-	'/startardustat',	'startardustat',
-	'/galvanostat',		'galvanostat',
+urls = ('/galvanostat',	'galvanostat',
 	'/potentiostat',	'potentiostat',
+	'/raiseground',		'raiseground',
 	'/calibrate',		'calibrate',
-	'/rawcmd',			'rawcmd',
 	'/begindatalog',	'begindatalog',
 	'/enddatalog',		'enddatalog',
-	'/datatable',		'datatable',
-	'/generateimage',	'generateimage',
 	'/ask',				'ask',
 	'/blink',			'blink',
-	'/raiseground',		'raiseground',
-	'/makenewimage',	'makenewimage',
-	'/listcsvfiles',	'listcsvfiles',
+	#Slightly nonstandard functions:
+	'/shutdown',		'shutdown',
+	'/startardustat',	'startardustat',
+	'/rawcmd',			'rawcmd',
 	'/cyclinginputparse','cyclinginputparse',
 	'/killself',		'killself',
-	'/shutdown',		'shutdown',
-	'/favicon.ico',		'favicon',
-	'/jquery-tools-full.min.js','jqueryfile')
-
-
+	#Functions dealing with CSV files:
+	'/generateimage',	'generateimage',
+	'/listcsvfiles',	'listcsvfiles',
+	'/datatable',		'datatable',
+	#Files:
+	'/',				'index',
+	'/jquery-tools-full.min.js','jqueryfile',
+	'/favicon.ico',		'favicon')
+	
 app = web.application(urls, globals())
 
-class index:
-	def GET(self):
-		return open("index.html","r").read()
-		
-class startardustat: #Open serialforwarder.py as a subprocess so we can use it communicate with the ardustat over sockets. Save a dictionary containing its process ID and the ardustat ID # in a pickle so we can find and kill it later.
-	def POST(self):
-		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["id"]) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		data["id"] = int(data["id"])
-		if data["input"] == "": #If input is left blank, use the guessUSB function to autoconnect to the first ardustat it finds
-			result = ardustatlibrary.guessUSB()
-			if result["success"] == True:
-				port = result["port"]
-			else:
-				print result
-				return json.dumps({"success":False,"message":"Couldn't find serial port to autoconnect to. guessUSB() returned:"+result["message"]})
-		else:
-			port = data["input"]
-		result = ardustatlibrary.connecttoardustat(port,data["id"])
-		return json.dumps(result)
-			
+enabledebugging = True #Allow errors to print to the console instead of just telling the user that the function has "failed unexpectedly"
+
+portconstant = 50000 #The port that the ardustat connects to is equal to this constant + the ID #.
+
+#Note: Ideally, every class should have the following form:
+#
+#class example:
+#	def POST(self):
+#		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+#		if len(data["id"]) < 1:
+#			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+#		data["id"] = int(data["id"])
+#		try:
+#			result = ardustatlibrary.example(data["input"],portconstant+int(data["id"]))
+#		except:
+#			if enabledebugging == True: raise
+#			return json.dumps({"success":False,"message":"Example function failed unexpectedly."})
+#		else:
+#			if result["success"] == True:
+#				return json.dumps({"success":True,"message":"Did example function:\n"+result["message"]})
+#			else:
+#				return json.dumps({"success":False,"message":"Example function failed with message:\n"+result["message"]})
+#
+#If classes are made this way, then all you need to do to change the program is change the code in ardustatlibrary. You can debug using the console by setting the enabledebugging variable to True; if this is set to False, web.py should just tell the user that it failed unexpectedly.
+#
+#Begin "standardized" functions
+
 class galvanostat:
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No id number was passed to this function."})
+		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.galvanostat(float(data["input"]),50000+int(data["id"]),int(data["id"]))
+			result = ardustatlibrary.galvanostat(float(data["input"]),portconstant+int(data["id"]),int(data["id"]))
 		except:
-			return json.dumps({"success":False,"message":"Unexpected error setting galvanostat"})
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Setting galvanostat failed unexpectedly."})
 		else:
 			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Set galvanostat"+result["message"]})
+				return json.dumps({"success":True,"message":"Set galvanostat:\n"+result["message"]})
 			else:
-				return json.dumps({"success":False,"message":"Setting galvanostat failed: "+result["message"]})
+				return json.dumps({"success":False,"message":"Setting galvanostat failed with message:\n"+result["message"]})
 
 class potentiostat:
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.potentiostat(float(data["input"]),50000+int(data["id"]))
+			result = ardustatlibrary.potentiostat(float(data["input"]),portconstant+int(data["id"]))
 		except:
-			return json.dumps({"success":False,"message":"Unexpected error setting potentiostat"})
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Setting potentiostat failed unexpectedly."})
 		else:
 			if result["success"] == True:
 				return json.dumps({"success":True,"message":"Set potentiostat: "+result["message"]})
 			else:
-				return json.dumps({"success":False,"message":"Setting potentiostat failed: "+result["message"]})
+				return json.dumps({"success":False,"message":"Setting potentiostat failed with message:\n"+result["message"]})
 
 class raiseground:
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No id number was passed to this function."})
+		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.raiseGround(float(data["input"]),50000+int(data["id"]))
+			result = ardustatlibrary.raiseGround(float(data["input"]),portconstant+data["id"])
 		except:
-			return json.dumps({"success":False,"message":"Unexpected error raising ground"})
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Raising ground failed unexpectedly."})
 		else:
 			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Raised ground: "+result["message"]})
+				return json.dumps({"success":True,"message":"Raised ground:\n"+result["message"]})
 			else:
-				return json.dumps({"success":False,"message":"Raising ground failed:\n"+result["message"]})
+				return json.dumps({"success":False,"message":"Raising ground failed with message:\n"+result["message"]})
 
 class calibrate:
 	def POST(self):
@@ -113,31 +120,15 @@ class calibrate:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.calibrate(float(data["input"]),50000+data["id"],data["id"])
+			result = ardustatlibrary.calibrate(float(data["input"]),portconstant+data["id"],data["id"])
 		except:
-			return json.dumps({"success":False,"message":"Unexpected error starting calibration"})
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Starting calibration failed unexpectedly."})
 		else:
 			if result["success"] == True:
 				return json.dumps({"success":True,"message":"Started calibration:\n"+result["message"]})
 			else:
-				return json.dumps({"success":False,"message":"Starting calibration failed:\n"+result["message"]})
-
-class rawcmd: #Sends a command directly over socket interface to the ardustat. No sanity checking. Fix this later
-	def POST(self):
-		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["id"]) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		data["id"] = int(data["id"])
-		try:
-			connsocket = ardustatlibrary.connecttosocket(50000+data["id"])
-			result = ardustatlibrary.socketwrite(connsocket["socket"],data["input"])
-		except:
-			return json.dumps({"success":False,"message":"Unexpected error sending raw command"})
-		else:
-			if result["success"] == True:
-				return json.dumps({"success":True,"message":"Sent command "+data["input"]+"."})
-			else:
-				return json.dumps({"success":False,"message":"Error sending command:\n"+result["message"]})
+				return json.dumps({"success":False,"message":"Starting calibration failed with message:\n"+result["message"]})
 
 class begindatalog:
 	def POST(self):
@@ -145,27 +136,158 @@ class begindatalog:
 		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		data["id"] = int(data["id"])
-		result = ardustatlibrary.begindatalog(data["input"],50000+data["id"],data["id"])
-		return json.dumps(result)
-				
+		try:
+			result = ardustatlibrary.begindatalog(data["input"],portconstant+data["id"],data["id"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Starting data log failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Started data log:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Starting data log failed with message:\n"+result["message"]})
+
 class enddatalog:
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		if len(data["id"]) < 1:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		data["id"] = int(data["id"])
-		result = ardustatlibrary.enddatalog(data["id"])
-		return json.dumps(result)
+		try:
+			result = ardustatlibrary.enddatalog(data["id"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Ending data log failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Ended data log:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Ending data log failed with message:\n"+result["message"]})
 
-class datatable: #Generate a data table for the filename the user inputs. No HTTP parsing; chokes on non-alphanumeric characters besides '-'
+class ask:
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		contents = open(data["input"], "r").read()	#VERY VERY VERY VERY INSECURE
-		contents = str(contents)
-		contents = "<table><tr><td>"+contents+"</td></tr></table>"
-		contents = contents.replace("\n","</td></tr><tr><td>")
-		contents = contents.replace(",","</td><td>")
-		return contents
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
+		try:
+			result = ardustatlibrary.ask(portconstant+data["id"],data["id"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Getting data failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Got data:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Getting data failed with message:\n"+result["message"]})
+
+class blink:
+	def POST(self):
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
+		try:
+			result = ardustatlibrary.blink(portconstant+data["id"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Blinking LED failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Blinked LED:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Blinking LED failed with message:\n"+result["message"]})		
+		
+class shutdown: #Run shutdown() and then quit using sys.exit()
+	def POST(self):
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
+		try:
+			result = ardustatlibrary.shutdown(data["id"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Shutting down failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Shutting down:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Shutting down failed with message:\n"+result["message"]})		
+
+#Begin "nonstandardized" functions
+
+#"Slightly nonstandard"...
+
+class startardustat:
+	def POST(self):
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
+		if data["input"] == "": #If the port to connect to is left blank, just autoconnect
+			autoconnect = True
+		else:
+			autoconnect = False
+		try:
+			result = ardustatlibrary.connecttoardustat(data["input"],data["id"],autoconnect)
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Connecting to ardustat failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Connected to ardustat:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Connecting to ardustat failed with message:\n"+result["message"]})
+				
+class rawcmd: #Sends a command directly over socket interface to the ardustat. No sanity checking. Fix this later
+	def POST(self):
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
+		try:
+			connsocket = ardustatlibrary.connecttosocket(portconstant+data["id"])
+			result = ardustatlibrary.socketwrite(connsocket["socket"],data["input"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Sending raw command failed unexpectedly"})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Sent command:\n"+data["input"]+"."})
+			else:
+				return json.dumps({"success":False,"message":"Sending command failed with message:\n"+result["message"]})
+
+class cyclinginputparse:
+	def POST(self):
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		try:
+			result = ardustatlibrary.cyclinginputparse(data["input"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Parsing input failed unexpectedly."})
+		else:
+			return json.dumps({"success":True,"message":"Parsing input:\n"+result})
+
+class killself: #Run shutdown() and then quit using sys.exit()
+	def POST(self):
+		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
+		if len(data["id"]) < 1:
+			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
+		data["id"] = int(data["id"])
+		try:
+			result = ardustatlibrary.shutdown(data["id"])
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Shutting down failed unexpectedly."})
+		else:
+			if result["success"] == True:
+				return json.dumps({"success":True,"message":"Shutting down:\n"+result["message"]})
+			else:
+				return json.dumps({"success":False,"message":"Shutting down failed with message:\n"+result["message"]})		
+		sys.exit()
+
+#Functions that deal with csv files...
 
 class generateimage: #Generate a graph for input in the parsed data csv file
 	def GET(self): #If it's a "get", just return the image
@@ -296,24 +418,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		matplotlib.pyplot.draw()
 		return json.dumps({"success":True,"message":"Plotted "+xlabel+" on the x axis and "+ylabel+" on the y axis."})
 	
-class ask:
-	def POST(self):
-		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["id"]) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		data["id"] = int(data["id"])
-		result = ardustatlibrary.ask(50000+data["id"],data["id"])
-		return json.dumps({"success":True,"message":result["message"]})
 
-class blink:
-	def POST(self):
-		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["id"]) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		data["id"] = int(data["id"])
-		result = ardustatlibrary.blink(50000+data["id"])
-		return json.dumps({"success":True,"message":result["message"]})
-		
 class listcsvfiles:
 	def POST(self):
 		files = glob.glob("./*-parsed.csv")
@@ -326,11 +431,21 @@ class listcsvfiles:
 		else:
 			return json.dumps({"success":True,"message":filestr})
 			
-class cyclinginputparse:
+class datatable: #Generate a data table for the filename the user inputs. No HTTP parsing; chokes on non-alphanumeric characters besides '-'
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		result = ardustatlibrary.cyclinginputparse(data["input"])
-		return json.dumps({"success":True,"message":result})
+		contents = open(data["input"], "r").read()	#VERY VERY VERY VERY INSECURE
+		contents = str(contents)
+		contents = "<table><tr><td>"+contents+"</td></tr></table>"
+		contents = contents.replace("\n","</td></tr><tr><td>")
+		contents = contents.replace(",","</td><td>")
+		return contents
+
+#Files
+
+class index:
+	def GET(self):
+		return open("index.html","r").read()
 
 class jqueryfile:
 	def GET(self):
@@ -340,25 +455,7 @@ class favicon:
 	def GET(self):
 		web.header("Content-Type","image/x-icon")
 		return open("favicon.ico", "rb").read()
-		
-class killself: #Run shutdown() and then quit using sys.exit()
-	def POST(self):
-		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["id"]) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		data["id"] = int(data["id"])
-		ardustatlibrary.shutdown(data["id"])
-		sys.exit()
-		
-class shutdown:
-	def POST(self):
-		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["id"]) < 1:
-			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
-		data["id"] = int(data["id"])
-		result = ardustatlibrary.shutdown(data["id"])
-		return json.dumps({"success":True,"message":result["message"]})
-					
+				
 if __name__ == "__main__":
 	print "Starting up Ardustat web server. In your browser, go to http://localhost:8080/"
 	print "Note: You must keep this terminal window open for the program to work."
