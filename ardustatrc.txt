@@ -9,4 +9,4 @@ portconstant: 50000
 loggingpause: 0.5
 
 #If "enabledebugging" is enabled, then most "except"s go to "raise" instead of returning a message.
-enabledebugging: False
+enabledebugging: True

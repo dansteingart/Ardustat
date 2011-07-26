@@ -373,10 +373,10 @@ def log(filename,port,id): #This is the actual logging function
 					b = open(parseddatafilename,"r+")
 					adata = a.readlines()
 					bdata = b.readlines()
-					a.write("\n".join(a.readlines()[:-2])+"\n")
-					b.write("\n".join(a.readlines()[:-2])+"\n")
 					a.close()
 					b.close()
+					a.write("\n".join(adata[:-2])+"\n")
+					b.write("\n".join(adata[:-2])+"\n")
 					#End script to delete last line of data
 					rawdatafile = open(rawdatafilename,"a")
 					parseddatafile = open(parseddatafilename,"a")
