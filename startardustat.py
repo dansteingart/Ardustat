@@ -318,6 +318,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		cell_resistance = []
 		GND = []
 		reference_electrode = []
+		setting = []
 		cell_ADCminusreference_electrode = []
 		for row in csvfile:
 			try:
@@ -327,6 +328,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				float(row[3])
 				float(row[6])
 				float(row[9])
+				float(row[11])
 				float(row[14])
 			except:
 				pass
@@ -346,6 +348,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				except:
 					cell_resistance.append(False)
 				reference_electrode.append(float(row[9]))
+				setting.append(float(row[11]))
 				cell_ADCminusreference_electrode.append(float(row[14]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
 		if data["xaxis"] == "time":
@@ -374,10 +377,13 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 			xlabel = "Ground Measurement (V)"
 		elif data["xaxis"] == "reference_electrode":
 			data["xaxis"] = reference_electrode
-			ylabel = "Reference Electrode (V)"
+			xlabel = "Reference Electrode (V)"
+		elif data["xaxis"] == "setting":
+			data["xaxis"] = setting
+			xlabel = "Potentiostat/Galvanostat Setting (V)"
 		elif data["xaxis"] == "cell_ADC-reference_electrode":
 			data["xaxis"] = cell_ADCminusreference_electrode
-			ylabel = "Cell Voltage Measurement - Reference Electrode (V)"
+			xlabel = "Cell Voltage Measurement - Reference Electrode (V)"
 		else:
 			data["xaxis"] = [0]
 			xlabel = "Unexpected error!"
@@ -408,6 +414,9 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		elif data["yaxis"] == "reference_electrode":
 			data["yaxis"] = reference_electrode
 			ylabel = "Reference Electrode (V)"
+		elif data["yaxis"] == "setting":
+			data["yaxis"] = setting
+			ylabel = "Potentiostat/Galvanostat Setting (V)"
 		elif data["yaxis"] == "cell_ADC-reference_electrode":
 			data["yaxis"] = cell_ADCminusreference_electrode
 			ylabel = "Cell Voltage Measurement - Reference Electrode (V)"
