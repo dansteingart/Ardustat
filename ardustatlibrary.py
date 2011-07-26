@@ -1,10 +1,12 @@
-import socket, serial, os, time, pickle, math, json, glob, subprocess
+import socket, serial, os, time, pickle, math, json, glob, subprocess, ConfigParser
 
-#pycommand = "python" #Uncomment this line if you have a system that uses python 2 as its default
-pycommand = "python2" #Uncomment this line if you have a system that uses python 3 as its default and can use python 2 with the "python2" command (i.e. Arch Linux)
+config = ConfigParser.ConfigParser()
+config.read("ardustatrc.txt")
 
-portconstant = 50000 #The port that the ardustat connects to is equal to this constant + the ID #.
-loggingpause = 0.5 #Amount of time that the logging function waits during each iteration
+pycommand = str(config.get("values","pycommand"))
+portconstant = int(config.get("values","portconstant"))
+loggingpause = float(config.get("values","loggingpause"))
+enabledebugging = bool(config.get("values","enabledebugging"))
 
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""
@@ -64,6 +66,7 @@ def connecttoardustat(serialport,id,autoconnect=True):
 	try:
 		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(portconstant+id),"-b","57600"])
 	except:
+		if enabledebugging == True: raise
 		return {"success":False,"message":"Unexpected error starting serialforwarder.py."}
 	else:
 		filename = "pidfile" + str(id) + ".pickle"
@@ -86,6 +89,7 @@ def connecttosocket(port):
 		thesocket.connect(("localhost",port))
 		thesocket.settimeout(1)
 	except:
+		if enabledebugging == True: raise
 		message = message + "\nConnection to socket "+str(port)+" failed."
 		return {"success":False,"message":message}
 	else:
@@ -163,7 +167,6 @@ def setVoltageDifference(potential,port):
 		setting = str(int(1023*(potential/5.0))).rjust(4,"0")
 	else:
 		setting = str(int(1023*(math.fabs(potential)/5.0))+2000)
-		print setting
 	socketwrite(socketresult["socket"],"g"+setting)
 	return {"success":True,"message":"Sent command g"+setting+"."}
 
@@ -273,6 +276,7 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 				rescount +=1
 			except:
 				self.ocv()
+				if enabledebugging == True: raise
 				message = message + "\nUnexpected error in calibration with serial input "+str(line)
 				print message.split("\n")[-1]
 				return {"success":False,"message":message}
@@ -293,11 +297,13 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 	try:
 		f = open("resistances.pickle",'w')
 	except:
+		if enabledebugging == True: raise
 		message = message + "\nCouldn't open resistances.pickle file for writing. It may be open in another program. Couldn't save calibration data."
 		return {"success":False,"message":message}
 	try:
 		pickle.dump(resdict,f)
 	except:
+		if enabledebugging == True: raise
 		message = message + "\nCouldn't write data to resistances.pickle. Couldn't save calibration data."
 		return {"success":False,"message":message}
 	else:
@@ -309,6 +315,7 @@ def begindatalog(filename,port,id):
 	try:
 		ardustatloggerprocess = subprocess.Popen([pycommand,"ardustatlogger.py",filename,str(port),str(id)])
 	except:
+		if enabledebugging == True: raise
 		return {"success":False,"message":"Unexpected error starting ardustatlogger.py."}
 	else:
 		pidfilename = "pidfile" + str(id) + ".pickle"
@@ -404,91 +411,23 @@ def enddatalog(id):
 	try:
 		pidfile = open("pidfile"+str(id)+".pickle","r")
 	except:
+		if enabledebugging == True: raise
 		return {"success":False,"message":"Could not read pidfile dictionary; no process ID numbers available"}
 	else:
 		try:
 			piddict = pickle.load(pidfile)
 			pidfile.close()
 		except:
+			if enabledebugging == True: raise
 			return {"success":False,"message":"No processes associated with ardustat ID number "+str(id)+" in pidfile dictionary"}
 		else:
 			try:
 				os.kill(piddict["ardustatlogger.py"],9)
 			except:
+				if enabledebugging == True: raise
 				return {"success":False,"message":"Error while attempting to kill logging process!"}
 			else:
 				return {"success":True,"message":"Killed the logging process."}
-
-def cycle(input, repeat, port, id): #Scripted control mechanism for ardustat. To understand the syntax, see the cycling instructions in the 'Instructions' folder
-	input = input.split("\n")
-	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	message = ""
-	try:
-		thesocket.connect(("localhost",port))
-	except:
-		message = message + "\nConnection to socket "+str(port)+" failed."
-		return {"success":False,"message":message}
-	else:
-		keepcycling = True
-		while keepcycling == True:
-			for line in input:
-				newline = line.split(" ")
-				if newline[0] == "0": #Sets current to a specified level until the potential reaches a specified level
-					print "Setting current to " + newline[1] + " mA until potential reaches "+newline[2]+" V\n"
-					currentinamperes = float(newline[1])*0.001
-					galvanostat(currentinamperes, port, id)
-					potentiallimit = float(newline[2])
-					loop = True
-					while loop==True:
-						thesocket.send("a")
-						line = thesocket.recv(1023)
-						parsedict = parse(line,id)
-						if parsedict["success"] == True:
-							if parsedict["cellVoltage"] >= potentiallimit:
-								loop = False
-							else:
-								print "Potential is "+str(parsedict["cellVoltage"])+" V < "+str(potentiallimit)+" V."
-						else:
-							print "Error parsing data for cycling!"
-					print "Potential has reached "+str(potentiallimit)+" V."					
-				elif newline[0] == "1": #Sets current to a specified level for a specified amount of time
-					print "Setting current to " + newline[1] + " mA for "+newline[2]+" seconds\n"
-					currentinamperes = float(newline[1])*0.001
-					galvanostat(currentinamperes, port, id)
-					time.sleep(float(newline[2]))
-				elif newline[0] == "2": #Sets potential to a specified level until current reaches a specified level
-					print "Setting potential to "+ newline[1] + " V until current reaches "+newline[2]+" mA\n"
-					potentiostat(float(newline[1]), port)
-					time.sleep(0.1)
-					currentinamperes = float(newline[2])*0.001
-					currentlimit = currentinamperes
-					loop = True
-					while loop == True:
-						thesocket.send("a")
-						line = thesocket.recv(1023)
-						parsedict = parse(line,id)
-						if parsedict["success"] == True:
-							if parsedict["current"] >= currentlimit:
-								loop = False
-							else:
-								print "Current is "+str(parsedict["current"])+" A < "+str(currentlimit)+" A."
-						else:
-							print "Error parsing data for cycling!"
-					print "Current has reached "+str(currentlimit)+" A."
-						
-				elif newline[0] == "3": #Sets potential to a specified level for a specified amount of time
-					print "Setting potential to "+ newline[1] + " V for "+newline[2]+" seconds\n"
-					potentiostat(float(newline[1]), port)
-					time.sleep(float(newline[2]))
-				else:
-					print "Syntax error!\n"
-			if repeat == 1:
-				keepcycling = True
-			else:
-				keepcycling = False
-		thesocket.send("x")
-		thesocket.close()
-		return {"success":True,"message":"Cycling functions completed."}
 		
 def blink(port): #Blinks the ardustat LED by sending a space. This is used to see which ardustat commands are being sent to.
 	message = ""
@@ -602,6 +541,7 @@ def shutdown(id):
 	try:
 		pidfile = open("pidfile"+str(id)+".pickle","r")
 	except:
+		if enabledebugging == True: raise
 		return {"success":False,"message":"Could not read pidfile dictionary; no process ID numbers available"}
 	else:
 		try:

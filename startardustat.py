@@ -5,6 +5,7 @@ import json
 import matplotlib.pyplot
 import webdotpyparselib
 import glob
+import ConfigParser
 
 #The port used for communication between the python functions and socketserver.py is always <portconstant variable> + (the id # of the ardustat). Ideally, the portconstant variable should be the same in both ardustatlibrary and startardustat and greater than 50000.
 #We don't use templates because web.py's templating language conflicts with jquery
@@ -35,9 +36,11 @@ urls = ('/galvanostat',	'galvanostat',
 	
 app = web.application(urls, globals())
 
-enabledebugging = True #Allow errors to print to the console instead of just telling the user that the function has "failed unexpectedly"
+config = ConfigParser.ConfigParser()
+config.read("ardustatrc.txt")
 
-portconstant = 50000 #The port that the ardustat connects to is equal to this constant + the ID #.
+portconstant = int(config.get("values","portconstant"))
+enabledebugging = bool(config.get("values","enabledebugging"))
 
 #Note: Ideally, every class should have the following form:
 #
@@ -69,7 +72,7 @@ class galvanostat:
 			return json.dumps({"success":False,"message":"No id number was passed to this function."})
 		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.galvanostat(float(data["input"]),portconstant+int(data["id"]),int(data["id"]))
+			result = ardustatlibrary.galvanostat(float(data["input"]),portconstant+data["id"],data["id"])
 		except:
 			if enabledebugging == True: raise
 			return json.dumps({"success":False,"message":"Setting galvanostat failed unexpectedly."})
@@ -86,7 +89,7 @@ class potentiostat:
 			return json.dumps({"success":False,"message":"No ID number was passed to this function."})
 		data["id"] = int(data["id"])
 		try:
-			result = ardustatlibrary.potentiostat(float(data["input"]),portconstant+int(data["id"]))
+			result = ardustatlibrary.potentiostat(float(data["input"]),portconstant+data["id"])
 		except:
 			if enabledebugging == True: raise
 			return json.dumps({"success":False,"message":"Setting potentiostat failed unexpectedly."})
