@@ -329,6 +329,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				float(row[9])
 				float(row[13])
 			except:
+				if enabledebugging == True: raise
 				pass
 			else:
 				timelist.append(float(row[0]))
