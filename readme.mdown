@@ -6,39 +6,38 @@ Authors:
 - Eddie Nolan <tapd260@gmail.com>
 - Dan Steingart <dan.steingart@gmail.com>
 	
+Beta Testers:
 
-##Overview
-Two tools here for the Ardustat V7 Board Specification.
-
-1. Firmware 
-	- Big change from previous versions: does _not_ automatically send data.  Must receive an "s0000" to send data.
-2. Python scripts
-	- Allow for either direct through the serial port connection or forwarded through a serial forward (included in code) 
-		- ardustat.mode = "serial"
-		- ardustat.mode = "socket" (default)
-			- socket code courtesy of Ben Kempke <bpkempke@umich.edu> and Chris Liechti <cliechti@gmx.net>
+- Balasubramanian Anantharaman <balaanantharaman@gmail.com>
 
 
-##Functions That Work
-- Potentiostat
-- OCV 
+###Installation:
+####Software that you need to have installed to use the ardustat:
+	* Arduino (http://arduino.cc/en/Main/Software)
+	* FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
+	* Web.py PySerial, and matplotlib libraries. These can both be installed using easy_install (http://pypi.python.org/pypi/setuptools).
+	All of these tools are cross-platform and should work on Mac OS X, Windows 2000 and up, and most Linux distributions.
 
-##Quick Test
+####Initial Setup:
+	* Attach your ardustat shield to your arduino
+	* Install the ardustat firmware on your arduino
+	* Connect your ardustat to your battery or cell
+	* Start the python script "startardustat.py"
+	* Using your browser, go to http://localhost:8080/
+	* Use the HTML interface to interact with the ardustat.
 
-- Attach your ardustat to a system of choice
-- Start a serial forwarder session
-	- python tcp_serial_redirect.py -p SERIAL_PORT -b 57600 
-- In another terminal try
-	- python socket_test_inject_ocv.py
+	Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid upredictable results, please use a modern browser.
+	
+###General Ardustat Instructions
 
-Then play with the socket_test_long_test.py code
+####Instructions for the “Connection, Manual Operation, Logging” tab
+#####Connection
+The first thing you should do after you have plugged the ardustat in is connect the ardustat to the web interface. Type in the ID number of the ardustat into the field at the top of the web interface (each individual ardustat should have an ID number written on it in sharpie). Normally you would use the autoconnect function to connect the ardustat, go to the field labeled "Start Ardustat," leave it blank, and click the “Submit” button.
+If you are using a version 7 ardustat, you can double-check that you are really connected by clicking the button next to the label “Blink ardustat LED” to blink the LED on your ardustat board. If the LED doesn’t blink, you are not connected. (The LED on the version 8 ardustat is nonfunctional due to a hardware bug.)
 
-##To Do
-- Add calibration code
-	-Get rid of very hacky code in resistor sections
-- Add galvanostat code
-- Enable DoubleDac
+#####Calibration
+If you haven’t calibrated the ardustat with that ID number before, you need to calibrate it to make sure that your data is accurate. Find a resistor and measure its resistance with a multimeter (actual resistances can be significantly different than labeled resistances). Type in the resistance value into the field underneath the “Calibrate” level and click “Submit.” You can check the progress of the calibration in the terminal window. This may take several minutes.
 
-##Not To Do (yet)
-- Logging Code
-- Web Code
+#####Logging
+You will want to keep a log of your data saved. First, pick a file name for your data. Make sure you don’t pick the same file name as a log file that already exists, since ardustat will overwrite it. The ardustat will save two files, of the form “YourFilename-parsed.csv” and “YourFilename-raw.csv”. Type in the filename in the field labeled “Filename” and press “Submit.”
+Note: You do not need to type in the file extension yourself.
