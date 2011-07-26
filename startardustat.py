@@ -327,9 +327,8 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				float(row[3])
 				float(row[6])
 				float(row[9])
-				float(row[13])
+				float(row[14])
 			except:
-				if enabledebugging == True: raise
 				pass
 			else:
 				timelist.append(float(row[0]))
@@ -347,7 +346,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				except:
 					cell_resistance.append(False)
 				reference_electrode.append(float(row[9]))
-				cell_ADCminusreference_electrode.append(float(row[13]))
+				cell_ADCminusreference_electrode.append(float(row[14]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
 		if data["xaxis"] == "time":
 			data["xaxis"] = timelist
