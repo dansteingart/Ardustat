@@ -159,7 +159,11 @@ def setResistance(resistance,port,id=None):
 def setVoltageDifference(potential,port):
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
-	setting = str(int(1023*(potential/5.0))).rjust(4,"0")
+	if potential >= 0:
+		setting = str(int(1023*(potential/5.0))).rjust(4,"0")
+	else:
+		setting = str(int(1023*(math.fabs(potential)/5.0))+2000)
+		print setting
 	socketwrite(socketresult["socket"],"g"+setting)
 	return {"success":True,"message":"Sent command g"+setting+"."}
 
@@ -185,11 +189,7 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 	
 	if id == None:
 		message = message + "\nWarning: No ID # passed to this function!"
-	
-	if current < 0 or current > 0.02:  #Current out of range
-		message = message + "\nCurrent "+str(current)+" out of range (0-0.02)."
-		return {"success":False,"message":message}		
-	
+		
 	if current == 0:  #Current is zero; do OCV
 		ocv(port)
 		message = message + "\nSet OCV mode since current was 0"
@@ -206,11 +206,11 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 			message = message + "\nCouldn't parse data: " + parseddict["message"]
 			return {"success":False,"message":message}
 		
-		if current > 0.001:
+		if current > 0.001 or current < -0.001:
 			voltagedifference = current * 1000 #1 milliamp corresponds to 1V, 1 microamp corresponds to 1 millivolt, etc
 		else:
 			voltagedifference = current * 10000
-		minvoltagedifference = 0.00489 #DAC has 4.89-millivolt resolution
+		minvoltagedifference = parseddict["cell_ADC"] * -1
 		maxvoltagedifference = 5 - parseddict["cell_ADC"]
 		if voltagedifference < minvoltagedifference: voltagedifference = minvoltagedifference
 		if voltagedifference > maxvoltagedifference: voltagedifference = maxvoltagedifference
@@ -219,12 +219,21 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 		maxresistance = resbasis(255,id)["resistance"]
 		
 		while resistancevalue < minresistance: #If resistor can't go that low for that voltage setting...
-			voltagedifference = voltagedifference + 0.00489 #Tick DAC up a setting
-			if voltagedifference < maxvoltagedifference:
-				resistancevalue = voltagedifference / current #Recalculate resistor setting
-			else: #Voltage is maxed out and resistor still can't go low enough to source current...
-				message = message + "\nYou connected a "+str(parseddict["cell_ADC"])+" cell. Max current for that cell is "+str(maxvoltagedifference/minresistance)+" A. Cannot set current as "+str(current)+" A."
-				return {"success":False,"message":message}
+			if voltagedifference >= 0:
+				voltagedifference = voltagedifference + 0.00489 #Tick DAC up a setting
+				if voltagedifference < maxvoltagedifference:
+					resistancevalue = voltagedifference / current #Recalculate resistor setting
+				else: #Voltage is maxed out and resistor still can't go low enough to source current...
+					message = message + "\nYou connected a "+str(parseddict["cell_ADC"])+" cell. Max current for that cell is "+str(maxvoltagedifference/minresistance)+" A. Cannot set current as "+str(current)+" A."
+					return {"success":False,"message":message}
+			else:
+				voltagedifference = voltagedifference - 0.00489 #Tick DAC down a setting
+				if voltagedifference > minvoltagedifference:
+					resistancevalue = voltagedifference / current #Recalculate resistor setting
+				else: #Voltage is at lowest value and resistor still can't go low enough to source current...
+					message = message + "\nYou connected a "+str(parseddict["cell_ADC"])+" cell. Min current for that cell is "+str(minvoltagedifference/minresistance)+" A. Cannot set current as "+str(current)+" A."
+					return {"success":False,"message":message}
+
 		
 		if resistancevalue > maxresistance: #If resistor can't go that high for that voltage setting...
 			resistancevalue = maxresistance

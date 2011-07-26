@@ -622,6 +622,17 @@ void galvanostat()
 
     }
   }
+  
+  if (outvolt < 0)
+  {
+    outvolt = 0;
+    send_dac(0,outvolt);
+  }
+  if (outvolt > 1023)
+  {
+    outvolt = 1023;
+    send_dac(0,outvolt);
+  }
 }
 
 void sendout()
