@@ -13,18 +13,18 @@ Beta Testers:
 
 ###Installation:
 ####Software that you need to have installed to use the ardustat:
-	* Arduino (http://arduino.cc/en/Main/Software)
-	* FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
-	* Web.py PySerial, and matplotlib libraries. These can both be installed using easy_install (http://pypi.python.org/pypi/setuptools).
+	- Arduino (http://arduino.cc/en/Main/Software)
+	- FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
+	- Web.py PySerial, and matplotlib libraries. These can both be installed using easy_install (http://pypi.python.org/pypi/setuptools).
 	All of these tools are cross-platform and should work on Mac OS X, Windows 2000 and up, and most Linux distributions.
 
 ####Initial Setup:
-	* Attach your ardustat shield to your arduino
-	* Install the ardustat firmware on your arduino
-	* Connect your ardustat to your battery or cell
-	* Start the python script "startardustat.py"
-	* Using your browser, go to http://localhost:8080/
-	* Use the HTML interface to interact with the ardustat.
+	- Attach your ardustat shield to your arduino
+	- Install the ardustat firmware on your arduino
+	- Connect your ardustat to your battery or cell
+	- Start the python script "startardustat.py"
+	- Using your browser, go to http://localhost:8080/
+	- Use the HTML interface to interact with the ardustat.
 
 	Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid upredictable results, please use a modern browser.
 	
