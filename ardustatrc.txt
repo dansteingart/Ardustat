@@ -10,3 +10,6 @@ loggingpause: 0.5
 
 #If "enabledebugging" is enabled, then most "except"s go to "raise" instead of returning a message.
 enabledebugging: False
+
+#If verbose mode is enabled, then functions print out everything that they are doing to the console. If not, they don't print debug messages.
+verbosemode: False

@@ -9,10 +9,14 @@ loggingpause = float(config.get("values","loggingpause"))
 enabledebugging = config.get("values","enabledebugging")
 if enabledebugging == "True": enabledebugging = True
 else: enabledebugging = False
+verbosemode = config.get("values","verbosemode")
+if verbosemode == "True": verbosemode = True
+else: verbosemode = False
 
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""
 	message = message + "\nTesting for ardustat on port "+str(port)+"."
+	if verbosemode == True: print message.split("\n")[-1]
 	try:
 		ser=serial.Serial(port,57600,timeout=5) #The ardustat uses a baudrate of 57600. This can be changed in the firmware
 	except:
@@ -26,6 +30,7 @@ def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	except:
 		ser.close()
 		message = message + "\nNo ardustat on port "+port+" or error getting serial data from ardustat."
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":False,"message":message}
 	if line.find("GO") !=-1 or line.find("ST") !=-1: #These are the start and end markers of the serial lines that the ardustat spits out
 		ser.close()
@@ -33,6 +38,7 @@ def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	else:
 		ser.close()
 		message = message + "\nNo ardustat on port "+port+"."
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":False,"message":message}
 
 def findPorts():
@@ -54,6 +60,7 @@ def guessUSB(): #This finds out what the possible serial ports are and runs isAr
 			message = message + isardresult["message"]
 			if isardresult["success"] == True:
 				message = message + "\nArdustat found on "+port+"."
+				if verbosemode == True: print message.split("\n")[-1]
 				return {"success":True,"port":port,"message":message}
 	else:
 		return {"success":False,"message":message+"\nCouldn't find any ardustats."}
@@ -94,6 +101,7 @@ def connecttosocket(port):
 	except:
 		if enabledebugging == True: raise
 		message = message + "\nConnection to socket "+str(port)+" failed."
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":False,"message":message}
 	else:
 		return {"success":True,"socket":thesocket}
@@ -128,15 +136,18 @@ def resbasis(pot,id=None): #Returns the value in ohms for the givening potentiom
 			f.close()
 			res = resdict[str(id)] #This variable stores the resistance data for the Ardustat with that specific ID number
 			message = message + "\nCalibration data found for id#"+str(id)
+			if verbosemode == True: print message.split("\n")[-1]
 			calibrated = True
 		except: #If there's no resistance data
 			message = message + "\nCalibration data not found for id #"+str(id)
+			if verbosemode == True: print message.split("\n")[-1]
 			res = []
 			for i in range(256):
 				res.append(i/255.*10000 + 100)
 			calibrated = False
 	else:
 		message = message + "\nNo ID # passed to this function. Using non-calibrated resistances."
+		if verbosemode == True: print message.split("\n")[-1]
 		res = []
 		for i in range(256):
 			res.append(i/255.*10000 + 100)
@@ -145,6 +156,7 @@ def resbasis(pot,id=None): #Returns the value in ohms for the givening potentiom
 		res[pot]
 	except:
 		message = message + "\nPotentiometer setting "+str(pot)+" out of range (0-255)!"
+		if verbosemode == True: print message.split("\n")[-1]
 		print message.split("\n")[-1]
 		return {"success":False,"message":message,"resistance":False,"calibrated":calibrated}
 	else:
@@ -167,7 +179,8 @@ def setResistance(resistance,port,id=None):
 	closestvalue = str(closestvalue).rjust(4,"0")
 	socketwrite(socketresult["socket"],"r"+closestvalue)
 	setting = resbasis(int(closestvalue),id)["resistance"]
-	message = "Set resistance to "+str(setting)
+	message = message + "\nSet resistance to "+str(setting)
+	if verbosemode == True: print message.split("\n")[-1]
 	return {"success":True,"message":message,"setting":setting}
 
 def setVoltageDifference(potential,port):
@@ -202,21 +215,25 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 	
 	if id == None:
 		message = message + "\nWarning: No ID # passed to this function!"
+		if verbosemode == True: print message.split("\n")[-1]
 		
 	if current == 0:  #Current is zero; do OCV
 		ocv(port)
 		message = message + "\nSet OCV mode since current was 0"
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":True,"message":message}
 	
 	else:
 		socketreadresult = socketread(thesocket)
 		if socketreadresult == False:
 			message = message + "\nCouldn't read data from socket."
+			if verbosemode == True: print message.split("\n")[-1]
 			return {"success":False,"message":message}
 		
 		parseddict = parse(socketreadresult["reading"],id)
 		if parseddict["success"] == False:
 			message = message + "\nCouldn't parse data: " + parseddict["message"]
+			if verbosemode == True: print message.split("\n")[-1]
 			return {"success":False,"message":message}
 		
 		if current > 0.001 or current < -0.001:
@@ -238,6 +255,7 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 					resistancevalue = voltagedifference / current #Recalculate resistor setting
 				else: #Voltage is maxed out and resistor still can't go low enough to source current...
 					message = message + "\nYou connected a "+str(parseddict["cell_ADC"])+" cell. Max current for that cell is "+str(maxvoltagedifference/minresistance)+" A. Cannot set current as "+str(current)+" A."
+					if verbosemode == True: print message.split("\n")[-1]
 					return {"success":False,"message":message}
 			else:
 				voltagedifference = voltagedifference - 0.00489 #Tick DAC down a setting
@@ -245,6 +263,7 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 					resistancevalue = voltagedifference / current #Recalculate resistor setting
 				else: #Voltage is at lowest value and resistor still can't go low enough to source current...
 					message = message + "\nYou connected a "+str(parseddict["cell_ADC"])+" cell. Min current for that cell is "+str(minvoltagedifference/minresistance)+" A. Cannot set current as "+str(current)+" A."
+					if verbosemode == True: print message.split("\n")[-1]
 					return {"success":False,"message":message}
 
 		
@@ -253,6 +272,7 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 			voltagedifference = resistancevalue * current #Recalculate voltage difference
 			if voltagedifference < minvoltagedifference: #Voltage difference is so low at max resistance that the closest DAC setting is 0.
 				message = message + "\nYour current is lower than the maximum resistance of the potentiometer * the minimum voltage difference of the DAC."
+				if verbosemode == True: print message.split("\n")[-1]
 				return {"success":False,"message":message}
 		
 		#If we are at this point, then we find the resistor setting that corresponds to the resistance value
@@ -260,6 +280,7 @@ def galvanostat(current,port,id=None): #This takes a specified current as input 
 		time.sleep(0.3)
 		setVoltageDifference(voltagedifference, port)
 		message = message + "\nSuccessfully set galvanostat. Set voltage difference to "+str(voltagedifference)+" V. Set resistance to "+str(resistanceresult["setting"])+" Ohm."
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":True,"message":message}
 
 def calibrate(resistance,port,id): #Since the actual resistances for digital potentiometer setting are unknown, we connect a resistor of known resistance and use the voltage divider equation to find the actual resistance of each potentiometer setting, then save it in a pickle
@@ -288,6 +309,7 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 				self.ocv()
 				if enabledebugging == True: raise
 				message = message + "\nUnexpected error in calibration with serial input "+str(line)
+				if verbosemode == True: print message.split("\n")[-1]
 				print message.split("\n")[-1]
 				return {"success":False,"message":message}
 			print "Calibration: " + str(float(rescount)/(256*5)*100)[:4]+"%"
@@ -309,15 +331,18 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 	except:
 		if enabledebugging == True: raise
 		message = message + "\nCouldn't open resistances.pickle file for writing. It may be open in another program. Couldn't save calibration data."
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":False,"message":message}
 	try:
 		pickle.dump(resdict,f)
 	except:
 		if enabledebugging == True: raise
 		message = message + "\nCouldn't write data to resistances.pickle. Couldn't save calibration data."
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":False,"message":message}
 	else:
 		message = message + "\nCalibration completed and saved for Ardustat #"+str(id)
+		if verbosemode == True: print message.split("\n")[-1]
 		return {"success":True,"message":message}
 	f.close()
 
