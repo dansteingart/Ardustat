@@ -6,7 +6,9 @@ config.read("ardustatrc.txt")
 pycommand = str(config.get("values","pycommand"))
 portconstant = int(config.get("values","portconstant"))
 loggingpause = float(config.get("values","loggingpause"))
-enabledebugging = bool(config.get("values","enabledebugging"))
+enabledebugging = config.get("values","enabledebugging")
+if enabledebugging == "True": enabledebugging = True
+else: enabledebugging = False
 
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""

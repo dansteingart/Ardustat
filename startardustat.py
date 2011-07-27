@@ -41,7 +41,9 @@ config = ConfigParser.ConfigParser()
 config.read("ardustatrc.txt")
 
 portconstant = int(config.get("values","portconstant"))
-enabledebugging = bool(config.get("values","enabledebugging"))
+enabledebugging = config.get("values","enabledebugging")
+if enabledebugging == "True": enabledebugging = True
+else: enabledebugging = False
 
 #Note: Ideally, every class should have the following form:
 #
