@@ -279,9 +279,8 @@ $(function() {
 						$('input[type=submit]', this).attr('disabled','disabled');
                         var $form = $( this ),
                                 formid = $("body").find( 'input[name="id"]' ).val(),
-                                forminput = new String("")
                                 url = $form.attr( 'action' );
-                        $.post( url, { input: forminput, id:formid },
+                        $.post( url, { input: "", id:formid },
                           function( data ) {
                                   var thejson = $.parseJSON( data )
 								  var message = new String(thejson.message).replace(/\n/g,"<br>");
