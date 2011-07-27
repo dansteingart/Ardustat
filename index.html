@@ -151,11 +151,11 @@ height:1px;
                       <input type="radio" name="xaxis" value="setting">Potentiostat/Galvanostat Setting (V)<br>
                       <input type="radio" name="xaxis" value="cell_ADC-reference_electrode">Cell Voltage Measurement - Reference Electrode (V)<br>
                       Y Axis:<br>
-                      <input type="radio" name="yaxis" value="timesincebeginning" checked>Time since beginning of log (s)<br>
+                      <input type="radio" name="yaxis" value="timesincebeginning">Time since beginning of log (s)<br>
                       <input type="radio" name="yaxis" value="time">Unix Time (s)<br>
                       <input type="radio" name="yaxis" value="DAC0_setting">DAC Setting (V)<br>
                       <input type="radio" name="yaxis" value="DAC0_ADC">DAC Measurement (V)<br>
-                      <input type="radio" name="yaxis" value="cell_ADC">Cell Voltage Measurement (V)<br>
+                      <input type="radio" name="yaxis" value="cell_ADC" checked>Cell Voltage Measurement (V)<br>
                       <input type="radio" name="yaxis" value="resistance">Resistor Setting (Ohm)<br>
                       <input type="radio" name="yaxis" value="current">Current Calculation (A)<br>
                       <input type="radio" name="yaxis" value="cell_resistance">Cell Resistance Calculation (Ohm)<br>
@@ -167,8 +167,12 @@ height:1px;
                       Filename:<br>
                       No files available yet
                       </div>
-					  View only the last <input type="text" name="xaxisdatapoints"> points of data on the x-axis<br>
-					  View only the last <input type="text" name="yaxisdatapoints"> points of data on the y-axis<br>
+                      <input type="radio" name="constraint" value="all" checked>
+                        View all data<br>
+					  <input type="radio" name="constraint" value="xpointsconstraint">
+						View only the last <input type="text" name="xpoints"> points of data<br>
+					  <input type="radio" name="constraint" value ="timeconstraint">
+						View data from <input type="text" name="timeconstraint-l"> seconds to <input type="text" name="timeconstraint-r"> seconds<br>
 					  <input type="radio" name="plotstyle" value="." checked> Don't connect data points<br>
 					  <input type="radio" name="plotstyle" value="-"> Connect data points<br>
                       <input type="submit" value="Submit"><br>
@@ -463,12 +467,14 @@ $(function() {
                         var $form = $( this ),
 								formxaxis = $form.find( 'input[name="xaxis"]:checked' ).val(),
 								formyaxis = $form.find( 'input[name="yaxis"]:checked' ).val(),
-								formxpoints = $form.find( 'input[name="xaxisdatapoints"]' ).val(),
-								formypoints = $form.find( 'input[name="yaxisdatapoints"]' ).val(),
-								formplotstyle = $form.find( 'input[name="plotstyle"]:checked' ).val()
-								formfilename = $form.find( 'select[name="filedropdown"]' ).val()
+								formconstraint = $form.find( 'input[name="constraint"]:checked' ).val(),
+								formxpoints = $form.find( 'input[name="xpoints"]' ).val(),
+								formtimeconstraintl = $form.find( 'input[name="timeconstraint-l"]' ).val(),
+								formtimeconstraintr = $form.find( 'input[name="timeconstraint-r"]' ).val(),
+								formplotstyle = $form.find( 'input[name="plotstyle"]:checked' ).val(),
+								formfilename = $form.find( 'select[name="filedropdown"]' ).val(),
                                 url = $form.attr( 'action' );
-                        $.post( url, { xaxis: formxaxis, yaxis:formyaxis, xpoints:formxpoints, ypoints: formypoints, plotstyle: formplotstyle, filename:formfilename },
+                        $.post( url, { xaxis: formxaxis, yaxis:formyaxis, constraint:formconstraint, xpoints:formxpoints, timeconstraintl: formtimeconstraintl, timeconstraintr: formtimeconstraintr, plotstyle: formplotstyle, filename:formfilename },
                           function( data ) {
                                   var thejson = $.parseJSON( data )
 								  var message = new String(thejson.message).replace(/\n/g,"<br>");
@@ -559,7 +565,7 @@ $(function() {
 				});
 window.setInterval(function(){
 	$('#generateimage').submit();
-}, 5000); 
+}, 10000); 
     </script>
   </body>
 </html>

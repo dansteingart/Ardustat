@@ -5,11 +5,7 @@ Authors:
 - Barry Van Tassell <bajavata@gmail.com>
 - Eddie Nolan <tapd260@gmail.com>
 - Dan Steingart <dan.steingart@gmail.com>
-	
-Beta Testers:
-
 - Balasubramanian Anantharaman <balaanantharaman@gmail.com>
-
 
 ###Installation:
 ####Software that you need to have installed to use the ardustat:

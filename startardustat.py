@@ -6,6 +6,7 @@ import matplotlib.pyplot
 import webdotpyparselib
 import glob
 import ConfigParser
+import time
 
 #The port used for communication between the python functions and socketserver.py is always <portconstant variable> + (the id # of the ardustat). Ideally, the portconstant variable should be the same in both ardustatlibrary and startardustat and greater than 50000.
 #We don't use templates because web.py's templating language conflicts with jquery
@@ -295,14 +296,6 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 	
 	def POST(self): #If it's a "post", generate the image and return a string saying what the function plotted
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
-		if len(data["xpoints"]) > 0:
-			data["xpoints"] = int(data["xpoints"])
-		else:
-			data["xpoints"] = False
-		if len(data["ypoints"]) > 0:
-			data["ypoints"] = int(data["ypoints"])
-		else:
-			data["ypoints"] = False
 		f = open(data["filename"], "r") #ALSO VERY INSECURE
 		csvfile = f.read()
 		f.close()
@@ -433,16 +426,36 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 			data["yaxis"] = [0]
 			ylabel = "Unexpected error!"
 		matplotlib.pyplot.clf()
-		if data["xpoints"] != False:
+		if data["constraint"] == "all":
+			pass
+		elif data["constraint"] == "xpointsconstraint":
+			data["xpoints"] = int(data["xpoints"])
 			data["xaxis"] = data["xaxis"][(data["xpoints"] * -1):] #The last (data["xpoints"]) number of points
-		if data["ypoints"] != False:
-			data["yaxis"] = data["yaxis"][(data["ypoints"] * -1):] #Ditto
+			data["yaxis"] = data["yaxis"][(data["xpoints"] * -1):] #Ditto
+		elif data["constraint"] == "timeconstraint":
+			if xlabel != "Time since beginning of log (s)":
+				return json.dumps({"success":False,"message":"You must set the X axis to the time since the beginning of the log to use this constraint."})
+			else:
+				constraintl = "No Data"
+				constraintr = "No Data"
+				for i in range(len(data["xaxis"])):
+					if data["xaxis"][i] >= float(data["timeconstraintl"]): 
+						constraintl = i
+						break
+				for i in range(len(data["xaxis"])):
+					if data["xaxis"][i] >= float(data["timeconstraintr"]):
+						constraintr = i
+						break
+				if constraintl == "No Data" or constraintr == "No Data":
+					return json.dumps({"success":False,"message":"Those points do not match the data"})
+				data["xaxis"] = data["xaxis"][constraintl:constraintr]
+				data["yaxis"] = data["yaxis"][constraintl:constraintr]
 		matplotlib.pyplot.plot(data["xaxis"],data["yaxis"],data["plotstyle"])
 		matplotlib.pyplot.xlabel(xlabel)
 		matplotlib.pyplot.ylabel(ylabel)
 		matplotlib.pyplot.savefig("image.png")
 		matplotlib.pyplot.draw()
-		return json.dumps({"success":True,"message":"Plotted "+xlabel+" on the x axis and "+ylabel+" on the y axis."})
+		return json.dumps({"success":True,"message":"Plotted "+xlabel+" on the x axis and "+ylabel+" on the y axis at "+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())})
 	
 
 class listcsvfiles:
