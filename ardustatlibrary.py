@@ -37,16 +37,17 @@ def isArdustat(port): #Tests whether an ardustat is connected to a given port
 
 def findPorts():
 	if os.name == "posix": #Mac OS X and Linux
-		return glob.glob("/dev/tty.u*")+glob.glob("/dev/ttyU*")+glob.glob("/dev/ttyA*")
+		ports = glob.glob("/dev/tty.u*")+glob.glob("/dev/ttyU*")+glob.glob("/dev/ttyA*")
+		return {"success":True,"ports":ports}
 	elif os.name == "nt": #Windows
 		ports = []
 		for i in range(1,100):
 			ports.append("COM"+str(i))
-		return ports
+		return {"success":True,"ports":ports}
 	
 def guessUSB(): #This finds out what the possible serial ports are and runs isArdustat on them. Mac OS X and Linux handle serial ports differently than Windows, so we split the code up for each OS
 	message = ""
-	possibles = findPorts()
+	possibles = findPorts()["ports"]
 	if len(possibles)>=1:
 		for port in possibles:
 			isardresult = isArdustat(port)

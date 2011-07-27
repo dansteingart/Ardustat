@@ -77,8 +77,17 @@ height:1px;
             <td>
               <form id="startardustat" action="startardustat" method="post" name="startardustat">
                 Start Ardustat:<br>
-                Port Value (leave blank to autoconnect):<input type="text" name="input"> <input type="submit" value="Submit"><br>
+				<div id="portsdropdowndiv">
+				  No ports available yet  
+				</div>
+				<input type="submit" value="Connect">
               </form>
+		      <form name="findports" action="findports" method="post" id="findports">
+				<input type="submit" value="Update ports in dropdown">
+		      </form>
+		      <form id="autoconnect" action="startardustat" method="post" id="startardustat">
+				<input type="submit" value="Autoconnect">
+		      </form>
               <form id="galvanostat" action="galvanostat" method="post" name="galvanostat">
                 Galvanostat:<br>
                 Current Value: <input class="numbersOnly" type="text" name="input"> <input type="submit" value="Submit"><br>
@@ -244,6 +253,7 @@ $(function() {
 });
 $(function() {
 	$('#listcsvfiles').submit();
+	$('#findports').submit();
 });
 				$("#idinputbox").submit(function(event) {
 						event.preventDefault();
@@ -253,7 +263,7 @@ $(function() {
 						$('input[type=submit]', this).attr('disabled','disabled');
                         var $form = $( this ),
                                 formid = $("body").find( 'input[name="id"]' ).val(),
-                                                forminput = $form.find( 'input[name="input"]' ).val()
+                                                forminput = $form.find( 'select[name="portsdropdown"]' ).val(),
                                 url = $form.attr( 'action' );
                         $.post( url, { input: forminput, id:formid },
                           function( data ) {
@@ -261,6 +271,22 @@ $(function() {
 								  var message = new String(thejson.message).replace(/\n/g,"<br>");
                                   $( "#result" ).empty().append( message );
 								  $('input[type=submit]', '#startardustat').removeAttr('disabled');
+                          }
+                        );
+                });
+                $("#autoconnect").submit(function(event) {
+                        event.preventDefault();
+						$('input[type=submit]', this).attr('disabled','disabled');
+                        var $form = $( this ),
+                                formid = $("body").find( 'input[name="id"]' ).val(),
+                                forminput = new String("")
+                                url = $form.attr( 'action' );
+                        $.post( url, { input: forminput, id:formid },
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+								  var message = new String(thejson.message).replace(/\n/g,"<br>");
+                                  $( "#result" ).empty().append( message );
+								  $('input[type=submit]', '#autoconnect').removeAttr('disabled');
                           }
                         );
                 });
@@ -501,6 +527,25 @@ $(function() {
 								  returnstring = "Filename:<br>\n<select name=\"filedropdown\">"+returnstring+"</select>"
                                   $( "#filedropdowndiv" ).empty().append( returnstring );
                                   $( "#filedropdowndiv2" ).empty().append( returnstring );
+                          }
+                        );
+                });
+                $("#findports").submit(function(event) {
+                        event.preventDefault(); 
+                        var $form = $( this ),
+                                url = $form.attr( 'action' );
+                        $.post( url,
+                          function( data ) {
+                                  var thejson = $.parseJSON( data )
+                                  var portsraw = new String(thejson.message).replace(/\n/g,"<br>")
+                                  var portsarray = portsraw.split("<br>")
+                                  var returnstring = new String("")
+                                  $.each(portsarray, function(index){
+									  portsarray[index] = "<option value=\""+portsarray[index]+"\">"+portsarray[index]+"</option>\n"
+									  returnstring = returnstring + portsarray[index]
+								  });
+								  returnstring = "<select name=\"portsdropdown\">"+returnstring+"</select>"
+                                  $( "#portsdropdowndiv" ).empty().append( returnstring );
                           }
                         );
                 });

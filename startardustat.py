@@ -26,6 +26,7 @@ urls = ('/galvanostat',	'galvanostat',
 	'/rawcmd',			'rawcmd',
 	'/cyclinginputparse','cyclinginputparse',
 	'/killself',		'killself',
+	'/findports',		'findports',
 	#Functions dealing with CSV files:
 	'/generateimage',	'generateimage',
 	'/listcsvfiles',	'listcsvfiles',
@@ -204,7 +205,7 @@ class blink:
 			else:
 				return json.dumps({"success":False,"message":"Blinking LED failed with message:\n"+result["message"]})		
 		
-class shutdown: #Run shutdown() and then quit using sys.exit()
+class shutdown:
 	def POST(self):
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		if len(data["id"]) < 1:
@@ -288,6 +289,16 @@ class killself: #Run shutdown() and then quit using sys.exit()
 			return json.dumps({"success":False,"message":"Shutting down failed unexpectedly. (If you are on a unix system, open a terminal and type \"killall "+pycommand+"\". If you are on Windows, press ctrl-alt-del to open up task manager, go to the \"processes\" tab, and kill all the processes that are named \"python.exe\"."})
 		else:
 			sys.exit()
+
+class findports:
+	def POST(self):
+		try:
+			result = ardustatlibrary.findPorts()
+		except:
+			if enabledebugging == True: raise
+			return json.dumps({"success":False,"message":"Finding ports failed unexpectedly."})
+		else:
+			return json.dumps({"success":True,"message":"\n".join(result["ports"])})
 
 #Functions that deal with csv files...
 
