@@ -138,7 +138,8 @@ height:1px;
                   <td>
                     <form name="generateimage" action="generateimage" method="post" id="generateimage">
                       X Axis:<br>
-                      <input type="radio" name="xaxis" value="time" checked>Unix Time<br>
+                      <input type="radio" name="xaxis" value="timesincebeginning" checked>Time since beginning of log (s)<br>
+                      <input type="radio" name="xaxis" value="time">Unix Time (s)<br>
                       <input type="radio" name="xaxis" value="DAC0_setting">DAC Setting (V)<br>
                       <input type="radio" name="xaxis" value="DAC0_ADC">DAC Measurement (V)<br>
                       <input type="radio" name="xaxis" value="cell_ADC">Cell Voltage Measurement (V)<br>
@@ -150,7 +151,8 @@ height:1px;
                       <input type="radio" name="xaxis" value="setting">Potentiostat/Galvanostat Setting (V)<br>
                       <input type="radio" name="xaxis" value="cell_ADC-reference_electrode">Cell Voltage Measurement - Reference Electrode (V)<br>
                       Y Axis:<br>
-                      <input type="radio" name="yaxis" value="time" checked>Unix Time<br>
+                      <input type="radio" name="yaxis" value="timesincebeginning" checked>Time since beginning of log (s)<br>
+                      <input type="radio" name="yaxis" value="time">Unix Time (s)<br>
                       <input type="radio" name="yaxis" value="DAC0_setting">DAC Setting (V)<br>
                       <input type="radio" name="yaxis" value="DAC0_ADC">DAC Measurement (V)<br>
                       <input type="radio" name="yaxis" value="cell_ADC">Cell Voltage Measurement (V)<br>

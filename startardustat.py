@@ -309,7 +309,9 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		csvfile = csvfile.split("\n")
 		for i in range(len(csvfile)):
 			csvfile[i] = csvfile[i].split(",")
+		starttime = float(csvfile[1][0])
 		timelist = []
+		timesincebeginning = []
 		DAC0_setting = []
 		DAC0_ADC = []
 		cell_ADC = []
@@ -334,6 +336,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				pass
 			else:
 				timelist.append(float(row[0]))
+				timesincebeginning.append(float(row[0])-starttime)
 				DAC0_setting.append(float(row[1]))
 				DAC0_ADC.append(float(row[2]))
 				cell_ADC.append(float(row[3]))
@@ -351,9 +354,12 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				setting.append(float(row[11]))
 				cell_ADCminusreference_electrode.append(float(row[14]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
-		if data["xaxis"] == "time":
+		if data["xaxis"] == "timesincebeginning":
+			data["xaxis"] = timesincebeginning
+			xlabel = "Time since beginning of log (s)"
+		elif data["xaxis"] == "time":
 			data["xaxis"] = timelist
-			xlabel = "Unix Time"
+			xlabel = "Unix Time (s)"
 		elif data["xaxis"] == "DAC0_setting":
 			data["xaxis"] = DAC0_setting
 			xlabel = "DAC Setting (V)"
@@ -387,9 +393,12 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		else:
 			data["xaxis"] = [0]
 			xlabel = "Unexpected error!"
-		if data["yaxis"] == "time":
+		if data["yaxis"] == "timesincebeginning":
+			data["yaxis"] = timesincebeginning
+			ylabel = "Time since beginning of log (s)"
+		elif data["yaxis"] == "time":
 			data["yaxis"] = timelist
-			ylabel = "Unix Time"
+			ylabel = "Unix Time (s)"
 		elif data["yaxis"] == "DAC0_setting":
 			data["yaxis"] = DAC0_setting
 			ylabel = "DAC Setting (V)"
