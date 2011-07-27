@@ -333,16 +333,19 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				DAC0_setting.append(float(row[1]))
 				DAC0_ADC.append(float(row[2]))
 				cell_ADC.append(float(row[3]))
-				resistance.append(float(row[5]))
+				try:
+					resistance.append(float(row[5]))
+				except:
+					resistance.append(None)
 				GND.append(float(row[6]))
 				try:
 					current.append(float(row[7]))
 				except:
-					current.append(False)
+					current.append(None)
 				try:
 					cell_resistance.append(float(row[8]))
 				except:
-					cell_resistance.append(False)
+					cell_resistance.append(None)
 				reference_electrode.append(float(row[9]))
 				setting.append(float(row[11]))
 				cell_ADCminusreference_electrode.append(float(row[14]))

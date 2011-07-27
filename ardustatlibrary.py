@@ -124,21 +124,28 @@ def resbasis(pot,id=None): #Returns the value in ohms for the givening potentiom
 			resdict = pickle.load(f)
 			f.close()
 			res = resdict[str(id)] #This variable stores the resistance data for the Ardustat with that specific ID number
-			message = message + "Calibration data found for id#"+str(id)
+			message = message + "\nCalibration data found for id#"+str(id)
 			calibrated = True
 		except: #If there's no resistance data
-			message = message + "Calibration data not found for id #"+str(id)
+			message = message + "\nCalibration data not found for id #"+str(id)
 			res = []
 			for i in range(256):
 				res.append(i/255.*10000 + 100)
 			calibrated = False
 	else:
-		message = message + "No ID # passed to this function. Using non-calibrated resistances."
+		message = message + "\nNo ID # passed to this function. Using non-calibrated resistances."
 		res = []
 		for i in range(256):
 			res.append(i/255.*10000 + 100)
 		calibrated = False
-	return {"success":True,"message":message,"resistance":res[pot],"calibrated":calibrated}
+	try:
+		res[pot]
+	except:
+		message = message + "\nPotentiometer setting "+str(pot)+" out of range (0-255)!"
+		print message.split("\n")[-1]
+		return {"success":False,"message":message,"resistance":False,"calibrated":calibrated}
+	else:
+		return {"success":True,"message":message,"resistance":res[pot],"calibrated":calibrated}
 
 def ocv(port):
 	message = ""
