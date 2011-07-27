@@ -181,7 +181,9 @@ height:1px;
 					  <input type="radio" name="constraint" value="xpointsconstraint">
 						View only the last <input type="text" name="xpoints"> points of data<br>
 					  <input type="radio" name="constraint" value ="timeconstraint">
-						View data from <input type="text" name="timeconstraint-l"> seconds to <input type="text" name="timeconstraint-r"> seconds<br>
+						View data from <input type="text" name="timeconstraint-l"> seconds to:<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="timeconstraintend" value="end" checked>the end of the data<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="timeconstraintend" value="number"><input type="text" name="timeconstraint-r"> seconds<br>
 					  <input type="radio" name="plotstyle" value="." checked> Don't connect data points<br>
 					  <input type="radio" name="plotstyle" value="-"> Connect data points<br>
                       <input type="submit" value="Submit"><br>
@@ -496,10 +498,11 @@ $(function() {
 								formxpoints = $form.find( 'input[name="xpoints"]' ).val(),
 								formtimeconstraintl = $form.find( 'input[name="timeconstraint-l"]' ).val(),
 								formtimeconstraintr = $form.find( 'input[name="timeconstraint-r"]' ).val(),
+								formtimeconstraintend = $form.find( 'input[name="timeconstraintend"]:checked' ).val(),
 								formplotstyle = $form.find( 'input[name="plotstyle"]:checked' ).val(),
 								formfilename = $form.find( 'select[name="filedropdown"]' ).val(),
                                 url = $form.attr( 'action' );
-                        $.post( url, { xaxis: formxaxis, yaxis:formyaxis, constraint:formconstraint, xpoints:formxpoints, timeconstraintl: formtimeconstraintl, timeconstraintr: formtimeconstraintr, plotstyle: formplotstyle, filename:formfilename },
+                        $.post( url, { xaxis: formxaxis, yaxis:formyaxis, constraint:formconstraint, xpoints:formxpoints, timeconstraintl: formtimeconstraintl, timeconstraintr: formtimeconstraintr, timeconstraintend: formtimeconstraintend, plotstyle: formplotstyle, filename:formfilename },
                           function( data ) {
                                   var thejson = $.parseJSON( data )
 								  var message = new String(thejson.message).replace(/\n/g,"<br>");

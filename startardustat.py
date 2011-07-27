@@ -458,10 +458,13 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 					if data["xaxis"][i] >= float(data["timeconstraintl"]): 
 						constraintl = i
 						break
-				for i in range(len(data["xaxis"])):
-					if data["xaxis"][i] >= float(data["timeconstraintr"]):
-						constraintr = i
-						break
+				if data["timeconstraintend"] == "number":
+					for i in range(len(data["xaxis"])):
+						if data["xaxis"][i] >= float(data["timeconstraintr"]):
+							constraintr = i
+							break
+				else:
+					constraintr = len(data["xaxis"]) - 1
 				if constraintl == "No Data" or constraintr == "No Data":
 					return json.dumps({"success":False,"message":"Those points do not match the data"})
 				data["xaxis"] = data["xaxis"][constraintl:constraintr]
