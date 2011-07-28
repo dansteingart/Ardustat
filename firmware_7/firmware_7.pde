@@ -17,6 +17,7 @@
 #define LED 2
 #define LEDGND 1
 #define CLPIN 5*/
+#include "C:\Users\Bala\Downloads\PID_v1.0.1\PID_v1\PID_v1.cpp"
 
 int adc;    //out of pot
 int dac;    //out of main dac
@@ -489,18 +490,40 @@ void potentiostat()
   adc = analogRead(0);
   dac = analogRead(1);
   int refelectrode = analogRead(3);
-  int diff_adc_ref = adc - refelectrode;
-  float err = setting - diff_adc_ref;  
-  int move = 0;
+  float err = setting - refelectrode;  
+  if ( abs ( err ) > 1 ){
+  int c = 0;
   for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
   lastData[10] = err;
+  double aKp=8,aKi=0.05,aKd=10; 
+  double in = err, out = refelectrode, s = setting;
+  for ( i = 1; i < 12; i++ )
+    if ( lastData[i]-lastData[i+1] < 7 )
+      c++;
+  if ( c > 5 ) in = err;
+  else if ( abs ( err ) < 30 )
+  {
+    PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
+    aPID.SetMode(AUTOMATIC);
+    aPID.SetTunings(aKp, aKi, aKd);  
+    aPID.compute();
+  }
+  else 
+  {
+    aKp=3,aKi=0.15,aKd=3;
+    PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
+    aPID.SetMode(AUTOMATIC);
+    aPID.SetTunings(aKp, aKi, aKd);  
+    aPID.compute();
+  }
   //PID
-  float p = 1*err;
+/*  float p = 1*err;
   float i = 0;
   float d = 0;
   move = int(p+i+d);
   outvolt = outvolt + move;
-
+*/
+  outvolt+=in;
   if (outvolt>1023)
   {
     res = res - (outvolt-1023)/1024.*255./2;
