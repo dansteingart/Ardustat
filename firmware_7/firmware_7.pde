@@ -17,7 +17,7 @@
 #define LED 2
 #define LEDGND 1
 #define CLPIN 5*/
-#include "C:\Users\Bala\Downloads\PID_v1.0.1\PID_v1\PID_v1.cpp"
+#include "PID_V1.cpp"
 
 int adc;    //out of pot
 int dac;    //out of main dac
@@ -497,24 +497,21 @@ void potentiostat()
   lastData[10] = err;
   double aKp=8,aKi=0.05,aKd=10; 
   double in = err, out = refelectrode, s = setting;
-  for ( i = 1; i < 12; i++ )
-    if ( lastData[i]-lastData[i+1] < 7 )
-      c++;
-  if ( c > 5 ) in = err;
+  for (int i = 1; i < 12; i++ )
+   if ( lastData[i]-lastData[i+1] < 7 && err > 5 )
+     c++;
+  if ( c > 7 ) { s+=abs(err);
+  PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
+  aPID.SetMode(AUTOMATIC);
+  aPID.SetTunings(aKp, aKi, aKd);  
+  aPID.Compute();
+  }
   else if ( abs ( err ) < 30 )
   {
     PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
     aPID.SetMode(AUTOMATIC);
     aPID.SetTunings(aKp, aKi, aKd);  
-    aPID.compute();
-  }
-  else 
-  {
-    aKp=3,aKi=0.15,aKd=3;
-    PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
-    aPID.SetMode(AUTOMATIC);
-    aPID.SetTunings(aKp, aKi, aKd);  
-    aPID.compute();
+    aPID.Compute();
   }
   //PID
 /*  float p = 1*err;
@@ -534,61 +531,11 @@ void potentiostat()
     res = res+(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
     outvolt = 20;
     //res = res - res/6;
-    if (res<0) res=0;
-  }
-  if (abs(outvolt-diff_adc_ref)<100){
-    res = res + abs(outvolt-diff_adc_ref)/10.;
-    if (res>255) res = 255;
+    if (res>255) res=255;
   }
   write_pot(0,resistance1,res);
   send_dac(0,outvolt);
-
-  /* //if potential is too high
-  if ((diff_adc_ref > setting) && (outvolt > 0))
-  {
-    move = gainer(diff_adc_ref,setting);
-    outvolt=outvolt-move;
-    write_dac(0,outvolt);
-
   }
-
-  //if potential is too low
-  else if ((diff_adc_ref < setting) && (outvolt < 1023))
-  {
-    move = gainer(diff_adc_ref,setting);
-    outvolt=outvolt+move;
-    write_dac(0,outvolt);
-  }
-
-  // if range is limited decrease R
-  if ((outvolt > 1022) && (res > 0))
-  {
-    outvolt = 1000;
-    write_dac(0,outvolt);
-    resmove = resgainer(adc,setting);
-    res = res - resmove;
-    write_pot(pot,resistance1,res);
-
-  }
-  else if ((outvolt < 1) && (res > 0))
-  {
-    outvolt = 23;
-    write_dac(0,outvolt);
-    resmove = resgainer(adc,setting);
-    res = res - resmove;
-    write_pot(pot,resistance1,res);
-    delay(waiter);
-  }
-
-  //if range is truncated increase R
-  int dude = abs(dac-adc);
-  if ((dude < 100) && (res < 255))
-  {
-    res = res+1;
-    write_pot(pot,resistance1,res);
-    delay(waiter);
-  }*/
-
 }
 
 void galvanostat()
