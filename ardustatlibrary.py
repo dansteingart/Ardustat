@@ -107,7 +107,7 @@ def connecttosocket(port):
 		return {"success":True,"socket":thesocket}
 
 def socketwrite(socketinstance,message,id=None):
-	for i in range(5):
+	for i in range(1):
 		socketinstance.send(message+"\n")
 		time.sleep(0.05)
 	return {"success":True}
@@ -166,7 +166,9 @@ def ocv(port):
 	message = ""
 	socketresult = connecttosocket(port)
 	if socketresult["success"] == False: return {"success":False,"message":socketresult["message"]}
-	socketwrite(socketresult["socket"],"-0000")
+	else:
+		socketwrite(socketresult["socket"],"-0000")
+		return {"success":True,"message":"Set to OCV"}
 
 def setResistance(resistance,port,id=None):
 	message = ""

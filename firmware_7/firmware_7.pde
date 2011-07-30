@@ -1,3 +1,4 @@
+#include "PID.h"
 #define DATAOUT 11//MOSI
 #define DATAIN 12//MISO - not used, but part of builtin SPI
 #define SPICLOCK  13//sck
@@ -17,7 +18,6 @@
 #define LED 2
 #define LEDGND 1
 #define CLPIN 5*/
-#include "PID_V1.cpp"
 
 int adc;    //out of pot
 int dac;    //out of main dac
