@@ -44,7 +44,6 @@ config.read("ardustatrc.txt")
 
 portconstant = int(config.get("values","portconstant"))
 enabledebugging = config.get("values","enabledebugging")
-baudrate = int(config.get("values","baudrate"))
 if enabledebugging == "True": enabledebugging = True
 else: enabledebugging = False
 
