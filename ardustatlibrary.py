@@ -12,6 +12,7 @@ else: enabledebugging = False
 verbosemode = config.get("values","verbosemode")
 if verbosemode == "True": verbosemode = True
 else: verbosemode = False
+baudrate = int(config.get("values","baudrate"))
 
 def isArdustat(port): #Tests whether an ardustat is connected to a given port
 	message = ""
@@ -74,7 +75,7 @@ def connecttoardustat(serialport,id,autoconnect=True):
 		else:
 			return {"success":False,"message":"Couldn't find serial port to autoconnect to. guessUSB() returned:"+result["message"]}
 	try:
-		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(portconstant+id),"-b","57600"])
+		serialforwarderprocess = subprocess.Popen([pycommand,"tcp_serial_redirect.py","-p",serialport,"-P",str(portconstant+id),"-b",str(baudrate)])
 	except:
 		if enabledebugging == True: raise
 		return {"success":False,"message":"Unexpected error starting serialforwarder.py."}
@@ -92,7 +93,7 @@ def connecttoardustat(serialport,id,autoconnect=True):
 		else:
 			return {"success":True,"message":"Started to open ardustat on port "+serialport+". guessUSB() returned:"+result["message"]}
 
-def connecttosocket(port):
+def connecttosocket(port): #Input: an integer port number. Output: a dictionary containing whether the connection was successful "success" and an connected socket instance "socket"
 	message = ""
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
@@ -106,13 +107,18 @@ def connecttosocket(port):
 	else:
 		return {"success":True,"socket":thesocket}
 
-def socketwrite(socketinstance,message,id=None):
+def socketwrite(socketinstance,message,id=None): #Input: any connected socket instance.
 	for i in range(1):
 		socketinstance.send(message+"\n")
 		time.sleep(0.05)
 	return {"success":True}
 
-def socketread(socketinstance):
+def socketread(socketinstance): #Input: any connected socket instance. Sends "s0000," then reads and concatenates lines until it gets a "ST\r\n".
+#Note: The reason that we do this is that the tcp_serial_forwarder.py will sometimes send broken up lines like:
+#GO
+#,1037,
+#311,972,0,714,3,s0000,29,0,510,ST
+#Without the "while" loop, this function would just return "GO" without concatenating all of these together.
 	socketinstance.send("s0000\n")
 	time.sleep(0.01)
 	a = ""
@@ -348,7 +354,7 @@ def calibrate(resistance,port,id): #Since the actual resistances for digital pot
 		return {"success":True,"message":message}
 	f.close()
 
-def begindatalog(filename,port,id):
+def begindatalog(filename,port,id): #Open "log" function in new process, save process ID in pickle
 	try:
 		ardustatloggerprocess = subprocess.Popen([pycommand,"ardustatlogger.py",filename,str(port),str(id)])
 	except:
@@ -482,12 +488,14 @@ def ask(port, id=None):
 	printstring += ' V\nDAC 0 reading..............(ADC 1): ' + str(p["DAC0_ADC"])  
 	printstring += ' V\nCell Voltage reading.......(ADC 0): ' + str(p["cell_ADC"]) 
 	printstring += ' V\nResistor arduino setting..........: ' + str(p["resistance"]) 
-	printstring += ' Ohm\nCurrent calculation...............: ' + str(p["current"]) 
-	printstring += ' A\nCell resistance calculation.......: ' + str(p["cell_resistance"]) 
+	printstring += ' Ohm\nCurrent calculation...............: ' + str(p["current"])
+	printstring += ' A\nGalvanostat/Potentiostat Setting..: ' + str(p["setting"])
+	printstring += '\nCell resistance calculation.......: ' + str(p["cell_resistance"]) 
 	printstring += ' Ohm\nGND reading................(ADC 2): ' + str(p["GND"]) 
-	printstring += " V\nReference electrode reading(ADC 3): " + str(p["reference_electrode"]) 
-	printstring += " V\nVoltage reference value....(ADC 5): " + str(p["ref"]) 
-	printstring += " \nMode..............................: " +str(p["mode"])
+	printstring += " V\nReference electrode reading(ADC 3): " + str(p["reference_electrode"])
+	printstring += " V\nCell Voltage - Reference Electrode: " + str(p["cell_ADC-reference_electrode"]) 
+	printstring += " V\nVoltage reference value....(ADC 5): " + str(p["ref"])
+	printstring += "\nMode..............................: " +str(p["mode"])
 	printstring += "\nLast command sent.................: " + str(p["last_command"]) 
 	printstring += "\nRaw data: " + str(p["raw"]).replace("\n","")
 	printstring += "\nCalibrated: " + str(p["calibration"])

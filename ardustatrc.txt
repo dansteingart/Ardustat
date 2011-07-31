@@ -13,3 +13,6 @@ enabledebugging: False
 
 #If verbose mode is enabled, then functions print out everything that they are doing to the console. If not, they don't print debug messages.
 verbosemode: False
+
+#Baud rate of arduino
+baudrate: 57600

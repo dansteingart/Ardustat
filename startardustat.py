@@ -12,6 +12,7 @@ import time
 #We don't use templates because web.py's templating language conflicts with jquery
 #We communicate with the HTML/Javascript page using JSON objects, which are like python dictionaries except in string form; conversion to/from json format is as simple as using json.dumps(<dictionary>)/json.loads(<dictionary>).
 
+    #Standard functions:
 urls = ('/galvanostat',	'galvanostat',
 	'/potentiostat',	'potentiostat',
 	'/raiseground',		'raiseground',
@@ -43,6 +44,7 @@ config.read("ardustatrc.txt")
 
 portconstant = int(config.get("values","portconstant"))
 enabledebugging = config.get("values","enabledebugging")
+baudrate = int(config.get("values","baudrate"))
 if enabledebugging == "True": enabledebugging = True
 else: enabledebugging = False
 
