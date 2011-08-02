@@ -68,7 +68,7 @@ boolean ocv = true;
 boolean cv = false;
 int dactoset = 0;
 int setting = 0;
-int speed = 100;
+int speed = 1;
 int countto = 0;
 byte clr;
 
@@ -491,7 +491,7 @@ void potentiostat()
   dac = analogRead(1);
   int refelectrode = analogRead(3);
   float err = setting - refelectrode;  
-  if ( abs ( err ) > 1 ){
+  if ( abs ( err ) > 2 ){
   int c = 0;
   for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
   lastData[10] = err;
@@ -523,12 +523,12 @@ void potentiostat()
   outvolt+=in;
   if (outvolt>1023)
   {
-    res = res - (outvolt-1023)/1024.*255./2;
+    res = res - (outvolt-1023)/1023*255/2;
     outvolt = 1023;
     //res = res-res/6;
     if (res<0) res=0;
   }else if (outvolt<0){
-    res = res+(outvolt+(lastData[10]-lastData[9]))/1024.*255.;
+    res = res+(outvolt+(lastData[10]-lastData[9]))/1023*255;
     outvolt = 20;
     //res = res - res/6;
     if (res>255) res=255;
