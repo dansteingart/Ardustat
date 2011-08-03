@@ -7,7 +7,7 @@ Authors:
 - Dan Steingart <dan.steingart@gmail.com>
 - Balasubramanian Anantharaman <balaanantharaman@gmail.com>
 - Rigers Qeraj <rigersqeraj@gmail.com>
-- Susan Tan <onceuponatimeforever@gmail.com >
+- Susan Tan <onceuponatimeforever@gmail.com>
 
 ###Installation:
 ####Software that you need to have installed to use the ardustat:
