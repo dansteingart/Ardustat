@@ -307,7 +307,7 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 	def GET(self): #If it's a "get", just return the image
 		web.header("Content-Type", "images/png")
 		return open("image.png","rb").read()
-	
+
 	def POST(self): #If it's a "post", generate the image and return a string saying what the function plotted
 		data = webdotpyparselib.webdataintodict(webdotpyparselib.webdataintoascii(web.data()))
 		f = open(data["filename"], "r") #ALSO VERY INSECURE
@@ -329,6 +329,8 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		reference_electrode = []
 		setting = []
 		cell_ADCminusreference_electrode = []
+		value_v_ref = []
+		value_cell_voltage = []
 		for row in csvfile:
 			try:
 				float(row[0])
@@ -339,6 +341,8 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				float(row[9])
 				float(row[11])
 				float(row[14])
+				float(row[15])
+				float(row[16])
 			except:
 				pass
 			else:
@@ -363,6 +367,8 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 				reference_electrode.append(float(row[9]))
 				setting.append(float(row[11]))
 				cell_ADCminusreference_electrode.append(float(row[14]))
+				value_v_ref.append(float(row[15]))
+				value_cell_voltage.append(float(row[16]))
 		#We need to do this so that only certain values can be passed to pylab.plot, otherwise there is arbitrary code execution
 		if data["xaxis"] == "timesincebeginning":
 			data["xaxis"] = timesincebeginning
@@ -400,6 +406,12 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		elif data["xaxis"] == "cell_ADC-reference_electrode":
 			data["xaxis"] = cell_ADCminusreference_electrode
 			xlabel = "Cell Voltage Measurement - Reference Electrode (V)"
+		elif data["xaxis"] == "value_v_ref" :
+			data["xaxis"] = value_v_ref
+			xlabel = "Value_V_ref(V)"
+		elif data["xaxis"] == "value_cell_potential" :
+			data["xaxis"] = value_cell_potential
+			xlabel = "Value_Cell_Potential(V)"
 		else:
 			data["xaxis"] = [0]
 			xlabel = "Unexpected error!"
@@ -439,6 +451,12 @@ class generateimage: #Generate a graph for input in the parsed data csv file
 		elif data["yaxis"] == "cell_ADC-reference_electrode":
 			data["yaxis"] = cell_ADCminusreference_electrode
 			ylabel = "Cell Voltage Measurement - Reference Electrode (V)"
+		elif data["yaxis"] == "value_v_ref" :
+			data["yaxis"] = value_v_ref
+			ylabel = "Value_V_ref(V)"
+		elif data["yaxis"] == "value_cell_potential" :
+			data["yaxis"] = value_cell_potential
+			ylabel = "Value_Cell_Potential(V)"
 		else:
 			data["yaxis"] = [0]
 			ylabel = "Unexpected error!"

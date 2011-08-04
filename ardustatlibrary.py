@@ -430,13 +430,13 @@ def log(filename,port,id): #This is the actual logging function
 				print message.split("\n")[-1]
 				if initfileio == True:
 					rawdatafile.write("Unix Time,Data Start Marker,DAC setting,Cell Voltage (ADC 0),DAC Measurement (ADC 1),DVR Setting,Output Setting Value,Mode,Last Command,GND Measurement,Reference Electrode,Reference Voltage,Data Stop Marker\n")
-					parseddatafile.write("Unix Time,DAC 0 Setting (V),DAC 0 Reading (ADC 1) (V),Cell Voltage (ADC 0) (V),Potentiometer Setting (0-255),Potentiometer Setting (Ohms),GND Reading (ADC 2) (V),Current Calculation (A),Cell Resistance Calculation (Ohms),Reference Electrode Reading (ADC 3) (V),Mode,Setting (V),Last Command Received,Calibrated,Cell Voltage Reading - Reference Electrode Reading (V)\n")
+					parseddatafile.write("Unix Time,DAC 0 Setting (V),DAC 0 Reading (ADC 1) (V),Cell Voltage (ADC 0) (V),Potentiometer Setting (0-255),Potentiometer Setting (Ohms),GND Reading (ADC 2) (V),Current Calculation (A),Cell Resistance Calculation (Ohms),Reference Electrode Reading (ADC 3) (V),Mode,Setting (V),Last Command Received,Calibrated,Cell Voltage Reading - Reference Electrode Reading (V),Value_v_ref (V),Value_cell_voltage (V)\n")
 				initfileio = False
 
 			try:
 				rawdatafile.write(str(parsedict["time"])+","+line.replace("\0","")+"\n") #Tack on the unix time to the beginning of the raw data, clean it up, and record it
 				d = lambda x: str(parsedict[x])+"," #Convert dictionary items to CSV format
-				parsestring = d("time")+d("DAC0_setting")+d("DAC0_ADC")+d("cell_ADC")+d("pot_step")+d("resistance")+d("GND")+d("current")+d("cell_resistance")+d("reference_electrode")+d("mode")+d("setting")+d("last_command").replace("\0","")+d("calibration")+d("cell_ADC-reference_electrode")[:-1]+"\n"
+				parsestring = d("time")+d("DAC0_setting")+d("DAC0_ADC")+d("cell_ADC")+d("pot_step")+d("resistance")+d("GND")+d("current")+d("cell_resistance")+d("reference_electrode")+d("mode")+d("setting")+d("last_command").replace("\0","")+d("calibration")+d("cell_ADCminusreference_electrode")[:-1]+d("value_v_ref")+d("value_cell_voltage")+"\n"
 				parseddatafile.write(parsestring)
 				if parsedict["calibration"] == False and calibratecheck == True: #Nag the user to calibrate only once if their ardustat isn't calibrated
 					message = message + "\nWarning: Your ardustat is not calibrated. This can lead to highly inaccurate data! Please calibrate your ardustat."
@@ -560,6 +560,9 @@ def parse(reading,id=None):
 		outdict['last_command'] = parts[7]
 		outdict['calibration'] = resbasis(outdict['pot_step'],id)["calibrated"]
 		outdict['cell_ADC-reference_electrode'] = outdict['cell_ADC']-outdict['reference_electrode']
+		outdict['value_v_ref'] = outdict['cell_ADC']-outdict['reference_electrode']
+		outdict['value_cell_voltage'] = outdict['cell_ADC']-outdict['GND']
+		
 	else:
 		outdict['success'] = False
 	return outdict

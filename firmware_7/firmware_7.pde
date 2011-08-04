@@ -44,7 +44,7 @@ int counter = 0;
 int sign = 1;
 int waiter = 0;
 int mode = 1;  //tells computer what's what
-int pMode = 0; //saved variable to remember if the last mode was pstat or not
+int pMode = 0,nMode=0; //saved variable to remember if the last mode was pstat or not
 int lastData[10]; //previous error values for use in pstat's PID algorithm
 int dacrun;
 int adcrun;
@@ -63,12 +63,12 @@ int output;
 boolean whocares = false;
 boolean positive = false;
 boolean gstat = false;
-boolean pstat = false;
+boolean pstat = false,nstat = false;
 boolean ocv = true;
 boolean cv = false;
 int dactoset = 0;
 int setting = 0;
-int speed = 1;
+int speed = 2;
 int countto = 0;
 byte clr;
 
@@ -134,11 +134,12 @@ void loop()
     holdString[4] = serInString[4];
 
     //try to print out collected information. it will do it only if there actually is some info.
-    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100 || serInString[0] == 88)
+    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 || serInString[0] == 110 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100 || serInString[0] == 88)
     {
       if (serInString[0] == 43) positive = true; //"+"
       else if (serInString[0] == 45) positive = false; //"-"
       pstat = false;
+      nstat = false;
       if (serInString[0] != 114) gstat = false;
       dactest = false;
       rtest = false;
@@ -153,6 +154,9 @@ void loop()
       {
         pMode = 0;
       }
+      
+      if (serInString[0] != 110 ) //"n"
+        nMode = 0;
       
       if (serInString[0] == 43) //"+"
       {
@@ -259,6 +263,18 @@ void loop()
         send_dac(dactoset,outvolt);
         digitalWrite(RELAYPIN,HIGH);
       }
+      if ( serInString[0] == 110 ) //"n"
+      {
+        if (nMode == 0)
+        {
+          dacon();
+        }
+        nstat = true;
+        nMode = 1;
+        setting = out;
+        digitalWrite(RELAYPIN,HIGH);
+        send_dac(1,setting);
+    }
     }
 
     else if (serInString[0] == 32) //Space
@@ -484,6 +500,61 @@ int resgainer(int whatitis, int whatitshouldbe)
       return move;
 } 
 
+void npotentiostat()
+{
+  //read in values
+  adc = analogRead(0);
+  int dac_2 = analogRead(2);
+  int ref = analogRead(3);
+  double dac = adc-dac_2, refelectrode = adc-ref;
+  float err = setting - refelectrode;  
+  if ( abs ( err ) > 2 ){
+  int c = 0;
+  for (int i=2;i<=11;i++) lastData[i-1]=lastData[i];
+  lastData[10] = err;
+  double aKp=8,aKi=0.05,aKd=10; 
+  double in = err, out = refelectrode, s = setting;
+  for (int i = 1; i < 12; i++ )
+   if ( lastData[i]-lastData[i+1] < 7 && abs(err) > 5 )
+     c++;
+  if ( c > 7 ) { s+=abs(err);
+  PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
+  aPID.SetMode(AUTOMATIC);
+  aPID.SetTunings(aKp, aKi, aKd);  
+  aPID.Compute();
+  }
+  else if ( abs ( err ) < 20 )
+  {
+    PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
+    aPID.SetMode(AUTOMATIC);
+    aPID.SetTunings(aKp, aKi, aKd);  
+    aPID.Compute();
+  }
+  //PID
+/*  float p = 1*err;
+  float i = 0;
+  float d = 0;
+  move = int(p+i+d);
+  outvolt = outvolt + move;
+*/
+  outvolt+=in;
+  if (outvolt>1023)
+  {
+    res = res - (outvolt-1023)/1023*255/2;
+    outvolt = 1023;
+    //res = res-res/6;
+    if (res<0) res=0;
+  }else if (outvolt<0){
+    res = res+(outvolt+(lastData[10]-lastData[9]))/1023*255;
+    outvolt = 20;
+    //res = res - res/6;
+    if (res>255) res=255;
+  }
+  write_pot(0,resistance1,res);
+  send_dac(0,outvolt);
+  }
+}
+
 void potentiostat()
 {
   //read in values
@@ -498,7 +569,7 @@ void potentiostat()
   double aKp=8,aKi=0.05,aKd=10; 
   double in = err, out = refelectrode, s = setting;
   for (int i = 1; i < 12; i++ )
-   if ( lastData[i]-lastData[i+1] < 7 && err > 5 )
+   if ( lastData[i]-lastData[i+1] < 7 && abs(err) > 5 )
      c++;
   if ( c > 7 ) { s+=abs(err);
   PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
@@ -506,7 +577,7 @@ void potentiostat()
   aPID.SetTunings(aKp, aKi, aKd);  
   aPID.Compute();
   }
-  else if ( abs ( err ) < 30 )
+  else if ( abs ( err ) < 20 )
   {
     PID aPID(&in,&out,&s,aKp,aKi,aKd,DIRECT);
     aPID.SetMode(AUTOMATIC);
