@@ -160,10 +160,10 @@ class Redirector:
         self.thread_read.start()
 		
 		#Set up a logging thread which checks the 
-        self.thread_log = threading.Thread(target=self.logger)
-        self.thread_log.setDaemon(True)
-        self.thread_log.setName('serial->logger')
-        self.thread_log.start()
+        #self.thread_log = threading.Thread(target=self.logger)
+        #self.thread_log.setDaemon(True)
+        #self.thread_log.setName('serial->logger')
+        #self.thread_log.start()
         
 #        self.logger()
         
