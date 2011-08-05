@@ -9,16 +9,15 @@ print connresult
 socketinstance = connresult["socket"]
 
 print ard.ocv(the_socket)
-for i in range(0,10):
-	time.sleep(.3)
-	print ard.socketread(socketinstance)
-
+print ard.socketread(socketinstance)
+time.sleep(3)
 print ard.potentiostat(2,the_socket)
-for i in range(0,10):
-	time.sleep(.3)
-	print ard.socketread(socketinstance)
-
+print ard.socketread(socketinstance)
+print ard.ocv(the_socket)
+print ard.socketread(socketinstance)
+time.sleep(3)
 print ard.potentiostat(1,the_socket)
-for i in range(0,10):
-	time.sleep(.3)
-	print ard.socketread(socketinstance)
+print ard.socketread(socketinstance)
+
+
+
