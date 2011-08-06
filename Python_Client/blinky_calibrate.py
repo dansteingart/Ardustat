@@ -12,7 +12,7 @@ for a in range(0,5):
 	ard.blink(the_socket)
 	time.sleep(.2)
 
-print ard.calibrate(9999,7777,7)
+print ard.calibrate(9999,7777,5)
 
 for a in range(0,5):
 	ard.blink(the_socket)
