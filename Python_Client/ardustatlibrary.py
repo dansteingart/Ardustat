@@ -93,7 +93,8 @@ def connecttoardustat(serialport,id,autoconnect=True):
 		else:
 			return {"success":True,"message":"Started to open ardustat on port "+serialport+". guessUSB() returned:"+result["message"]}
 
-def connecttosocket(port): #Input: an integer port number. Output: a dictionary containing whether the connection was successful "success" and an connected socket instance "socket"
+def connecttosocket(port): 
+	"""Input: an integer port number. Output: a dictionary containing whether the connection was successful "success" and an connected socket instance "socket" """
 	message = ""
 	thesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:

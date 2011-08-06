@@ -155,7 +155,7 @@ void loop()
         outvolt = out;
         send_dac(1,outvolt);
         digitalWrite(3,HIGH);
-        speed = 5;
+        speed = 1;
         countto = 10;
       }
       if (serInString[0] == 45)
@@ -400,7 +400,7 @@ void flushSerialString(char *strArray) {
 void readSerialString (char *strArray) {
   int i = 0;
   if(Serial.available()) {
-    //Serial.println("    ");  //optional: for confirmation
+    Serial.println("    ");  //optional: for confirmation
     while (Serial.available()){
       strArray[i] = Serial.read();
       i++;
@@ -712,3 +712,4 @@ byte readWiper()
   }
   digitalWrite(SLAVESELECTP,HIGH);
 }
+

@@ -1,9 +1,9 @@
 from pylab import *
-import ardustatlibrary as ard
+import ardustat_library_simple as ard
 import time
-the_socket = 7777
 
-connresult = ard.connecttosocket(the_socket)
+a = ard.ardustat()
+a.connect(7777)
 
 
 times = []
@@ -11,33 +11,33 @@ potential = []
 current = []
 time_start = time.time()
 def appender(reading):
+	print reading['cell_ADC'],read['current']
 	potential.append(reading['cell_ADC'])
 	current.append(reading['current'])
 	times.append(time.time()-time_start)
 
-print connresult
 
-socketinstance = connresult["socket"]
 
-print ard.ocv(the_socket)
+output = 0
+
+print a.ocv()
 for i in range(0,10):
 	time.sleep(.1)
-	read = ard.parse(ard.socketread(socketinstance)['reading'])
-	print read
-	appender(read)
-	
-print ard.potentiostat(2,the_socket)
-for i in range(0,10):
-	time.sleep(.1)
-	read = ard.parse(ard.socketread(socketinstance)['reading'])
-	print read
+	read = a.parsedread()
 	appender(read)
 
-print ard.potentiostat(1,the_socket)
+while output < 1:
+	output = output + .1
+	print a.potentiostat(output)
+	for i in range(0,5):
+		time.sleep(.1)
+		read = a.parsedread()
+		appender(read)
+
+print a.ocv()
 for i in range(0,10):
 	time.sleep(.1)
-	read = ard.parse(ard.socketread(socketinstance)['reading'])
-	print read
+	read = a.parsedread()
 	appender(read)
 
 
