@@ -1,11 +1,15 @@
 from pylab import *
+import numpy
 import ardustat_library_simple as ard
 import time
 
+#connecto to ardustat and setup resistance table
 a = ard.ardustat()
 a.connect(7777)
+a.debug = False
+a.load_resistance_table(16)
 
-
+#create arrays + a function for logging data
 times = []
 potential = []
 current = []
@@ -17,23 +21,21 @@ def appender(reading):
 	times.append(time.time()-time_start)
 
 
-
+#Step through values
 output = 0
-
 print a.ocv()
 for i in range(0,10):
 	time.sleep(.1)
 	read = a.parsedread()
 	appender(read)
 
-while output < 1:
+while output < 2:
 	output = output + .1
 	print a.potentiostat(output)
-	for i in range(0,5):
+	for i in range(0,3):
 		time.sleep(.1)
 		read = a.parsedread()
 		appender(read)
-
 print a.ocv()
 for i in range(0,10):
 	time.sleep(.1)
@@ -41,8 +43,19 @@ for i in range(0,10):
 	appender(read)
 
 
-subplot(2,1,1)
-plot(times,potential)
-subplot(2,1,2)
-plot(times,current)
+#Make sure everything plots out realistically 
+subplot(3,1,1)
+plot(times,potential,'.')
+title("Potential vs. Time")
+ylabel("Potential (V)")
+
+subplot(3,1,2)
+plot(times,current,'.')
+title("Current vs. Time")
+ylabel("Current (A)")
+subplot(3,1,3)
+plot(times,numpy.array(potential)/numpy.array(current))
+title("Resistance vs. Time")
+ylabel("Resistance (Ohms)")
+xlabel("Time (s)")
 show()

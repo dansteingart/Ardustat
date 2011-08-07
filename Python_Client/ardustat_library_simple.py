@@ -1,6 +1,7 @@
 import serial 
 import socket
 import glob
+import pickle
 from time import sleep,time
 
 class ardustat:
@@ -9,6 +10,7 @@ class ardustat:
 		self.ser = serial.Serial()
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.mode = "socket"
+		self.debug = False
 
 	def findPorts(self):
 		"""A commands to find possible ardustat ports with no Arguments, """
@@ -49,6 +51,47 @@ class ardustat:
 				a += self.s.recv(1024)
 				if a.find("ST\r\n") > 1: return a.strip()
 
+	def solve_for_r(self,input_r,v_in,v_out):
+		return input_r*((v_in/v_out)-1)
+
+	def load_resistance_table(self,id):
+		self.res_table =  pickle.load(open("unit_"+str(id)+".pickle"))
+		if self.debug: print self.res_table
+		self.id = id
+
+	def calibrate(self,known_r,id):
+		"""Runs a calibration by setting the resistance against a known resistor and solving the voltage divider equation.  Cycles through all possible resistances"""
+		
+		#Make a Big List of Correlations
+		ressers = []
+		self.rawwrite("R")
+		sleep(.1)
+		self.rawwrite("r0001")		
+		for i in range(0,10):
+			for y in range(0,255):
+				self.rawwrite("r"+str(y).rjust(4,"0"))
+				sleep(.05)
+				values = self.parsedread()
+				solved_r = self.solve_for_r(known_r,values['DAC0_ADC'],values['cell_ADC'])
+				print values['pot_step'], solved_r
+				ressers.append([int(values['pot_step']), solved_r])
+		self.ocv()
+		
+		#Make a Big List of Correlations
+		big_dict = {}
+		for r in ressers:
+			try:
+				big_dict[r[0]].append(r[1])
+			except:
+				big_dict[r[0]] = []
+				big_dict[r[0]].append(r[1])
+				
+		#Find Values
+		final_dict = {}
+		for b in big_dict.keys():
+			final_dict[b] = [sum(big_dict[b])/len(big_dict[b]),(max(big_dict[b])-min(big_dict[b]))/2.0]
+		pickle.dump(final_dict,open("unit_"+str(id)+".pickle","w"))
+		return final_dict
 	
 	def parsedread(self):
 		return self.parseline(self.rawread())
@@ -92,7 +135,12 @@ class ardustat:
 			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])
 			outdict['pot_step'] = parts[4]
-			outdict['res'] = self.resbasis(outdict['pot_step'],10000.0)
+			##Try to read from the res_table, otherwise make the dangerous assumption
+			try:
+				outdict['res'] = self.res_table[int(outdict['pot_step'])][0]
+			except Exception, err:
+				if self.debug: print err
+				outdict['res'] = self.resbasis(outdict['pot_step'],10000.0)
 			outdict['current'] = (float(outdict['DAC0_ADC'])-float(outdict['cell_ADC']))/outdict['res']			
 		else:
 			outdict['valid'] = False
