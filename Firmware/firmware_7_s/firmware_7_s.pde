@@ -220,6 +220,8 @@ void loop()
 
         setting = out;
         outvolt = analogRead(0)+(sign*out);
+        if (outvolt > 1023) outvolt = 1023;
+        if (outvolt < 0) outvolt = 0;
         write_dac(0,outvolt);
 
         digitalWrite(3,HIGH);

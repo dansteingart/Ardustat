@@ -58,7 +58,7 @@ class ardustat:
 		"""Tries to pick the ideal resistance and sets a current difference"""
 		#V = I R -> I = delta V / R
 		#goal -> delta V = .2 V
-		R_goal = .3 / current
+		R_goal = .1 / current
 		R_real = 10000
 		R_set = 0
 		err = 1000
@@ -70,9 +70,11 @@ class ardustat:
 				R_real = self.res_table[d][0]
 		#Solve for real delta V
 		delta_V = abs(current*R_real)
+		if self.debug: print delta_V,R_real
 		potential = str(int(1023*(delta_V/5.0))).rjust(4,"0")
 		if current < 0:
-			potential[0] = "2"
+			potential = str(int(potential)+2000)
+		if self.debug: print "gstat setting:", potential
 		#Write!
 		self.rawwrite("r"+str(R_set).rjust(4,"0"))
 		sleep(.1)
