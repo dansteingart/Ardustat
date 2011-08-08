@@ -13,8 +13,9 @@ Authors:
 ####Software that you need to have installed to use the ardustat:
 - Arduino (http://arduino.cc/en/Main/Software)
 - FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
-- Web.py PySerial, and matplotlib libraries. These can all be installed using easy_install (http://pypi.python.org/pypi/setuptools).
-All of these tools are cross-platform and should work on Mac OS X, Windows 2000 and up, and most Linux distributions.
+- The [enthought python distribution](http://www.enthought.com/products/epd_free.php) (free version works well)
+   - You'll also need to easy_install pyserial (required) and web.py (optional) 
+   - All of these tools are cross-platform and should work on Mac OS X, Windows 2000 and up, and most Linux distributions.
 
 ####Initial Setup:
 - Attach your ardustat shield to your arduino
