@@ -53,6 +53,32 @@ class ardustat:
 
 	def solve_for_r(self,input_r,v_in,v_out):
 		return input_r*((v_in/v_out)-1)
+		
+	def galvanostat(self,current):
+		"""Tries to pick the ideal resistance and sets a current difference"""
+		#V = I R -> I = delta V / R
+		#goal -> delta V = .2 V
+		R_goal = .3 / current
+		R_real = 10000
+		R_set = 0
+		err = 1000
+		for d in self.res_table:
+			this_err = abs(self.res_table[d][0]-R_goal)
+			if this_err < err:
+				err = this_err
+				R_set = d
+				R_real = self.res_table[d][0]
+		#Solve for real delta V
+		delta_V = abs(current*R_real)
+		potential = str(int(1023*(delta_V/5.0))).rjust(4,"0")
+		if current < 0:
+			potential[0] = "2"
+		#Write!
+		self.rawwrite("r"+str(R_set).rjust(4,"0"))
+		sleep(.1)
+		self.rawwrite("g"+str(potential))
+		
+		
 
 	def load_resistance_table(self,id):
 		self.res_table =  pickle.load(open("unit_"+str(id)+".pickle"))

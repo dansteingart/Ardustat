@@ -41,6 +41,22 @@ for i in range(0,10):
 	time.sleep(.1)
 	read = a.parsedread()
 	appender(read)
+	
+output = 0
+while output < .001:
+	output = output + .0001
+	a.galvanostat(output)
+	for i in range(0,3):
+		time.sleep(.1)
+		read = a.parsedread()
+		appender(read)
+
+print a.ocv()
+for i in range(0,10):
+	time.sleep(.1)
+	read = a.parsedread()
+	appender(read)
+
 
 
 #Make sure everything plots out realistically 
