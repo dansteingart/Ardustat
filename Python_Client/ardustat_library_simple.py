@@ -100,9 +100,12 @@ class ardustat:
 				self.rawwrite("r"+str(y).rjust(4,"0"))
 				sleep(.05)
 				values = self.parsedread()
-				solved_r = self.solve_for_r(known_r,values['DAC0_ADC'],values['cell_ADC'])
-				print values['pot_step'], solved_r
-				ressers.append([int(values['pot_step']), solved_r])
+				if values['valid']:
+					solved_r = self.solve_for_r(known_r,values['DAC0_ADC'],values['cell_ADC'])
+					print values['pot_step'], solved_r
+					ressers.append([int(values['pot_step']), solved_r])
+				else: print "bad read"
+					
 		self.ocv()
 		
 		#Make a Big List of Correlations

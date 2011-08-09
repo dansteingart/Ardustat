@@ -26,10 +26,13 @@ time_start = time.time()
 cycle = 0
 file_name = file_name+"_"+str(int(time_start))+".dat"
 def appender(reading):
-	print reading['cell_ADC'],read['current']
-	tdiff = str(time.time()-time_start)
-	out = tdiff+","+str(reading['cell_ADC'])+","+str(read['current'])+","+str(cycle)+"\n"
-	open(file_name,"a").write(out)
+	if reading['valid']:
+		print reading['cell_ADC'],read['current']
+		tdiff = str(time.time()-time_start)
+		out = tdiff+","+str(reading['cell_ADC'])+","+str(read['current'])+","+str(cycle)+"\n"
+		open(file_name,"a").write(out)
+	else:
+		print "bad read"
 
 
 #Step through values
