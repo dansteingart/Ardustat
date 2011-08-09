@@ -1,5 +1,6 @@
 #Ardustat Code
 
+
 Authors:
 
 - Barry Van Tassell <bajavata@gmail.com>
@@ -8,6 +9,9 @@ Authors:
 - Balasubramanian Anantharaman <balaanantharaman@gmail.com>
 - Rigers Qeraj <rigersqeraj@gmail.com>
 - Susan Tan <onceuponatimeforever@gmail.com>
+
+Rigers, Susan and Eddie were able to work on this because of inspiration by NSF CMMI 1031208  
+Balasubramanian is supported by NSF CMMI 1031208
 
 ###Installation:
 ####Software that you need to have installed to use the ardustat:
@@ -36,7 +40,7 @@ If you are using a version 7 ardustat, you can double-check that you are really 
 
 #####Calibration
 If you haven’t calibrated the ardustat with that ID number before, you need to calibrate it to make sure that your data is accurate. Find a resistor and measure its resistance with a multimeter (actual resistances can be significantly different than labeled resistances). Type in the resistance value into the field underneath the “Calibrate” level and click “Submit.” You can check the progress of the calibration in the terminal window. This may take several minutes.
-
+
 #####Logging
 You will want to keep a log of your data saved. First, pick a file name for your data. Make sure you don’t pick the same file name as a log file that already exists, since ardustat will overwrite it. The ardustat will save two files, of the form “YourFilename-parsed.csv” and “YourFilename-raw.csv”. Type in the filename in the field labeled “Filename” and press “Submit.”
 Note: You do not need to type in the file extension yourself.
