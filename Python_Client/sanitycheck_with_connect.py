@@ -32,6 +32,7 @@ a.connect(7777)
 a.debug = False
 a.load_resistance_table(16)
 
+
 #create arrays + a function for logging data
 times = []
 potential = []
