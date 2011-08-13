@@ -278,7 +278,11 @@ void loop()
   }
   else if (millis()-watchdog > watchdogdiff)
   {
+
     ocv = true;
+    gstat = false;
+    pstat = false
+
     //blink 3 times
     for (int i = 0; i < 3; i++)
     {

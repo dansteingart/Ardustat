@@ -1,4 +1,4 @@
-from pylab import *
+import pylab
 import numpy
 import ardustat_library_simple as ard
 import time
@@ -50,9 +50,9 @@ cycles.append({'times':times,'potential':potential,'current':current})
 
 counter = 1
 for c in cycles:
-	plot(c['potential'],c['current'],label='Cycle '+str(counter))
-	legend(loc="best")
-	ylabel("Current (A)")
-	xlabel("Potential (V)")
+	pylab.plot(c['potential'],c['current'],label='Cycle '+str(counter))
+	pylab.legend(loc="best")
+	pylab.ylabel("Current (A)")
+	pylab.xlabel("Potential (V)")
 	counter += 1
-show()
+pylab.savefig("out-cv.png")

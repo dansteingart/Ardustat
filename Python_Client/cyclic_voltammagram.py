@@ -1,4 +1,3 @@
-from pylab import *
 import numpy
 import ardustat_library_simple as ard
 import time
@@ -25,7 +24,7 @@ a.ocv()
 time.sleep(.1)
 a.groundvalue = 2.5
 a.moveground()
-time.sleep(.1)
+time.sleep(.2)
 a.ocv()
 
 #create arrays + a function for logging data
@@ -52,7 +51,9 @@ for i in range(0,60):
 	appender(read)
 	output = float(read['cell_ADC'])
 
-#Stepping
+min_potential = min_potential + output #V
+max_potential = max_potential + output #V
+
 while cycle < cycles:
 	#Scan Up
 	while output < max_potential:	

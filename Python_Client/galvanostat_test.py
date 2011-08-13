@@ -16,6 +16,12 @@ a = ard.ardustat()
 a.connect(ardustat_socket)
 a.debug = debug
 a.load_resistance_table(ardustat_id)
+a.ocv()
+a.groundvalue = 2.5
+a.moveground()
+time.sleep(.2)
+a.ocv()
+
 
 #create arrays + a function for logging data
 times = []
@@ -37,7 +43,7 @@ def appender(reading):
 #Step through values
 output = 0
 a.ocv()
-for i in range(0,10):
+for i in range(0,20):
 	time.sleep(.1)
 	read = a.parsedread()
 	appender(read)
@@ -45,7 +51,7 @@ for i in range(0,10):
 
 while True:
 	start_pulse = time.time()
-	a.galvanostat(0.01)
+	a.galvanostat(-0.01)
 	while (time.time()- start_pulse) < pulse_time:
 		time.sleep(read_delay)
 		read = a.parsedread()
@@ -53,7 +59,7 @@ while True:
 		
 	start_pulse = time.time()
 	a.ocv()
-	while (time.time()- start_pulse) < 60:
+	while (time.time()- start_pulse) < pulse_time:
 		time.sleep(read_delay)
 		read = a.parsedread()
 		appender(read)
