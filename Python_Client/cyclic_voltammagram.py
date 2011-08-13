@@ -5,21 +5,28 @@ import time
 
 #set parameters
 cycles = 3
-min_potential = .2 #V
-max_potential = 1.8 #V
-rate = 1 #mV/s
+min_potential = -1 #V
+max_potential = 1 #V
+rate = 5 #mV/s
 read_delay = .5 #second
 ardustat_id = 16
-file_name = "two_penny_test"
+file_name = "two_coin_test"
 ardustat_socket = 7777
 debug = False
 
 #Below here no touchy
 #connect to to ardustat and setup resistance table
 a = ard.ardustat()
+
 a.connect(ardustat_socket)
 a.debug = debug
 a.load_resistance_table(ardustat_id)
+a.ocv()
+time.sleep(.1)
+a.groundvalue = 2.5
+a.moveground()
+time.sleep(.1)
+a.ocv()
 
 #create arrays + a function for logging data
 times = []

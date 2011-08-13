@@ -1,4 +1,3 @@
-from pylab import *
 import numpy
 import ardustat_library_simple as ard
 import time
@@ -46,26 +45,12 @@ for i in range(0,10):
 
 while True:
 	start_pulse = time.time()
-	a.galvanostat(-.01)
-	while (time.time()- start_pulse) < pulse_time:
-		time.sleep(read_delay)
-		read = a.parsedread()
-		appender(read)
-	
-	start_pulse = time.time()
-	a.ocv()
-	while (time.time()- start_pulse) < 60:
-		time.sleep(read_delay)
-		read = a.parsedread()
-		appender(read)
-
-	start_pulse = time.time()
 	a.galvanostat(0.01)
 	while (time.time()- start_pulse) < pulse_time:
 		time.sleep(read_delay)
 		read = a.parsedread()
-		appender(read)
-			
+		appender(read)		
+		
 	start_pulse = time.time()
 	a.ocv()
 	while (time.time()- start_pulse) < 60:
@@ -78,4 +63,3 @@ while True:
 	
 
 
-print a.ocv()

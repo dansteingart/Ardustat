@@ -8,6 +8,11 @@ a = ard.ardustat()
 a.connect(7777)
 a.debug = False
 a.load_resistance_table(16)
+a.ocv()
+time.sleep(100)
+a.groundvalue = 0
+a.moveground()
+
 
 #create arrays + a function for logging data
 times = []
@@ -30,7 +35,7 @@ for i in range(0,10):
 	read = a.parsedread()
 	appender(read)
 
-while output < 2:
+while output < 1:
 	output = output + .005
 	print a.potentiostat(output)
 	for i in range(0,5):
@@ -38,7 +43,7 @@ while output < 2:
 		read = a.parsedread()
 		appender(read)
 		
-while output > .1 :
+while output > -1 :
 	output = output + .005
 	print a.potentiostat(output)
 	for i in range(0,5):

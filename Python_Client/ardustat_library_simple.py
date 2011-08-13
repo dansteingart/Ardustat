@@ -11,6 +11,8 @@ class ardustat:
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.mode = "socket"
 		self.debug = False
+		self.chatty = False
+		self.groundvalue = 0
 
 	def findPorts(self):
 		"""A commands to find possible ardustat ports with no Arguments, """
@@ -30,6 +32,8 @@ class ardustat:
 		self.rawwrite("-0000")
 	
 	def potentiostat(self,potential):
+		"""Argument: Potential (V).  Sets the potentiostat"""
+		potential = potential+self.groundvalue
 		potential = str(int(1023*(potential/5.0))).rjust(4,"0")
 		self.rawwrite("p"+potential)
 	
@@ -39,6 +43,9 @@ class ardustat:
 			self.ser.write(command+"\n")
 		if self.mode == "socket":
 			self.s.send(command)
+			if self.chatty:
+				sleep(.1)
+				return self.parsedread()
 	
 	def rawread(self):
 		self.rawwrite("s0000")
@@ -58,7 +65,7 @@ class ardustat:
 		"""Tries to pick the ideal resistance and sets a current difference"""
 		#V = I R -> I = delta V / R
 		#goal -> delta V = .2 V
-		R_goal = .1 / current
+		R_goal = abs(.1 / current)
 		R_real = 10000
 		R_set = 0
 		err = 1000
@@ -70,15 +77,19 @@ class ardustat:
 				R_real = self.res_table[d][0]
 		#Solve for real delta V
 		delta_V = abs(current*R_real)
-		if self.debug: print delta_V,R_real
+		if self.debug: print current,delta_V,R_real,R_set
 		potential = str(int(1023*(delta_V/5.0))).rjust(4,"0")
 		if current < 0:
 			potential = str(int(potential)+2000)
 		if self.debug: print "gstat setting:", potential
-		#Write!
-		self.rawwrite("r"+str(R_set).rjust(4,"0"))
-		sleep(.1)
-		self.rawwrite("g"+str(potential))
+		print potential
+		if potential == "2000" or potential == "0000":
+			self.ocv()
+		else:
+			#Write!
+			self.rawwrite("r"+str(R_set).rjust(4,"0"))
+			sleep(.1)
+			self.rawwrite("g"+str(potential))
 		
 		
 
@@ -132,14 +143,20 @@ class ardustat:
 		while self.ser.inWaiting() > 0: out = self.ser.readline()
 		return out
 	
+	
+	def moveground(self):
+		"""Argument: Potential (V).  Moves ground to allow negative potentials.  Check jumper position!"""
+		potential = str(int(1023*(self.groundvalue/5.0))).rjust(4,"0")
+		self.rawwrite("d"+potential)
+	
 	def refbasis(self,reading,ref):
-		"""returns an absolute potential based on the ADC reading against the 2.5 V reference
+		"""Argument: raw ADC reading, raw ADC basis.  Returns an absolute potential based on the ADC reading against the 2.5 V reference
 		   (reading from pot as a value between 0 and 1023, reference value in V (e.g. 2.5))"""
 		return round((float(reading)/float(ref))*2.5,3)
 	
 	def resbasis(self,reading,pot):
-		"""returns the value for the givening potentiometer setting 
-			(reading as value between 0 and 255, pot lookup variable)"""
+		"""Argument, raw pot setting, max pOT reading.   Returns the value for the givening potentiometer setting 
+			(reading as value between 0 and 255, pot lookup variable).  Wildly Inaccurate.  Don't use."""
 		return round(10+(float(reading)/255.0)*pot,2)
 		
 	def parseline(self,reading):
@@ -163,8 +180,8 @@ class ardustat:
 			outdict['time'] = time()
 			parts = reading.split(",")
 			outdict['ref'] = float(parts[len(parts)-2])
-			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])
-			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])
+			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
+			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
 			outdict['pot_step'] = parts[4]
 			##Try to read from the res_table, otherwise make the dangerous assumption
 			try:

@@ -146,7 +146,7 @@ void loop()
       {
         outvolt = out;
 
-        send_dac(0,outvolt);
+        send_dac(0,checkvolt(outvolt));
         digitalWrite(3,HIGH);
         speed = 1;
         countto = 10;
@@ -202,7 +202,7 @@ void loop()
         gstat = true;
 
         outvolt = analogRead(0);
-        write_dac(0,outvolt);
+        write_dac(0,checkvolt(outvolt));
         //speed = 5;
         //countto = 20;
 
@@ -223,7 +223,7 @@ void loop()
         outvolt = analogRead(0)+(sign*out);
         if (outvolt > 1023) outvolt = 1023;
         if (outvolt < 0) outvolt = 0;
-        write_dac(0,outvolt);
+        write_dac(0,checkvolt(outvolt));
 
         digitalWrite(3,HIGH);
 
@@ -466,7 +466,7 @@ void potentiostat()
   {
     move = gainer(adc,setting);
     outvolt=outvolt-move;
-    write_dac(0,outvolt);
+    write_dac(0,checkvolt(outvolt));
 
   }
 
@@ -475,14 +475,14 @@ void potentiostat()
   {
     move = gainer(adc,setting);
     outvolt=outvolt+move;
-    write_dac(0,outvolt);
+    write_dac(0,checkvolt(outvolt));
   }
 
   // if range is limited decrease R
   if ((outvolt > 1022) && (res > 0))
   {
     outvolt = 1000;
-    write_dac(0,outvolt);
+    write_dac(0,checkvolt(outvolt));
     resmove = resgainer(adc,setting);
     res = res - resmove;
     res = constrain(res,1,255);
@@ -492,7 +492,7 @@ void potentiostat()
   else if ((outvolt < 1) && (res > 0))
   {
     outvolt = 23;
-    write_dac(0,outvolt);
+    write_dac(0,checkvolt(outvolt));
     resmove = resgainer(adc,setting);
     res = res - resmove;
     res = constrain(res,1,255);
@@ -510,6 +510,14 @@ void potentiostat()
     delay(waiter);
   }
 
+}
+
+int checkvolt(int volt)
+{
+  int out = volt;
+  if (volt > 1023) volt = 1023;
+  if (volt < 0) volt = 0;
+  return volt;
 }
 
 void galvanostat()
@@ -532,7 +540,7 @@ void galvanostat()
 
       move = gainer(diff,setting);
       outvolt = outvolt-move;
-      write_dac(0,outvolt);
+      write_dac(0,checkvolt(outvolt));
 
     }
 
@@ -541,7 +549,7 @@ void galvanostat()
     {
       move = gainer(diff,setting);
       outvolt = outvolt+move;
-      write_dac(0,outvolt);
+      write_dac(0,checkvolt(outvolt));
 
     }
   }
@@ -555,7 +563,7 @@ void galvanostat()
     {
       move = gainer(diff,setting);
       outvolt =outvolt+move;
-      write_dac(0,outvolt);
+      write_dac(0,checkvolt(outvolt));
     }
 
     //if under current step dac down
@@ -563,7 +571,7 @@ void galvanostat()
     {
       move = gainer(diff,setting);
       outvolt = outvolt-move;
-      write_dac(0,outvolt);
+      write_dac(0,checkvolt(outvolt));
 
     }
   }
@@ -583,7 +591,7 @@ void sendout()
   else mode = 0;
   int setout = sign*setting;
   Serial.print("GO,");
-  Serial.print(outvolt,DEC);
+  Serial.print(checkvolt(outvolt),DEC);
   Serial.print(",");
   Serial.print(adc);
   Serial.print(",");
