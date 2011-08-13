@@ -4,7 +4,8 @@
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
 
-
+long watchdog = 0;
+long watchdogdiff = 30000; //one minute
 int adc;    //out of pot
 int dac;    //out of main dac
 int adcgnd; //adc at ground
@@ -63,7 +64,7 @@ void setup()
 
   //Startup Serial
   Serial.begin(57600);
-//  Serial.println("Hi Dan!");
+  //  Serial.println("Hi Dan!");
 
 
   //SPI
@@ -104,15 +105,15 @@ void setup()
   res=255;
   write_pot(pot,resistance1,res);
   for (int i=1;i<11;i++) lastData[i]=0;
+  watchdog = millis();
 }
 
 void loop()
 {
-
   //read the serial port and create a string out of what you read
   readSerialString(serInString);
   if( isStringEmpty(serInString) == false) { //this check is optional
-
+    watchdog = millis();
     //delay(500);
     holdString[0] = serInString[0];
     holdString[1] = serInString[1];
@@ -138,9 +139,9 @@ void loop()
       int out =  stringToNumber(sendString,4);
       //Serial.print(out,DEC);
       if (serInString[0] != 112)
-     {
-      pMode = 0;
-     } 
+      {
+        pMode = 0;
+      } 
       if (serInString[0] == 43)
       {
         outvolt = out;
@@ -264,8 +265,8 @@ void loop()
       digitalWrite(6,LOW);
 
     }
-    
-    
+
+
     else if (serInString[0] == 115)
     {
       sendout();
@@ -275,7 +276,20 @@ void loop()
 
     flushSerialString(serInString);
   }
-
+  else if (millis()-watchdog > watchdogdiff)
+  {
+    ocv = true;
+    //blink 3 times
+    for (int i = 0; i < 3; i++)
+    {
+      digitalWrite(5,HIGH);
+      digitalWrite(6,LOW);
+      delay(100);
+      digitalWrite(5,LOW);
+      digitalWrite(6,LOW);
+      delay(100);
+    }
+  }
 
 
   //Work Section
@@ -365,11 +379,11 @@ byte dacon()
 byte write_pot(int address, int value1, int value2)
 {
   /*digitalWrite(SLAVESELECTP,LOW);
-  //3 byte opcode
-  spi_transfer(address);
-  spi_transfer(value1);
-  spi_transfer(value2);
-  digitalWrite(SLAVESELECTP,HIGH);*/ //release chip, signal end transfer
+   //3 byte opcode
+   spi_transfer(address);
+   spi_transfer(value1);
+   spi_transfer(value2);
+   digitalWrite(SLAVESELECTP,HIGH);*/  //release chip, signal end transfer
   sendValue(0,255-value2);
 }
 
@@ -471,7 +485,7 @@ void potentiostat()
     write_dac(0,outvolt);
     resmove = resgainer(adc,setting);
     res = res - resmove;
-        res = constrain(res,1,255);
+    res = constrain(res,1,255);
     write_pot(pot,resistance1,res);
 
   }
@@ -515,7 +529,7 @@ void galvanostat()
     //if over current step dac down
     if( ((diff) > (setting)) && (outvolt > 0))
     {
-     
+
       move = gainer(diff,setting);
       outvolt = outvolt-move;
       write_dac(0,outvolt);
@@ -624,19 +638,19 @@ void testr ()
 
 int gainer(int whatitis, int whatitshouldbe)
 {
-      int move = abs(whatitis-whatitshouldbe);
-      move = constrain(move,1,100);
-      return move;
+  int move = abs(whatitis-whatitshouldbe);
+  move = constrain(move,1,100);
+  return move;
 }
 
 int resgainer(int whatitis, int whatitshouldbe)
 {
-      int move = 0;
-      int diff = abs(whatitis-whatitshouldbe); 
-      if (diff > 20) move = 30;
-      else move = 10;
-      //move = constrain(move,1,100);
-      return move;
+  int move = 0;
+  int diff = abs(whatitis-whatitshouldbe); 
+  if (diff > 20) move = 30;
+  else move = 10;
+  //move = constrain(move,1,100);
+  return move;
 }
 
 //Barry's hacky functions
@@ -660,13 +674,13 @@ byte sendValue(int wiper, int val)
   //digitalWrite(DATAOUT,LOW);
   digitalWrite(SLAVESELECTP,LOW);
   delayMicroseconds(10);
-  
+
   //Select wiper
   for(int i=0;i<3;i++){
     sendBit(false);
   }
   sendBit(wiper);
-  
+
   //write command
   for(int i=0;i<4;i++){
     sendBit(false);
@@ -697,7 +711,7 @@ byte readWiper()
   sendBit(false);
   sendBit(true);
   sendBit(true);
-  
+
   //get data
   int data[9];
   Serial.print("  ");
@@ -714,4 +728,6 @@ byte readWiper()
   }
   digitalWrite(SLAVESELECTP,HIGH);
 }
+
+
 
