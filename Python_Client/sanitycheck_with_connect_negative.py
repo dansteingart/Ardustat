@@ -34,8 +34,8 @@ a.debug = False
 a.load_resistance_table(16)
 
 #move ground up
-groundsetting = 2.5
-a.moveground(groundsetting)
+a.groundvalue = 2.5
+a.moveground()
 
 
 #create arrays + a function for logging data
@@ -68,7 +68,7 @@ for i in range(0,10):
 while output < 2:
 	output = output + .1
 	blink()
-	print a.potentiostat(output+groundsetting)
+	print a.potentiostat(output)
 	for i in range(0,3):
 		time.sleep(.1)
 		read = a.parsedread()
@@ -100,6 +100,8 @@ for i in range(0,10):
 	appender(read)
 
 
+a.s.close()
+p.kill()
 
 #Make sure everything plots out realistically 
 subplot(3,1,1)
@@ -117,6 +119,3 @@ title("Resistance vs. Time")
 ylabel("Resistance (Ohms)")
 xlabel("Time (s)")
 show()
-
-a.s.close()
-p.kill()

@@ -159,7 +159,7 @@ void loop()
         speed = 1;
         countto = 10;
       }
-      if (serInString[0] == 45)
+      if (serInString[0] == 45 || serInString[0] == 111)
       {
         //outvolt = -1;
         ocv = true;
@@ -230,6 +230,18 @@ void loop()
       }
       if (serInString[0] == 112)
       {
+
+        if (out > 2000)
+        {
+
+          out = out - 2000;
+          sign = -1;
+        }
+        else if (out < 2000)
+        {
+          out = out;
+          sign = 1;
+        }
         if (pMode == 0)
         {
           dacon();
@@ -238,7 +250,7 @@ void loop()
         pMode = 1;
         //speed = 5;
         //countto = 20;
-        setting = out;
+        setting = out*sign;
         //outvolt = setting; //initial guess
         digitalWrite(3,HIGH);
         write_dac(0,setting);
@@ -246,10 +258,22 @@ void loop()
 
       if (serInString[0] == 99)
       {
+
+        if (out > 2000)
+        {
+
+          out = out - 2000;
+          sign = -1;
+        }
+        else if (out < 2000)
+        {
+          out = out;
+          sign = 1;
+        }
         pstat = true;
         //speed = 5;
         //countto = 20;
-        setting = out;
+        setting = sign*out;
         //outvolt = setting; //initial guess
         dacon();
         digitalWrite(3,HIGH);
@@ -281,7 +305,7 @@ void loop()
 
     ocv = true;
     gstat = false;
-    pstat = false
+    pstat = false;
 
     //blink 3 times
     for (int i = 0; i < 3; i++)
@@ -392,7 +416,6 @@ byte write_pot(int address, int value1, int value2)
 }
 
 
-
 //Below Here is Serial Comm Shizzle (for rizzle)
 
 //utility function to know wither an array is empty or not
@@ -462,22 +485,23 @@ void potentiostat()
 {
   //read in values
   adc = analogRead(0);
+  int adc_set = adc-analogRead(3);
   dac = analogRead(1);
   int resmove = 0;
   int move = 0;
   //if potential is too high
-  if ((adc > setting) && (outvolt > 0))
+  if ((adc_set > setting) && (outvolt > 0))
   {
-    move = gainer(adc,setting);
+    move = gainer(adc_set,setting);
     outvolt=outvolt-move;
     write_dac(0,checkvolt(outvolt));
 
   }
 
   //if potential is too low
-  else if ((adc < setting) && (outvolt < 1023))
+  else if ((adc_set < setting) && (outvolt < 1023))
   {
-    move = gainer(adc,setting);
+    move = gainer(adc_set,setting);
     outvolt=outvolt+move;
     write_dac(0,checkvolt(outvolt));
   }
@@ -487,9 +511,9 @@ void potentiostat()
   {
     outvolt = 1000;
     write_dac(0,checkvolt(outvolt));
-    resmove = resgainer(adc,setting);
+    resmove = resgainer(adc_set,setting);
     res = res - resmove;
-    res = constrain(res,1,255);
+    res = constrain(res,0,255);
     write_pot(pot,resistance1,res);
 
   }
@@ -497,9 +521,9 @@ void potentiostat()
   {
     outvolt = 23;
     write_dac(0,checkvolt(outvolt));
-    resmove = resgainer(adc,setting);
+    resmove = resgainer(adc_set,setting);
     res = res - resmove;
-    res = constrain(res,1,255);
+    res = constrain(res,0,255);
     write_pot(pot,resistance1,res);
     delay(waiter);
   }
@@ -650,8 +674,15 @@ void testr ()
 
 int gainer(int whatitis, int whatitshouldbe)
 {
+  //Serial.print(whatitis);
+  //Serial.print(",");
+  //Serial.println(whatitshouldbe);
+
+
   int move = abs(whatitis-whatitshouldbe);
-  move = constrain(move,1,100);
+  move = constrain(move,-100,100);
+  //Minimize hyperactivity
+  //if (abs(move) < 2) move = 0;
   return move;
 }
 
@@ -740,6 +771,7 @@ byte readWiper()
   }
   digitalWrite(SLAVESELECTP,HIGH);
 }
+
 
 
 
