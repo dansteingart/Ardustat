@@ -182,6 +182,7 @@ class ardustat:
 			outdict['ref'] = float(parts[len(parts)-2])
 			outdict['DAC0_ADC'] = self.refbasis(parts[3],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
+			outdict['ref_ADC'] = self.refbasis(parts[9],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
 			outdict['pot_step'] = parts[4]
 			##Try to read from the res_table, otherwise make the dangerous assumption
 			try:
