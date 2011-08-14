@@ -3,9 +3,9 @@ import ardustat_library_simple as ard
 import time
 
 #set parameters
-cycles = 3
-min_potential = -1 #V
-max_potential = 1 #V
+cycles = 4
+min_potential = -1.1 #V
+max_potential = 1.1 #V
 rate = 5 #mV/s
 read_delay = .5 #second
 ardustat_id = 16
