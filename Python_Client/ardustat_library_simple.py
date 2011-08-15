@@ -3,6 +3,7 @@ import socket
 import glob
 import pickle
 from time import sleep,time
+import subprocess
 
 class ardustat:
 	def __init__(self):	
@@ -13,11 +14,25 @@ class ardustat:
 		self.debug = False
 		self.chatty = False
 		self.groundvalue = 0
+		self.p = None
 
 	def findPorts(self):
 		"""A commands to find possible ardustat ports with no Arguments, """
 		return glob.glob("/dev/tty.u*")
-
+		
+	def trial_connect(self):
+		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
+		port = self.findPorts()
+		self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port+" 57600").split())
+		print "connected!"
+		sleep(3)
+		print "ardustat should be responding, trying a blink"
+		
+		
+		
+	def blink(self):
+		self.rawwrite(" ");
+		
 	def connect(self,port):
 		if self.mode == "serial":
 			self.ser = serial.Serial(port,57600)
@@ -43,9 +58,10 @@ class ardustat:
 			self.ser.write(command+"\n")
 		if self.mode == "socket":
 			self.s.send(command)
+			sleep(.05)
 			if self.chatty:
-				sleep(.1)
 				return self.parsedread()
+				
 	
 	def rawread(self):
 		self.rawwrite("s0000")
