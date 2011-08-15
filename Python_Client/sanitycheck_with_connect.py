@@ -94,7 +94,8 @@ for i in range(0,10):
 	appender(read)
 
 
-
+a.s.close()
+p.kill()
 #Make sure everything plots out realistically 
 subplot(3,1,1)
 plot(times,potential,'.')
@@ -112,4 +113,3 @@ ylabel("Resistance (Ohms)")
 xlabel("Time (s)")
 show()
 
-p.kill()
