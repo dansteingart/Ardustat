@@ -485,7 +485,9 @@ void potentiostat()
 {
   //read in values
   adc = analogRead(0);
-  int adc_set = adc-analogRead(3);
+  int adc_set = analogRead(3);
+  if ( ! adc_set ) adc_set = adc;
+  if ( sign == -1 ) {  adc_set = analogRead(3) - adc;  if ( ! analogRead(3) ) adc_set = analogRead(2) - adc;}
   dac = analogRead(1);
   int resmove = 0;
   int move = 0;
