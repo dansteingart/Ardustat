@@ -7,28 +7,9 @@ import os
 import glob
 import sys
 
-##Guess a serial port
-port = ""
-if os.name == "posix":
-	#try os x
-	if len(glob.glob("/dev/tty.u*")) > 0:
-		port = glob.glob("/dev/tty.u*")[0]
-	elif len(glob.glob("/dev/ttyUSB*")) > 0:
-		port = glob.glob("/dev/ttyUSB*")[0]
-	else:
-		print "can't see any ardustats.  PEACE."
-		sys.exit()
-	print port
-	
-
-#start a serial forwarder
-p = subprocess.Popen(("python tcp_serial_redirect.py "+port+" 57600").split())
-print "waiting"
-time.sleep(5)
-print "going"
 #connecto to ardustat and setup resistance table
 a = ard.ardustat()
-a.connect(7777)
+a.trial_connect(7777)
 a.debug = False
 try:
 	a.load_resistance_table(16)

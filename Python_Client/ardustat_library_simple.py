@@ -4,6 +4,8 @@ import glob
 import pickle
 from time import sleep,time
 import subprocess
+import sys
+import os
 
 class ardustat:
 	def __init__(self):	
@@ -20,14 +22,27 @@ class ardustat:
 		"""A commands to find possible ardustat ports with no Arguments, """
 		return glob.glob("/dev/tty.u*")
 		
-	def trial_connect(self):
+	def trial_connect(self,sport):
 		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
-		port = self.findPorts()
-		self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port+" 57600").split())
-		print "connected!"
-		sleep(3)
-		print "ardustat should be responding, trying a blink"
-		
+		port = ""
+		if os.name == "posix":
+			#try os x
+			if len(glob.glob("/dev/tty.u*")) > 0:
+				port = glob.glob("/dev/tty.u*")
+			elif len(glob.glob("/dev/ttyUSB*")) > 0:
+				port = glob.glob("/dev/ttyUSB*")
+			else:
+				print "can't see any ardustats.  PEACE."
+				sys.exit()
+			if len(port) > 0:
+				self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port[0]+" 57600").split())
+				print "connected!"
+				sleep(3)
+				self.s.connect(("localhost",sport))
+				print "ardustat should be responding, trying a blink"
+			else:
+				print "not seeing any ardustats.  PEACE."
+				sys.exit()
 		
 		
 	def blink(self):
