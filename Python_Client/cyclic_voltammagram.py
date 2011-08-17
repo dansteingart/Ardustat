@@ -5,10 +5,10 @@ import atexit
 
 #set parameters
 cycles = 4
-min_potential = -.8 #V
-max_potential = .4 #V
+min_potential = -.5 #V
+max_potential = .5 #V
 rate = 5 #mV/s
-read_delay = .5 #second
+read_delay = .2 #second
 ardustat_id = 16
 file_name = "two_coin_test"
 ardustat_socket = 7777
@@ -45,8 +45,9 @@ def appender(reading):
 
 #Allows cell to settle and picks starting potential based on OCV
 output = 0
+print "cycles:",cycle
 a.ocv()
-for i in range(0,60):
+for i in range(0,5):
 	time.sleep(1)
 	read = a.parsedread()
 	appender(read)

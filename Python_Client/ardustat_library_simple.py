@@ -37,6 +37,7 @@ class ardustat:
 		#potential = potential#+self.groundvalue
 		if potential < 0: potential = str(2000+int(1023*(abs(potential)/5.0))).rjust(4,"0")
 		else: potential = str(int(1023*(potential/5.0))).rjust(4,"0")
+		if potential == "2000": potential = "0000"
 		self.rawwrite("p"+potential)
 	
 		
