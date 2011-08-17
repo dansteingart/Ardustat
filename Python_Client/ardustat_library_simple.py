@@ -6,6 +6,7 @@ from time import sleep,time
 import subprocess
 import sys
 import os
+import atexit
 
 class ardustat:
 	def __init__(self):	
@@ -25,7 +26,13 @@ class ardustat:
 	def trial_connect(self,sport):
 		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
 		port = ""
-		if os.name == "posix":
+		start_server = False
+		try:
+			self.connect(sport)
+		except:
+			start_server == True
+			
+		if start_server and os.name == "posix":
 			#try os x
 			if len(glob.glob("/dev/tty.u*")) > 0:
 				port = glob.glob("/dev/tty.u*")
@@ -192,7 +199,7 @@ class ardustat:
 		"""Argument, raw pot setting, max pOT reading.   Returns the value for the givening potentiometer setting 
 			(reading as value between 0 and 255, pot lookup variable).  Wildly Inaccurate.  Don't use."""
 		return round(10+(float(reading)/255.0)*pot,2)
-		
+	
 	def parseline(self,reading):
 		outdict = {}
 		#format GO,1023,88,88,255,0,1,-0000,0,0,510,ST 
