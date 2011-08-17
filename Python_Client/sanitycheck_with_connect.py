@@ -11,8 +11,7 @@ import sys
 a = ard.ardustat()
 a.trial_connect(7777)
 a.debug = False
-try:
-	a.load_resistance_table(16)
+a.load_resistance_table(16)
 
 
 #create arrays + a function for logging data
