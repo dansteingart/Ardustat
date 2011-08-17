@@ -30,7 +30,8 @@ print "going"
 a = ard.ardustat()
 a.connect(7777)
 a.debug = False
-a.load_resistance_table(16)
+try:
+	a.load_resistance_table(16)
 
 
 #create arrays + a function for logging data
@@ -93,7 +94,8 @@ for i in range(0,10):
 	read = a.parsedread()
 	appender(read)
 
-
+a.s.close()
+p.kill()
 
 #Make sure everything plots out realistically 
 subplot(3,1,1)
@@ -112,4 +114,3 @@ ylabel("Resistance (Ohms)")
 xlabel("Time (s)")
 show()
 
-p.kill()

@@ -186,6 +186,7 @@ class ardustat:
 			outdict['cell_ADC'] = self.refbasis(parts[2],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
 			outdict['ref_ADC'] = self.refbasis(parts[9],outdict['ref'])-self.refbasis(parts[8],outdict['ref'])
 			outdict['pot_step'] = parts[4]
+			outdict['work_v_ref'] = outdict['cell_ADC'] - outdict['ref_ADC']
 			##Try to read from the res_table, otherwise make the dangerous assumption
 			try:
 				outdict['res'] = self.res_table[int(outdict['pot_step'])][0]
