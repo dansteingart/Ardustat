@@ -32,3 +32,6 @@ foo = a.calibrate(9974,16)
 
 for f in foo:
 	print f,foo[f]
+	
+a.s.close()
+p.kill()

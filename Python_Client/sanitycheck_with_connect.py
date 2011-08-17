@@ -30,7 +30,8 @@ print "going"
 a = ard.ardustat()
 a.connect(7777)
 a.debug = False
-a.load_resistance_table(16)
+try:
+	a.load_resistance_table(16)
 
 
 #create arrays + a function for logging data

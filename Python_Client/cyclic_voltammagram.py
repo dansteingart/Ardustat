@@ -1,13 +1,14 @@
 import numpy
 import ardustat_library_simple as ard
 import time
+import atexit
 
 #set parameters
-cycles = 3
-min_potential = -1 #V
-max_potential = 1 #V
+cycles = 4
+min_potential = -.5 #V
+max_potential = .5 #V
 rate = 5 #mV/s
-read_delay = .5 #second
+read_delay = .2 #second
 ardustat_id = 16
 file_name = "two_coin_test"
 ardustat_socket = 7777
@@ -35,21 +36,22 @@ time_start = time.time()
 cycle = 0
 file_name = file_name+"_"+str(int(time_start))+".dat"
 def appender(reading):
-	print reading['cell_ADC'],read['current']
+	print reading['work_v_ref'],reading['current']
 	tdiff = str(time.time()-time_start)
-	out = tdiff+","+str(reading['cell_ADC'])+","+str(read['current'])+","+str(cycle)+"\n"
+	out = tdiff+","+str(reading['work_v_ref'])+","+str(reading['current'])+","+str(cycle)+"\n"
 	open(file_name,"a").write(out)
 	
 
 
 #Allows cell to settle and picks starting potential based on OCV
 output = 0
+print "cycles:",cycle
 a.ocv()
-for i in range(0,60):
+for i in range(0,5):
 	time.sleep(1)
 	read = a.parsedread()
 	appender(read)
-	output = float(read['cell_ADC'])
+	output = float(read['work_v_ref'])
 
 min_potential = min_potential + output #V
 max_potential = max_potential + output #V

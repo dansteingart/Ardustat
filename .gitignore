@@ -2,3 +2,6 @@
 *.dat
 *.pyc
 *.pickle
+Python_Client/sanitycheck_with_connect.py
+
+Python_Client/ardustat_library_simple.py
