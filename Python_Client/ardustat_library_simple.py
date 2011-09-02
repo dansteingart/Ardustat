@@ -146,7 +146,7 @@ class ardustat:
 		ressers = []
 		self.rawwrite("R")
 		sleep(.1)
-		self.rawwrite("r0001")		
+		self.rawwrite("r0000")		
 		for i in range(0,10):
 			for y in range(0,255):
 				self.rawwrite("r"+str(y).rjust(4,"0"))
