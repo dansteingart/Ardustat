@@ -26,11 +26,11 @@ class ardustat:
 	def trial_connect(self,sport):
 		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
 		port = ""
-		start_server = False
-		try:
-			self.connect(sport)
-		except:
-			start_server == True
+		start_server = True
+		#try:
+		#	self.connect(sport)
+		#except:
+		#	start_server == True
 			
 		if start_server and os.name == "posix":
 			#try os x
@@ -146,7 +146,7 @@ class ardustat:
 		ressers = []
 		self.rawwrite("R")
 		sleep(.1)
-		self.rawwrite("r0001")		
+		self.rawwrite("r0000")		
 		for i in range(0,10):
 			for y in range(0,255):
 				self.rawwrite("r"+str(y).rjust(4,"0"))
