@@ -20,10 +20,10 @@ class ardustat:
 		"""A commands to find possible ardustat ports with no Arguments, """
 		return glob.glob("/dev/tty.u*")
 		
-	def trial_connect(self,sport):
+	def trial_connect(self):
 		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
 		port = self.findPorts()
-		self.p = subprocess.Popen(("python tcp_serial_redirect.py "+sport+" 57600").split())
+		self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port+" 57600").split())
 		print "connected!"
 		sleep(3)
 		print "ardustat should be responding, trying a blink"
