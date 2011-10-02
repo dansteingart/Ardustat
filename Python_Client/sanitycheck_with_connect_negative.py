@@ -27,12 +27,12 @@ print "waiting"
 time.sleep(5)
 print "going"
 
-#connecto to ardustat and setup resistance table
+#connecto to ardustat and setup resistance table r
 a = ard.ardustat()
 a.connect(7777)
 a.debug = False
 a.load_resistance_table(16)
-
+print "got table"
 #move ground up
 a.groundvalue = 2.5
 a.moveground()

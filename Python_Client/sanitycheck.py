@@ -2,10 +2,10 @@ from pylab import *
 import numpy
 import ardustat_library_simple as ard
 import time
-
+import subprocess
 
 #start a serial forwarder
-p = subprocess.Popen("python tcp_serial_redirect.py /dev/tty.usbmodemfa131 57600".split())
+p = subprocess.Popen(("python tcp_serial_redirect.py /dev/tty.usbmodemfa131 57600").split())
 
 #connecto to ardustat and setup resistance table
 a = ard.ardustat()

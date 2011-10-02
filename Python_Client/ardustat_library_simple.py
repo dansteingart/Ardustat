@@ -4,6 +4,9 @@ import glob
 import pickle
 from time import sleep,time
 import subprocess
+import sys
+import os
+import atexit
 
 class ardustat:
 	def __init__(self):	
@@ -20,14 +23,33 @@ class ardustat:
 		"""A commands to find possible ardustat ports with no Arguments, """
 		return glob.glob("/dev/tty.u*")
 		
-	def trial_connect(self):
+	def trial_connect(self,sport):
 		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
-		port = self.findPorts()
-		self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port+" 57600").split())
-		print "connected!"
-		sleep(3)
-		print "ardustat should be responding, trying a blink"
-		
+		port = ""
+		start_server = True
+		#try:
+		#	self.connect(sport)
+		#except:
+		#	start_server == True
+			
+		if start_server and os.name == "posix":
+			#try os x
+			if len(glob.glob("/dev/tty.u*")) > 0:
+				port = glob.glob("/dev/tty.u*")
+			elif len(glob.glob("/dev/ttyUSB*")) > 0:
+				port = glob.glob("/dev/ttyUSB*")
+			else:
+				print "can't see any ardustats.  PEACE."
+				sys.exit()
+			if len(port) > 0:
+				self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port[0]+" 57600").split())
+				print "connected!"
+				sleep(3)
+				self.s.connect(("localhost",sport))
+				print "ardustat should be responding, trying a blink"
+			else:
+				print "not seeing any ardustats.  PEACE."
+				sys.exit()
 		
 		
 	def blink(self):
@@ -124,7 +146,7 @@ class ardustat:
 		ressers = []
 		self.rawwrite("R")
 		sleep(.1)
-		self.rawwrite("r0001")		
+		self.rawwrite("r0000")		
 		for i in range(0,10):
 			for y in range(0,255):
 				self.rawwrite("r"+str(y).rjust(4,"0"))
@@ -177,7 +199,7 @@ class ardustat:
 		"""Argument, raw pot setting, max pOT reading.   Returns the value for the givening potentiometer setting 
 			(reading as value between 0 and 255, pot lookup variable).  Wildly Inaccurate.  Don't use."""
 		return round(10+(float(reading)/255.0)*pot,2)
-		
+	
 	def parseline(self,reading):
 		outdict = {}
 		#format GO,1023,88,88,255,0,1,-0000,0,0,510,ST 
