@@ -18,7 +18,7 @@ class ardustat:
 		self.chatty = False
 		self.groundvalue = 0
 		self.p = None
-		atexit.register(kill_connection)
+		atexit.register(self.kill_connection)
 	
 	def kill_connection(self):
 		try:
