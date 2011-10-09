@@ -18,13 +18,20 @@ class ardustat:
 		self.chatty = False
 		self.groundvalue = 0
 		self.p = None
-
+		atexit.register(kill_connection)
+	
+	def kill_connection(self):
+		try:
+			self.p.kill()
+		except Exception as err:
+			print "Couldn't Kill P,"err
+	
 	def findPorts(self):
 		"""A commands to find possible ardustat ports with no Arguments, """
 		return glob.glob("/dev/tty.u*")
 		
 	def trial_connect(self,sport):
-		"""Experimental!  No arguments.  Trys to start a serial forwarder if one isn't started"""
+		"""Experimental!  Enter the port to try listening.  Trys to start a serial forwarder if one isn't started"""
 		port = ""
 		start_server = True
 		#try:
@@ -42,6 +49,7 @@ class ardustat:
 				print "can't see any ardustats.  PEACE."
 				sys.exit()
 			if len(port) > 0:
+				print port[0]
 				self.p = subprocess.Popen(("python tcp_serial_redirect.py "+port[0]+" 57600").split())
 				print "connected!"
 				sleep(3)
