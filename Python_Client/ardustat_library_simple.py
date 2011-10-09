@@ -24,7 +24,7 @@ class ardustat:
 		try:
 			self.p.kill()
 		except Exception as err:
-			print "Couldn't Kill P,"err
+			print "Couldn't Kill P,",err
 	
 	def findPorts(self):
 		"""A commands to find possible ardustat ports with no Arguments, """
