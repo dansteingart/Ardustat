@@ -22,6 +22,7 @@ class ardustat:
 	
 	def kill_connection(self):
 		try:
+			self.s.shutdown(socket.SHUT_RDWR)
 			self.p.kill()
 		except Exception as err:
 			print "Couldn't Kill P,",err
@@ -244,4 +245,3 @@ class ardustat:
 		else:
 			outdict['valid'] = False
 		return outdict
-			
