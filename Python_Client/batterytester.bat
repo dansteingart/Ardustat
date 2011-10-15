@@ -1,0 +1,1 @@
+python C:\Ameer\Ardustat\Python_Client\GUI.py
