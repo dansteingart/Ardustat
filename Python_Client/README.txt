@@ -1,3 +1,4 @@
+
 ----------------------How to run Imprint Energy's Battery Tester------------------
 
 1. Make sure that the arduino board is hooked up via usb to the laptop.
@@ -9,7 +10,9 @@ If you do not see this, remove the USB cable and try again.
 
 
 -----------------------Galvanostat/Potentiostat tests------------------------------
-
+Make sure that you calibrate the device before running these tests. The GUI
+will expect a unit_16.pickle calibration file in the same directory so it can
+load the calibration file.
 1. Select the appropriate tab for whichever test you want to run. Fill in the necessary fields with the parameters you wish
 to use.
 2. Click "Run!". After a few seconds, you should see plots starting to form in real time on the graph. If nothing happens,
