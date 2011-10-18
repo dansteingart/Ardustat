@@ -491,12 +491,12 @@ long powerOfTen(char digit, int power) {
 
 int resgainer(int whatitis, int whatitshouldbe)
 {
-      //int move = 0;
-      int move = 1;
-      //int diff = abs(whatitis-whatitshouldbe); 
-      //if (diff > 20) move = 20;
-      //else move = 1;
-      //move = constrain(move,1,100);
+      int move = 0;
+      //int move = 1;
+      int diff = abs(whatitis-whatitshouldbe); 
+      if (diff > 20) move = 20;
+      else move = 1;
+      move = constrain(move,1,100);
       return move;
 } 
 
@@ -592,18 +592,22 @@ void potentiostat()
   outvolt = outvolt + move;
 */
   outvolt+=in;
+  //if range is limited, decrease R
   if (outvolt>1023)
   {
-    res = res - (outvolt-1023)/1023*255/2;
+    res = res - resgainer(adc,setting);
     outvolt = 1023;
     //res = res-res/6;
     if (res<0) res=0;
   }else if (outvolt<0){
-    res = res+(outvolt+(lastData[10]-lastData[9]))/1023*255;
+    res = res-resgainer(adc,setting);
     outvolt = 20;
     //res = res - res/6;
     if (res>255) res=255;
   }
+  //if range is truncated, increase R
+  if(abs(adc-dac)>100 && (res<255))
+    res = res+resgainer(adc,setting);
   write_pot(0,resistance1,res);
   send_dac(0,outvolt);
   }
