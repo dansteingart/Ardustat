@@ -1,18 +1,36 @@
+Before running anything, the correct firmware must be downloaded to the Arduino. Currently,
+we are using firmware 7_s.
+
+---------------------How to calibrate your device--------------------------------
+1. Make sure that the arduino board is hooked up via usb to the laptop.
+2. Make sure that the aligator clips are hooked up to some battery with the positive and negative clips hooked up correctly.
+3. Run the connect.bat file (double-click) if it has not been run already. You should see a command window pop up saying 
+"waiting for connection on 7777". If you do not see this, remove the USB cable and try again.
+4. Keep this window open, do not close it. Minimize it.
+
+The GUI will expect a unit_16.pickle calibration file in the same directory so it can
+load the calibration file. 
+
+5. Be sure to measure the resistance of the resistor using an accurate 
+multimeter, and modify calibrateroutine.py to reflect your measured resistance (see comments in 
+calibrateroutine.py for more info). 
+
+6.To run calibration, run calibrateroutine.bat. This file will
+save a unit_16.pickle calibration file to the current directory.
+
 
 ----------------------How to run Imprint Energy's Battery Tester------------------
 
 1. Make sure that the arduino board is hooked up via usb to the laptop.
 2. Make sure that the aligator clips are hooked up to some battery with the positive and negative clips hooked up correctly.
-3. Run the connect.bat file (double-click). You should see a command window pop up saying "waiting for connection on 7777"
-If you do not see this, remove the USB cable and try again.
+3. Run the connect.bat file (double-click) if it has not been run already. You should see a command window pop 
+up saying "waiting for connection on 7777". If you do not see this, remove the USB cable and try again.
 4. Keep this window open, do not close it. Minimize it.
-4. Run the batterytester.bat file. This will bring up the program.
+5. Run batterytester.bat.
 
 
 -----------------------Galvanostat/Potentiostat tests------------------------------
-Make sure that you calibrate the device before running these tests. The GUI
-will expect a unit_16.pickle calibration file in the same directory so it can
-load the calibration file.
+
 1. Select the appropriate tab for whichever test you want to run. Fill in the necessary fields with the parameters you wish
 to use.
 2. Click "Run!". After a few seconds, you should see plots starting to form in real time on the graph. If nothing happens,
