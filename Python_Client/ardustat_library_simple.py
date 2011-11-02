@@ -110,7 +110,10 @@ class ardustat:
 
 	def solve_for_r(self,input_r,v_in,v_out):
 		return input_r*((v_in/v_out)-1)
-		
+	
+	
+	r_fixed_bool = False
+	r_fixed = 50	
 	def galvanostat(self,current):
 		"""Tries to pick the ideal resistance and sets a current difference"""
 		#V = I R -> I = delta V / R
@@ -126,6 +129,8 @@ class ardustat:
 				R_set = d
 				R_real = self.res_table[d][0]
 		#Solve for real delta V
+		if r_fixed_bool:
+			R_real = r_fixed
 		delta_V = abs(current*R_real)
 		if self.debug: print current,delta_V,R_real,R_set
 		potential = str(int(1023*(delta_V/5.0))).rjust(4,"0")
