@@ -13,7 +13,7 @@ class ardustat:
 		self.port = ""
 		self.ser = serial.Serial()
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.mode = "socket"
+		self.mode = "serial"
 		self.debug = False
 		self.chatty = False
 		self.groundvalue = 0
@@ -22,17 +22,16 @@ class ardustat:
 	
 	def kill_connection(self):
 		try:
-			self.s.shutdown(socket.SHUT_RDWR)
-			self.p.kill()
+			print "Closing Time"
 		except Exception as err:
-			print "Couldn't Kill P,",err
+			print "Latter!"
 	
 	def findPorts(self):
 		"""A commands to find possible ardustat ports with no Arguments, """
 		return glob.glob("/dev/tty.u*")
 		
 	def auto_connect(self,sport):
-		"""This seems to work now!  Enter the port to try listening.  Trys to start a serial forwarder if one isn't started"""
+		"""This seems to work now!  Enter the port to try listening.  Try's to start a serial forwarder if one isn't started"""
 		port = ""
 		start_server = True
 		#try:
@@ -68,10 +67,19 @@ class ardustat:
 		self.rawwrite(" ");
 
 
-	def connect(self,port):
+	def connect(self,port=None):		
+		if port == None:
+			if len(glob.glob("/dev/tty.u*")) > 0:
+				port = glob.glob("/dev/tty.u*")
+			elif len(glob.glob("/dev/ttyUSB*")) > 0:
+				port = glob.glob("/dev/ttyUSB*")
+			else:
+				print "can't see any ardustats.  PEACE."
+				sys.exit()
+		port = port[0]
 		if self.mode == "serial":
 			self.ser = serial.Serial(port,57600)
-			self.ser.timeout = 1
+			self.ser.timeout = .1
 			self.ser.open()
 			return "connected to serial"
 		if self.mode == "socket":
@@ -92,7 +100,7 @@ class ardustat:
 		
 	def rawwrite(self,command):
 		if self.mode == "serial":
-			self.ser.write(command+"\n")
+			self.ser.write(command)
 		if self.mode == "socket":
 			self.s.send(command)
 			sleep(.05)
@@ -104,7 +112,11 @@ class ardustat:
 		self.rawwrite("s0000")
 		sleep(.01)
 		if self.mode == "serial":
-			return self.ser.readlines()
+			a = ""
+			while 1:
+				a += self.ser.read(100)
+				if a.find("ST\r\n") > 1: return a.strip()
+			
 		if self.mode == "socket":
 			a = ""
 			while 1:

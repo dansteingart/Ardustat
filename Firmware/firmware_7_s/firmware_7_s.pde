@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #define DATAOUT 11//MOSI
 #define DATAIN 12//MISO - not used, but part of builtin SPI
 #define SPICLOCK  13//sck
@@ -122,7 +124,7 @@ void loop()
     holdString[4] = serInString[4];
 
     //try to print out collected information. it will do it only if there actually is some info.
-    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100)
+    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100 || serInString[0] == 86)
     {
       if (serInString[0] == 43) positive = true;
       else if (serInString[0] == 45) positive = false;
@@ -194,6 +196,16 @@ void loop()
 
         res = out;
         write_pot(pot,resistance1,res);
+      }
+
+      //Write ID to EEPROM
+      if (serInString[0] == 86)  
+      {
+        Serial.println("fudge");
+        Serial.println(out);
+
+        EEPROM.write(32,byte(out)) ;
+
       }
 
       if (serInString[0] == 103)
@@ -486,8 +498,8 @@ void potentiostat()
   //read in values
   adc = analogRead(0);
   int adc_set = adc - analogRead(3);
- // if ( ! adc_set ) adc_set = adc;
-//  if ( sign == -1 ) {  adc_set = analogRead(3) - adc;  if ( ! analogRead(3) ) adc_set = analogRead(2) - adc;}
+  // if ( ! adc_set ) adc_set = adc;
+  //  if ( sign == -1 ) {  adc_set = analogRead(3) - adc;  if ( ! analogRead(3) ) adc_set = analogRead(2) - adc;}
   dac = analogRead(1);
   int resmove = 0;
   int move = 0;
@@ -644,6 +656,8 @@ void sendout()
   Serial.print(adcref);
   Serial.print(",");
   Serial.print(refvolt);
+  Serial.print(",");
+  Serial.print(int(EEPROM.read(32)));
   Serial.println(",ST");
   //res=res+1;
   //if (res > 255) res = 0;
@@ -773,6 +787,7 @@ byte readWiper()
   }
   digitalWrite(SLAVESELECTP,HIGH);
 }
+
 
 
 
