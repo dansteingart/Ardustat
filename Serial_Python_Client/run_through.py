@@ -1,12 +1,10 @@
 import ardustat_library_simple as ard
 from time import sleep
 a = ard.ardustat()
-
+print "foo"
 a.connect()
-
-while True:
-	sleep(.5)
-	a.blink()
-	a.ser.flush()
-	a.rawwrite("s0000")
-	print a.rawread()
+a.load_resistance_table(16)
+sleep(2)
+a.blink()
+print "foo"
+print a.parsedread()

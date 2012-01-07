@@ -269,7 +269,8 @@ class ardustat:
 				outdict['valid'] = False
 				outdict['raw'] = reading
 				
-		except:
+		except Exception as error:
+			if self.debug: print error
 			outdict['valid'] = False
 			outdict['raw'] = reading
 			

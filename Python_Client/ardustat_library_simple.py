@@ -92,7 +92,7 @@ class ardustat:
 		
 	def rawwrite(self,command):
 		if self.mode == "serial":
-			self.ser.write(command+"\n")
+			self.ser.write(command)
 		if self.mode == "socket":
 			self.s.send(command)
 			sleep(.05)
@@ -104,7 +104,7 @@ class ardustat:
 		self.rawwrite("s0000")
 		sleep(.01)
 		if self.mode == "serial":
-			return self.ser.readlines()
+			return self.ser.readlines()[-1]
 		if self.mode == "socket":
 			a = ""
 			while 1:
@@ -158,7 +158,6 @@ class ardustat:
 
 	def calibrate(self,known_r,id):
 		"""Runs a calibration by setting the resistance against a known resistor and solving the voltage divider equation.  Cycles through all possible resistances"""
-		
 		#Make a Big List of Correlations
 		ressers = []
 		self.rawwrite("R")
@@ -219,6 +218,7 @@ class ardustat:
 	
 	def parseline(self,reading):
 		outdict = {}
+		reading = reading.strip()
 		#format GO,1023,88,88,255,0,1,-0000,0,0,510,ST 
 			#splitline[0] -> "GO"
 			#splitline[1] -> DAC Setting

@@ -96,7 +96,6 @@ def rawread():
 	sleep(.01)
 	if mode == "serial":
 		data = ser.readlines()
-		print 
 		return ser.readlines()[-1]
 	if mode == "socket":
 		a = ""
