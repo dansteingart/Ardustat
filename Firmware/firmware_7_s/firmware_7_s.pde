@@ -318,6 +318,7 @@ void loop()
     ocv = true;
     gstat = false;
     pstat = false;
+    digitalWrite(3,LOW);
 
     //blink 3 times
     for (int i = 0; i < 3; i++)
@@ -773,7 +774,7 @@ byte readWiper()
 
   //get data
   int data[9];
-  Serial.print("  ");
+  //Serial.print("  ");
   for(int i=0;i<9;i++)
   {
     digitalWrite(SPICLOCK,LOW);

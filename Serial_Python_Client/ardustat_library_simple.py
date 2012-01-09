@@ -18,8 +18,8 @@ class ardustat:
 		self.chatty = False
 		self.groundvalue = 0
 		self.p = None
-		atexit.register(self.kill_connection)
-	
+		self.r_fixed_bool = False
+		
 	def kill_connection(self):
 		try:
 			print "Closing Time"
@@ -109,12 +109,18 @@ class ardustat:
 				
 	
 	def rawread(self):
+		self.blink()
+		self.ser.flushInput()
+		sleep(.01)
+		self.rawwrite("s0000")
+		self.rawwrite("s0000")
 		self.rawwrite("s0000")
 		sleep(.01)
 		if self.mode == "serial":
-			a = ""
+			a = self.ser.read(1)			
 			while 1:
-				a += self.ser.read(100)
+				a += self.ser.read(1)
+				#print a
 				if a.find("ST\r\n") > 1: return a.strip()
 			
 		if self.mode == "socket":
@@ -127,8 +133,6 @@ class ardustat:
 		return input_r*((v_in/v_out)-1)
 	
 	
-	r_fixed_bool = False
-	r_fixed = 50	
 	def galvanostat(self,current):
 		"""Tries to pick the ideal resistance and sets a current difference"""
 		#V = I R -> I = delta V / R
@@ -144,7 +148,7 @@ class ardustat:
 				R_set = d
 				R_real = self.res_table[d][0]
 		#Solve for real delta V
-		if r_fixed_bool:
+		if self.r_fixed_bool:
 			R_real = r_fixed
 		delta_V = abs(current*R_real)
 		if self.debug: print current,delta_V,R_real,R_set
