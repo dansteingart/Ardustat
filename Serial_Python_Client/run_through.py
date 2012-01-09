@@ -13,4 +13,4 @@ a.ser.writeTimeout = .1
 
 for i in range(0,10):
 	print a.parsedread()
-	sleep(1)
+	sleep(1) 
