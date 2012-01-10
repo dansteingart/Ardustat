@@ -8,6 +8,7 @@ var express = require('express'),
 	app.use(express.bodyParser());
 	app.use(app.router);
 
+io = require('socket.io').listen(app);
 
 var serialport = require("serialport")
 var SerialPort = require("serialport").SerialPort
@@ -16,6 +17,8 @@ var serialPort = new SerialPort(glob.globSync("/dev/tty.u*")[0],{baudrate:57600,
 var datastream = ""
 
 app.use("/flot", express.static(__dirname + '/flot'));
+app.use("/socket.io", express.static(__dirname + '/node_modules/socket.io/lib'));
+
 
 app.get('/', function(req, res){
 	indexer = fs.readFileSync('index.html').toString()
@@ -59,11 +62,14 @@ function data_parse(data)
 	out['cell_adc'] = parts[2]
 	out['dac_adc'] = parts[3]
 	out['res_set'] = parts[4]
+	out['gnd_adc'] = parts[8]
 	
 	return out
 	
 	
 }
+
+
 
 serialPort.on("data", function (data) {
 	if (data.search("GO")>-1)
@@ -71,12 +77,12 @@ serialPort.on("data", function (data) {
 	foo = data_parse(data);
 	d = new Date().getTime()	
 	foo['time'] = d
-	
+	 io.sockets.emit('new_data',{'ardudata':foo} )
 	app.set('ardudata',foo)
 	}
 });
 
 
 setInterval(function(){
-	serialPort.write("s0000")}, 500)
+	serialPort.write("s0000")}, 100)
 

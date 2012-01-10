@@ -13,6 +13,8 @@
 	<body>
 	<script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.5.2.js"></script>
 	<script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+	<script src="socket.io/socket.io.js"></script>
+	
 	<div id="placeholder" style="width:800px;height:300px; margin: auto auto;"></div>
 	
 	<input type="textbox" id="input"> </input><br>
@@ -28,6 +30,15 @@
 				radius: .5},
 			lines: { show: true}
 		};
+		
+		
+		var socket = io.connect('http://localhost');
+	  	socket.on('new_data', function (data) {
+			big_arr.push(data.ardudata)
+			while (big_arr.length > 100) big_arr.shift(0)
+			plot_all(big_arr)
+		  });
+	
 		
 		$("#send").click(function(){
 			$.ajax({
@@ -108,12 +119,14 @@
 			flotfoo.push({'data':flotformat(foo,'time','dac_adc'),'label':'dac_adc'});
 			flotfoo.push({'data':flotformat(foo,'time','dac_set'),'label':'dac_set'});
 			flotfoo.push({'data':flotformat(foo,'time','res_set'),'label':'res_set'});
+			flotfoo.push({'data':flotformat(foo,'time','gnd_adc'),'label':'gnd_adc'});
+			
 			$.plot($("#placeholder"), flotfoo,options);
 
 		}
 	 
 		
-	setInterval("grabData()",1000);
+	//setInterval("grabData()",1000);
 	</script>	
 	</body>
 	
