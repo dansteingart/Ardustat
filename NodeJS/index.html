@@ -1,6 +1,10 @@
 <html>
 	<head>
 		<style>
+			body
+			{
+				font-family: Helvetica;
+			}
 			.output
 			{
 				width:800px;
@@ -17,8 +21,15 @@
 	
 	<div id="placeholder" style="width:800px;height:300px; margin: auto auto;"></div>
 	
+	<div id="placeholder" style="width:800px;height:300px; margin: auto auto;"><center><br>
+	Ardustat Commands <br>
 	<input type="textbox" id="input"> </input><br>
-	<button id="send">send</button><button id="blink">blink</button>
+	<button id="send">send</button><button id="blink">blink</button><br><br>
+	Other Commands<br>
+	<input type="textbox" id="otherinput"> </input><br>
+	<button id="sendother">send</button><center>
+	
+	</div>
 	
 	
 	<script>
@@ -35,6 +46,7 @@
 		var socket = io.connect('http://localhost');
 	  	socket.on('new_data', function (data) {
 			big_arr.push(data.ardudata)
+			
 			while (big_arr.length > 100) big_arr.shift(0)
 			plot_all(big_arr)
 		  });
@@ -46,7 +58,7 @@
 			  	dataType: "json",
 			  	async: true,
 			  	url: '/senddata',
-			  	data: {fudge:$("#input").val()},
+			  	data: {arducomm:$("#input").val()},
 			  	success: function(stuff){
 					console.log(stuff);
 				}
@@ -54,13 +66,28 @@
 					
 		});
 		
+		$("#sendother").click(function(){
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {command:$("#otherinput").val()},
+			  	success: function(stuff){
+					console.log(stuff);
+				}
+			});
+					
+		});
+		
+		
 		$("#blink").click(function(){
 			$.ajax({
 				type: 'POST',
 			  	dataType: "json",
 			  	async: true,
 			  	url: '/senddata',
-			  	data: {fudge:" "},
+			  	data: {arducomm:" "},
 			  	success: function(stuff){
 					console.log(stuff);
 				}
