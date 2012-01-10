@@ -1,0 +1,121 @@
+<html>
+	<head>
+		<style>
+			.output
+			{
+				width:800px;
+				margin: auto auto;
+				height: 400px;
+				border: black 1px;
+			}
+		</style>
+	</head>
+	<body>
+	<script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.5.2.js"></script>
+	<script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+	<div id="placeholder" style="width:800px;height:300px; margin: auto auto;"></div>
+	
+	<input type="textbox" id="input"> </input><br>
+	<button id="send">send</button><button id="blink">blink</button>
+	
+	
+	<script>
+		var options = {
+		    yaxis: { },
+		    xaxis: { mode: "time" },
+			points: {
+				show: false ,
+				radius: .5},
+			lines: { show: true}
+		};
+		
+		$("#send").click(function(){
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {fudge:$("#input").val()},
+			  	success: function(stuff){
+					console.log(stuff);
+				}
+			});
+					
+		});
+		
+		$("#blink").click(function(){
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {fudge:" "},
+			  	success: function(stuff){
+					console.log(stuff);
+				}
+			});
+			
+		});
+		
+		function grabData()
+		{
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/getdata',
+			  	success: function(stuff){
+					//console.log(stuff);
+					big_arr.push(stuff.ardudata)
+					while (big_arr > 100) big_arr.shift(0)
+					plot_all(big_arr)
+				}
+			});
+			
+		}
+		
+		big_arr = []
+		
+		function flotformat(source,xlab,ylab) {
+			start = source[0][xlab]
+			end = source[source.length - 1][xlab]
+			diff = Math.abs(start - end)
+			avdiff = diff/source.length
+	    	var i, l,
+	        	dest = [],
+	        	row;
+
+	    	for(i = 0, l = source.length; i < l; i++) 
+			{ 
+	        	row = source[i];
+				if (i > 0)
+				{
+					if (Math.abs(source[i][xlab] - source[i-1][xlab]) > avdiff*10) 
+					{
+						dest.push("null")
+					}
+				}
+				dest.push([row[xlab], row[ylab]]);
+	    	}
+	    	return dest;
+		}
+		
+		function plot_all(data)
+		{
+			foo = data;
+			flotfoo = []
+			flotfoo.push({'data':flotformat(foo,'time','cell_adc'),'label':'cell_adc'});
+			flotfoo.push({'data':flotformat(foo,'time','dac_adc'),'label':'dac_adc'});
+			flotfoo.push({'data':flotformat(foo,'time','dac_set'),'label':'dac_set'});
+			flotfoo.push({'data':flotformat(foo,'time','res_set'),'label':'res_set'});
+			$.plot($("#placeholder"), flotfoo,options);
+
+		}
+	 
+		
+	setInterval("grabData()",1000);
+	</script>	
+	</body>
+	
+	
+</html>

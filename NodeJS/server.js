@@ -1,29 +1,64 @@
 var http = require("http");
 var url = require("url");
+var fs = require('fs');
+var glob = require('glob');
+var qs = require('querystring');
 
 var serialport = require("serialport")
 var SerialPort = require("serialport").SerialPort
-var serialPort = new SerialPort("/dev/tty.usbmodemfd131",{baudrate:57600,parser:serialport.parsers.readline("\n") });
+
+var serialPort = new SerialPort(glob.globSync("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
+
 function onRequest(request, response) {
+
+  indexer = fs.readFileSync('index.html').toString()
+  console.log(request.method)
   var pathname = url.parse(request.url).pathname;
-  console.log("Request for " + pathname + " received.");
-  route(pathname);
-  response.writeHead(200, {"Content-Type": "text/plain"});
-  response.write("Hello World,"+pathname);
-  foo = {}
-  foo = {'data':parseData(datastream)}
-  response.write(JSON.stringify(foo));
-  response.end();
+  if (pathname == "/senddata") senddata(request,response);
+  if (pathname == "/getdata") getdata(request,response);
+
+  	else 
+  	{
+	route(pathname);
+ 	response.writeHead(200, {"Content-Type": "html"});
+ 	response.write(indexer);
+	foo = {}
+ 	foo = {'data':parseData(datastream)}
+  	response.end();
+	}
 }
 
+function senddata(request,response)
+{
+	if (request.method == 'POST') {
+        var body = '';
+        request.on('data', function (data) {
+			
+            body += data;
+
+        });
+        request.on('end', function () {
+		   	foo = qs.parse(body);
+			console.log(foo)
+			response.writeHead(200,'OK',{"Content-Type": "text/html"})
+			response.write(JSON.stringify(foo))
+			console.log(response)
+			response.end()
+		
+
+        });
+
+    }
+
+
+}
 
 
 
 function route(pathname) 
 {
-  console.log("About to route a request for " + pathname);
   if (pathname.search("blink")>-1) serialPort.write(" ")
   else if (pathname.search("p")>-1) serialPort.write(pathname.replace("/",""))
   
@@ -32,8 +67,11 @@ function route(pathname)
 
 
 serialPort.on("data", function (data) {
-	datastream = data;
-	console.log(data);
+	if (data.search("GO")>-1)
+	{
+	d = new Date().getTime()	
+	datastream = d+","+data
+	}
 });
 
 
@@ -47,3 +85,5 @@ function parseData(string)
 {
 	return string.split(",")
 }
+
+
