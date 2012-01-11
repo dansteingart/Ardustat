@@ -37,8 +37,10 @@
 	<select id="mode_choices">
 	  <option>potentiostat</option>
 	  <option>galvanostat</option>
+	  <option>moveground</option>
+	
 	</select>
-	</html><input type="textbox" id="input"> </input><br>
+	</html><input type="textbox" id="input"> </input> <span id="status"> </span><br>
 	<button id="send">send</button><button id="blink">blink</button><br><br>
 	</div>
 	
@@ -74,6 +76,8 @@
 			plot_all(big_arr)
 		  });
 	
+	
+		
 		
 		$("#send").click(function(){
 			$.ajax({
@@ -83,7 +87,7 @@
 			  	url: '/senddata',
 			  	data: {command:$("#mode_choices").val(),value:$("#input").val()},
 			  	success: function(stuff){
-					console.log(stuff);
+					$("#status").html("all good").fadeIn().fadeOut()
 				}
 			});
 					

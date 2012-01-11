@@ -75,6 +75,11 @@ function setStuff(req,res)
 			console.log("setting galvanostat");
 			galvanostat(value)
 		}
+		if (command == "moveground")
+		{
+			console.log("setting galvanostat");
+			moveground(value)
+		}
 		
 	}
 	res.send(req.body)
@@ -89,6 +94,14 @@ function potentiostat(value)
 	
 }
 
+function moveground(value)
+{
+	value_to_ardustat = value / volts_per_tick;
+	toArd("d",value_to_ardustat)
+	setTimeout(function(){toArd("-",0000)},50)
+	
+	
+}
 
 function galvanostat(value)
 {
