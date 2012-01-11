@@ -155,9 +155,10 @@ void loop()
       }
       if (serInString[0] == 100)
       {
+        
         outvolt = out;
         send_dac(1,outvolt);
-        digitalWrite(3,HIGH);
+        digitalWrite(3,LOW);
         speed = 1;
         countto = 10;
       }

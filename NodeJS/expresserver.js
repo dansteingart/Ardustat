@@ -25,6 +25,13 @@ app.get('/', function(req, res){
     res.send(indexer);
 });
 
+
+app.get('/debug', function(req, res){
+	indexer = fs.readFileSync('debug.html').toString()
+    res.send(indexer);
+});
+
+
 function setStuff(req,res)
 {
 	if (req.body.arducomm != undefined) serialPort.write(req.body.arducomm)
@@ -33,7 +40,7 @@ function setStuff(req,res)
 		if (req.body.command == "calibrate")
 		{
 			console.log("calibration should start");
-			calibrator();
+			calibrator(req.body.value);
 		}
 		
 	}
@@ -62,6 +69,9 @@ function datadoer()
 app.listen(8888);
 console.log('Express server started on port %s', app.address().port);
 
+id = 20035;
+mode = 0;
+var res_table;
 function data_parse(data)
 {
 	parts = data.split(",")
@@ -77,14 +87,52 @@ function data_parse(data)
 	out['gnd_adc'] = parseFloat(parts[8])
 	out['ref_adc'] = parseFloat(parts[9])
 	out['twopointfive_adc'] = parseFloat(parts[10])
-
+	out['id'] = parseInt(parts[11])
 	//making sense of it
 	volts_per_tick = 	2.5/out['twopointfive_adc']
+	if (id != out['id'])
+	{
+		id = out['id'];
+		res_table = undefined
+	}
+	
+	
+	if (mode != out['mode'])
+	{
+		mode = out['mode'];
+		
+	}
 	out['cell_potential'] = (out['cell_adc'] - out['gnd_adc']) * volts_per_tick
-	out['dac_potential'] = out['dac_adc']*volts_per_tick
+	out['dac_potential'] = (out['dac_adc'] - out['gnd_adc'])*volts_per_tick
 	out['ref_potential'] = out['ref_adc']*volts_per_tick
 	out['gnd_potential'] = out['gnd_adc']*volts_per_tick
 	out['working_potential'] = (out['cell_adc'] - out['ref_adc']) * volts_per_tick
+	
+	if (res_table == undefined)
+	{
+		try
+		{
+			res_table = JSON.parse(fs.readFileSync("unit_"+id.toString()+".json").toString())
+			console.log("loaded table "+id.toString())
+			
+			
+		}
+		catch (err)
+		{
+			console.log(err)
+			console.log("no table "+id.toString())
+			res_table = "null"
+		}
+	}
+	
+	if (res_table.constructor.toString().indexOf("Object")>-1)
+	{
+		out['resistance'] = res_table[out['res_set']]
+		current = (out['dac_potential']-out['cell_potential'])/out['resistance']
+		if (mode == 1) out['current'] = 0
+		else out['current'] = current
+	}
+	
 	return out
 }
 
@@ -112,12 +160,14 @@ serialPort.on("data", function (data) {
 calibrate = false
 counter = 0
 calloop = 0
-callimit = 3
+callimit = 2
 calibration_array = []
 rfixed = 10000
 
-function calibrator()
+function calibrator(value)
 {
+	rfixed = parseFloat(value)
+	console.log(rfixed)
 	calibrate = false
 	counter = 0
 	calloop = 0
@@ -134,7 +184,42 @@ setInterval(function(){
 		{
 			counter = 0	
 			calloop++
-			if (calloop > callimit) calibrate = false
+			if (calloop > callimit)
+			{
+				calibrate = false
+				out_table = {}
+				for (i = 0; i < calibration_array.length; i++)
+				{
+					this_foo = calibration_array[i]
+					res_set = this_foo['res_set']
+					dac_potential = this_foo['dac_potential']
+					cell_potential = this_foo['cell_potential']
+					gnd_potential = this_foo['gnd_potential']
+					res_value = rfixed*(((dac_potential-gnd_potential)/(cell_potential-gnd_potential)) - 1)					
+					if (out_table[res_set] == undefined) out_table[res_set] = []
+					out_table[res_set].push(res_value)
+				}
+				console.log(out_table)
+				final_table = {}
+				for (var key in out_table)
+				{
+					if (out_table.hasOwnProperty(key)) 
+					{
+						arr = out_table[key]
+						sum = 0
+						for (var i = 0; i < arr.length; i ++)
+						{
+							sum = sum + arr[i]
+						}
+						average = sum/(arr.length)
+						final_table[key] = average
+					}
+				  
+				}
+				console.log(final_table)
+				fs.writeFileSync("unit_"+id.toString()+".json",JSON.stringify(final_table))
+				res_table = undefined;
+			}
 		} 
 		setTimeout(function(){serialPort.write(ardupadder("r",counter))	},50);
 	

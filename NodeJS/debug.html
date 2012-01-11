@@ -19,13 +19,18 @@
 	<script language="javascript" type="text/javascript" src="/flot/jquery.flot.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	
-	<div id="flot_potential" style="width:800px;height:300px; margin: auto auto;"></div>
+	<div id="placeholder" style="width:800px;height:300px; margin: auto auto;"></div>
 	
-	<div id="flot_current" style="width:800px;height:300px; margin: auto auto;"><table>
+	<div id="placeholder" style="width:800px;height:300px; margin: auto auto;"><table>
 		<tr><td style="width:300px;"><center><br>
 	Ardustat Commands <br>
 	<input type="textbox" id="input"> </input><br>
 	<button id="send">send</button><button id="blink">blink</button><br><br>
+	Other Commands<br>
+	<input type="textbox" id="calibrate_r_fixed" value="99.6"> </input><br>
+	<button id="send_calibrate">calibrate</button><center>
+	</td>
+	<td> <div id="update_values"> </div> </td>
 	</div>
 	
 	
