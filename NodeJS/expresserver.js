@@ -1,3 +1,5 @@
+
+//Set it up
 var http = require("http");
 var url = require("url");
 var fs = require('fs');
@@ -16,6 +18,8 @@ var SerialPort = require("serialport").SerialPort
 var serialPort = new SerialPort(glob.globSync("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
+
+//Express Redirects
 app.use("/flot", express.static(__dirname + '/flot'));
 app.use("/socket.io", express.static(__dirname + '/node_modules/socket.io/lib'));
 
@@ -31,16 +35,45 @@ app.get('/debug', function(req, res){
     res.send(indexer);
 });
 
+app.post('/senddata', setStuff,function(req, res,next){
+	console.log(req.body)
+	res.send(req.body)
+	
+});
 
+
+app.post('/getdata',function(req, res){
+	res.send(req.app.settings)
+});
+
+app.listen(8888);
+console.log('Express server started on port %s', app.address().port);
+
+
+//Program Functions
 function setStuff(req,res)
 {
 	if (req.body.arducomm != undefined) serialPort.write(req.body.arducomm)
 	if (req.body.command != undefined)
 	{
-		if (req.body.command == "calibrate")
+		command = req.body.command;
+		value = req.body.value;
+		if (command == "calibrate")
 		{
 			console.log("calibration should start");
 			calibrator(req.body.value);
+		}
+		
+		
+		if (command == "potentiostat")
+		{
+			console.log("setting potentiostat");
+			potentiostat(value)
+		}
+		if (command == "galvanostat")
+		{
+			console.log("setting galvanostat");
+			galvanostat(value)
 		}
 		
 	}
@@ -48,28 +81,51 @@ function setStuff(req,res)
 	
 }
 
-app.post('/senddata', setStuff,function(req, res,next){
-	console.log(req.body)
-	res.send(req.body)
-	
-});
 
-fudge = "factor"
-
-app.post('/getdata',function(req, res){
-	res.send(req.app.settings)
-});
-
-
-function datadoer()
+function potentiostat(value)
 {
-	return datastream
+	value_to_ardustat = value / volts_per_tick;
+	toArd("p",value_to_ardustat)
+	
 }
 
-app.listen(8888);
-console.log('Express server started on port %s', app.address().port);
+
+function galvanostat(value)
+{
+	//First Match R
+	r_guess = .1/value
+	console.log(r_guess)
+	target = 1000000
+	r_best = 0
+	set_best = 0
+	for (var key in res_table)
+	{
+		if (Math.abs(r_guess-res_table[key]) < target)
+		{
+			console.log("got something better")
+			target = Math.abs(r_guess-res_table[key]) 
+			r_best = res_table[key]
+			set_best = key
+			
+		}
+	} 
+
+	//now solve for V
+	delta_potential = value*r_best
+	console.log(r_best)
+	console.log(set_best)
+	console.log(delta_potential)
+	
+	value_to_ardustat = delta_potential / volts_per_tick;
+	toArd("r",parseInt(set_best))
+	setTimeout(function(){toArd("g",parseInt(value_to_ardustat))},50)
+	
+}
+
+
 
 id = 20035;
+vpt = undefined; //volts per tick
 mode = 0;
 var res_table;
 function data_parse(data)
@@ -90,6 +146,7 @@ function data_parse(data)
 	out['id'] = parseInt(parts[11])
 	//making sense of it
 	volts_per_tick = 	2.5/out['twopointfive_adc']
+	if (vpt == undefined) vptt = volts_per_tick;
 	if (id != out['id'])
 	{
 		id = out['id'];
@@ -221,22 +278,29 @@ setInterval(function(){
 				res_table = undefined;
 			}
 		} 
-		setTimeout(function(){serialPort.write(ardupadder("r",counter))	},50);
+		setTimeout(function(){toArd("r",counter)},50);
 	
 	}
 },100)
 
 //Helpers
 //Format raw entry for ardustat
+function toArd(command,value)
+{
+	serialPort.write(ardupadder(command,value));	
+}
 function ardupadder(command,number)
 {
+	number = parseInt(number)
+	console.log(number)
 	if (number < -1) number=Math.abs(number)+2000
-	
+	console.log(number)
 	padding = "";
 	if (number < 10) padding = "000";
 	else if (number < 100) padding= "00";
 	else if (number < 1000) padding= "0";
 	out = command+padding+number.toString()
+	console.log(out)
 	return out
 	
 }
