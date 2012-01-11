@@ -21,8 +21,9 @@
 	
 	<div id="flot_potential" style="width:800px;height:300px; margin: auto auto;"></div>
 	
-	<div id="flot_current" style="width:800px;height:300px; margin: auto auto;"><table>
-		<tr><td style="width:300px;"><center><br>
+	<div id="flot_current" style="width:800px;height:300px; margin: auto auto;"></div>
+	
+	<div id="commanders">
 	Ardustat Commands <br>
 	<input type="textbox" id="input"> </input><br>
 	<button id="send">send</button><button id="blink">blink</button><br><br>
@@ -150,14 +151,13 @@
 		function plot_all(data)
 		{
 			foo = data;
-			flotfoo = []
-			flotfoo.push({'data':flotformat(foo,'time','cell_adc'),'label':'cell_adc'});
-			flotfoo.push({'data':flotformat(foo,'time','dac_adc'),'label':'dac_adc'});
-			flotfoo.push({'data':flotformat(foo,'time','dac_set'),'label':'dac_set'});
-			flotfoo.push({'data':flotformat(foo,'time','res_set'),'label':'res_set'});
-			flotfoo.push({'data':flotformat(foo,'time','gnd_adc'),'label':'gnd_adc'});
+			flotfoo = []   
+			flotfoo.push({'data':flotformat(foo,'time','working_potential'),'label':'working_potential','color':'red'});
+			$.plot($("#flot_potential"), flotfoo,options);
 			
-			$.plot($("#placeholder"), flotfoo,options);
+			flotfoo = []   
+			flotfoo.push({'data':flotformat(foo,'time','current'),'label':'current','color':'red'});
+			$.plot($("#flot_current"), flotfoo,options);
 
 		}
 	 
