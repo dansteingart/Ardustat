@@ -2,5 +2,5 @@
 *.dat
 *.pyc
 *.pickle
-\
-NodeJS/unit_21.json
+*.json
+*.ardudata

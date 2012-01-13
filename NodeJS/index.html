@@ -39,13 +39,17 @@
 	  <option>galvanostat</option>
 	  <option>moveground</option>
 	
-	</select>
-	</html><input type="textbox" id="input"> </input> <span id="status"> </span><br>
-	<button id="send">send</button><button id="blink">blink</button><br><br>
+	</select><input type="textbox" id="input"> </input> <span id="status"> </span><br>
+	<button id="send">send</button><button id="blink">blink</button><button id="ocv">ocv</button><br><br>
+	Log Functions<br>
+	<input type="textbox" id="logfile"> </input></span><br>
+	<button id="logger">Start Log</button> <span id="log_file_name"> </span>
 	</div>
 	
+	<body>
 	
 	<script>
+		logger = "stopped";
 		var options = {
 		    yaxis: { },
 		    xaxis: { mode: "time" },
@@ -61,6 +65,7 @@
 			
 			out_text = ""
 			fata = data.ardudata
+			logcheck(fata)
 			for (var key in fata)
 			{
 				if (fata.hasOwnProperty(key)) 
@@ -76,7 +81,31 @@
 			plot_all(big_arr)
 		  });
 	
-	
+	function logcheck(fata)
+	{
+
+			logger = fata['logger'].toString()
+			if (fata['datafile'] != undefined)
+			{
+				datafile = fata['datafile'] 
+			} 
+			else
+			{
+				datafile = ""
+			}
+		
+			if (logger == "started")
+			{
+				$("#logger").html("Stop Log")
+				$("#log_file_name").text(datafile)
+			
+			}
+			else if (logger == "stopped")
+			{
+				$("#logger").html("Start Log")
+				$("#log_file_name").text("")
+			}
+	}
 		
 		
 		$("#send").click(function(){
@@ -108,6 +137,38 @@
 			
 		});
 		
+		$("#ocv").click(function(){
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {command:"ocv",value:""},
+			  	success: function(stuff){
+					console.log(stuff);
+				}
+			});
+			
+		});
+		
+			$("#logger").click(function(){
+				
+				if (logger == "stopped") logger = "started"
+				else logger = "stopped"
+				
+				console.log(logger)
+				$.ajax({
+					type: 'POST',
+				  	dataType: "json",
+				  	async: true,
+				  	url: '/senddata',
+				  	data: {logger:logger,datafilename:$("#logfile").val()},
+				  	success: function(stuff){
+						console.log(stuff);
+					}
+				});
+
+			});
 		
 		function grabData()
 		{
@@ -166,7 +227,6 @@
 		}
 	 
 		
-	//setInterval("grabData()",1000);
 	</script>	
 	</body>
 	
