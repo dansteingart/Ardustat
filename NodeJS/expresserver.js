@@ -9,11 +9,26 @@ var express = require('express'), //App Framework (similar to web.py abstraction
 	app.use(app.router);
 io = require('socket.io').listen(app); //Socket Creations
 io.set('log level', 1)
+
 var serialport = require("serialport") //Serial Port Creation
 var SerialPort = require("serialport").SerialPort 
-
 var serialPort = new SerialPort(glob.globSync("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
+
+//MongoDB stuff
+db_connected = false
+try
+{
+	var Mongolian = require("mongolian")
+	var server = new Mongolian
+	var db = server.db("test")
+	var collection = db.collection("holdit")
+	db_connected = true
+}
+catch (err)
+{
+	console.log(err)
+}
 
 //Logging Hack because I'm tired 
 var sys = require('sys')
@@ -50,7 +65,7 @@ app.get('/cv', function(req, res){
 
 //Accept data (all pages, throws to setStuff()
 app.post('/senddata', setStuff,function(req, res,next){
-	console.log(req.body)
+	//console.log(req.body)
 	res.send(req.body)
 	
 });
@@ -80,8 +95,10 @@ function setStuff(req,res)
 		if (logger == "started")
 		{
 			console.log("starting log")
-			datafile = req.body.datafilename +"_"+ new Date().getTime().toString()+".ardudata"
-			
+			profix = req.body.datafilename +"_"+ new Date().getTime().toString()
+			datafile = profix+".ardudata"
+			if (db_connected) collection = db.collection(profix)
+		  
 		}
 		else if (logger = "stopped")
 		{
@@ -94,7 +111,7 @@ function setStuff(req,res)
 	{
 		calibrate = false
 		cv = false
-		cycling = false
+		arb_cycling = false
 		
 		command = req.body.command;
 		value = req.body.value;
@@ -152,10 +169,16 @@ cv_time  = new Date().getTime()
 cv_arr = []
 last_comm = ""
 cv_comm = ""
-
+cv_settings = {}
 //Global Variables for Logging
 logger = "stopped"
 datafile = ""
+
+
+//Global Variablew for Arb Cyclingq
+arb_cycling = false
+arb_cycling_settings = {}
+
 //Abstracted Electrochemical Functions
 
 //Initiate CV
@@ -164,6 +187,7 @@ function cv_start_go(value)
 		cv_arr = []
 		moveground(2.5)
 		//convert mV/s to a wait time
+		cv_dir = 1
 		cv_rate =  (1/parseFloat(value['rate']))*1000*5
 		cv_max = parseFloat(value['v_max'])
 		cv_min = parseFloat(value['v_min'])
@@ -174,6 +198,8 @@ function cv_start_go(value)
 		cv_time  = new Date().getTime()	
 		cv_step = cv_start
 		potentiostat(cv_step)
+		cv_settings = value
+		cv_settings['cycle'] = cv_cycle
 		
 }
 
@@ -201,7 +227,7 @@ function cv_stepper()
 		if (cv_cycle > cv_cycle_limit) 
 		{
 			cv = false
-			ocv()
+			setTimeout(function(){ocv()},1000)
 		}
 		else
 		{
@@ -230,9 +256,7 @@ function moveground(value)
 {
 	value_to_ardustat = value / volts_per_tick;
 	toArd("d",value_to_ardustat)
-	setTimeout(function(){toArd("-",0000)},50)
-	
-	
+	ocv()
 }
 
 //Set Galvanostat
@@ -240,7 +264,7 @@ function galvanostat(value)
 {
 	//First Match R
 	r_guess = .1/value
-	console.log(r_guess)
+	//console.log(r_guess)
 	target = 1000000
 	r_best = 0
 	set_best = 0
@@ -248,7 +272,7 @@ function galvanostat(value)
 	{
 		if (Math.abs(r_guess-res_table[key]) < target)
 		{
-			console.log("got something better")
+			//console.log("got something better")
 			target = Math.abs(r_guess-res_table[key]) 
 			r_best = res_table[key]
 			set_best = key
@@ -258,13 +282,13 @@ function galvanostat(value)
 
 	//now solve for V
 	delta_potential = value*r_best
-	console.log(r_best)
-	console.log(set_best)
-	console.log(delta_potential)
+	//console.log(r_best)
+	//console.log(set_best)
+	//console.log(delta_potential)
 	
 	value_to_ardustat = delta_potential / volts_per_tick;
 	toArd("r",parseInt(set_best))
-	setTimeout(function(){toArd("g",parseInt(value_to_ardustat))},50)
+	toArd("g",parseInt(value_to_ardustat))
 	
 }
 
@@ -360,7 +384,7 @@ rfixed = 10000
 function calibrator(value)
 {
 	rfixed = parseFloat(value)
-	console.log(rfixed)
+	//console.log(rfixed)
 	calibrate = false
 	counter = 0
 	calloop = 0
@@ -390,7 +414,7 @@ function calibrate_step()
 					if (out_table[res_set] == undefined) out_table[res_set] = []
 					out_table[res_set].push(res_value)
 				}
-				console.log(out_table)
+				//console.log(out_table)
 				final_table = {}
 				for (var key in out_table)
 				{
@@ -407,7 +431,7 @@ function calibrate_step()
 					}
 				  
 				}
-				console.log(final_table)
+				//console.log(final_table)
 				fs.writeFileSync("unit_"+id.toString()+".json",JSON.stringify(final_table))
 				res_table = undefined;
 			}
@@ -418,8 +442,9 @@ function calibrate_step()
 
 //Serial Port Interactions
 
-setInterval(function(){
-	serialPort.write("s0000")
+
+t1 = setInterval(function(){
+	queuer.push("s0000");
 	if (calibrate)
 	{   
 		calibrate_step()
@@ -429,14 +454,30 @@ setInterval(function(){
 	{
 		cv_stepper()
 	}
-
+	
 },100)
 
+t2 = setInterval(function(){
+	
+	if (queuer.length > 0)
+	{
+		sout = queuer.shift();
+		//if (sout != "s0000") console.log(sout);
+		serialPort.write(sout);	
+	}
+
+},20)
+
+
+var queuer = []
 function toArd(command,value)
 {
 	last_comm = ardupadder(command,value)
-	serialPort.write(ardupadder(command,value));	
+	//serialPort.write(ardupadder(command,value));	
+	queuer.push(ardupadder(command,value))
+	//console.log(queuer)
 }
+
 
 serialPort.on("data", function (data) {
 	if (data.search("GO")>-1)
@@ -445,6 +486,9 @@ serialPort.on("data", function (data) {
 		d = new Date().getTime()	
 		foo['time'] = d
 		
+		if (cv) foo['cv_settings'] = cv_settings
+		if (arb_cycling) foo['arb_cycling'] = arb_cycling_settings
+		
 		if (calibrate)
 		{
 			calibration_array.push(foo)
@@ -452,6 +496,10 @@ serialPort.on("data", function (data) {
 		
 		if (logger=="started")
 		{
+			if (db_connected) 
+			{
+				collection.insert(foo)
+			}
 			exec("echo '"+JSON.stringify(foo)+"' >> data/"+datafile);
 			
 		}
@@ -466,19 +514,16 @@ serialPort.on("data", function (data) {
 	
 });
 
-
 function ardupadder(command,number)
 {
 	number = parseInt(number)
-	console.log(number)
-	if (number < -1) number=Math.abs(number)+2000
-	console.log(number)
+	if (number < 0) number=Math.abs(number)+2000
+	//console.log(number)
 	padding = "";
 	if (number < 10) padding = "000";
 	else if (number < 100) padding= "00";
 	else if (number < 1000) padding= "0";
-	out = command+padding+number.toString()
-	console.log(out)
-	return out
+	ard_out = command+padding+number.toString()
+	return ard_out
 	
 }

@@ -136,6 +136,11 @@
 				 y = y/hold_array['y'].length
 				 hold_array['x'] = []
 				 hold_array['y'] = []
+				if (cv_arr.length > 0) 
+				{
+					old_x = cv_arr[cv_arr.length-1][0]
+				 	if (Math.abs(x-old_x) > .05) cv_arr.push([null]);
+			 	}
 				 cv_arr.push([x,y]);
 				 
 				 //io.sockets.emit('cv_data',{'cv_data':cv_arr} )

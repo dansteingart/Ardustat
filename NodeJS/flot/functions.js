@@ -1,0 +1,181 @@
+	
+	//Globals
+	logger = "stopped";
+	var options = {
+	    yaxis: { },
+	    xaxis: { mode: "time" },
+		points: {
+			show: false ,
+			radius: .5},
+		lines: { show: true}
+	};
+	
+	big_arr = []
+	
+	var socket = io.connect('/');
+ 
+	//Socket Stuf
+ 	socket.on('new_data', function (data) {
+		
+		out_text = ""
+		fata = data.ardudata
+		logcheck(fata)
+		for (var key in fata)
+		{
+			if (fata.hasOwnProperty(key)) 
+			{
+				out_text+=key+": "+fata[key]+"<br>"
+			}
+		}
+	
+		$("#update_values").html(out_text);
+		big_arr.push(data.ardudata)
+		
+		while (big_arr.length > 100) big_arr.shift(0)
+		plot_all(big_arr)
+	});
+
+	
+	//Functions
+	function logcheck(fata)
+	{
+
+		logger = fata['logger'].toString()
+		if (fata['datafile'] != undefined)
+		{
+			datafile = fata['datafile'] 
+		} 
+		else
+		{
+			datafile = ""
+		}
+	
+		if (logger == "started")
+		{
+			$("#logger").html("Stop Log")
+			$("#log_file_name").text(datafile)
+		
+		}
+		else if (logger == "stopped")
+		{
+			$("#logger").html("Start Log")
+			$("#log_file_name").text("")
+		}
+	}
+	
+	
+	$("#send").click(function(){
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/senddata',
+		  	data: {command:$("#mode_choices").val(),value:$("#input").val()},
+		  	success: function(stuff){
+				$("#status").html("all good").fadeIn().fadeOut()
+			}
+		});
+				
+	});
+			
+	
+	$("#blink").click(function(){
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/senddata',
+		  	data: {arducomm:" "},
+		  	success: function(stuff){
+				console.log(stuff);
+			}
+		});
+		
+	});
+	
+	$("#ocv").click(function(){
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/senddata',
+		  	data: {command:"ocv",value:""},
+		  	success: function(stuff){
+				console.log(stuff);
+			}
+		});
+		
+	});
+	
+	$("#logger").click(function(){
+			if (logger == "stopped") logger = "started"
+			else logger = "stopped"
+			
+			console.log(logger)
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {logger:logger,datafilename:$("#logfile").val()},
+			  	success: function(stuff){
+					console.log(stuff);
+				}
+			});
+
+	});
+	
+	function grabData()
+	{
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/getdata',
+		  	success: function(stuff){
+				//console.log(stuff);
+				big_arr.push(stuff.ardudata)
+				while (big_arr > 100) big_arr.shift(0)
+				plot_all(big_arr)
+			}
+		});
+		
+	}
+	
+	
+	function flotformat(source,xlab,ylab) {
+		start = source[0][xlab]
+		end = source[source.length - 1][xlab]
+		diff = Math.abs(start - end)
+		avdiff = diff/source.length
+    	var i, l,
+        	dest = [],
+        	row;
+
+    	for(i = 0, l = source.length; i < l; i++) 
+		{ 
+        	row = source[i];
+			if (i > 0)
+			{
+				if (Math.abs(source[i][xlab] - source[i-1][xlab]) > avdiff*10) 
+				{
+					dest.push("null")
+				}
+			}
+			dest.push([row[xlab], row[ylab]]);
+    	}
+    	return dest;
+	}
+	
+	function plot_all(data)
+	{
+		foo = data;
+		flotfoo = []   
+		flotfoo.push({'data':flotformat(foo,'time','working_potential'),'label':'working_potential','color':'red'});
+		$.plot($("#flot_potential"), flotfoo,options);
+		
+		flotfoo = []   
+		flotfoo.push({'data':flotformat(foo,'time','current'),'label':'current','color':'red'});
+		$.plot($("#flot_current"), flotfoo,options);
+
+	}
