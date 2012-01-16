@@ -1,6 +1,5 @@
 #Ardustat Code
 
-
 Authors:
 
 - Barry Van Tassell <bajavata@gmail.com>
@@ -17,9 +16,8 @@ Balasubramanian is supported by NSF CMMI 1031208
 ####Software that you need to have installed to use the ardustat:
 - Arduino (http://arduino.cc/en/Main/Software)
 - FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
-- The [enthought python distribution](http://www.enthought.com/products/epd_free.php) (free version works well)
-   - You'll also need to easy_install pyserial (required) and web.py (optional) 
-   - All of these tools are cross-platform and should work on Mac OS X, Windows 2000 and up, and most Linux distributions.
+- We're now a node shop.  
+   - Get node [here](http://nodejs.org/)
 
 ####Initial Setup:
 - Attach your ardustat shield to your arduino
@@ -29,18 +27,27 @@ Balasubramanian is supported by NSF CMMI 1031208
 - Using your browser, go to http://localhost:8080/
 - Use the HTML interface to interact with the ardustat.
 
-Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid upredictable results, please use a modern browser.
+Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
 	
-###General Ardustat Instructions
+###General Ardustat Instructions (tested against mac os x)
+1. Install Version of Firmware 7s on your ardustat (Firmware/Firmware 7_s/)
+2. In the NodeJS directory, type
+	npm install serialport (only on the first go)
+3. Then type
+	node expresserver.js
+4. In a browser, go to http://localhost:8888/debug
+	(stuff should be happening)
+5. We now need to calibrate the ardustat.  Put a quality resistor of known value between the working and counter clips, and then attach the reference clip to the counter clip
+6. Give your ardustat an id: in the "Ardustat Commands"  box type 
+		V0XXX
+	where XXX is an integer between 0 and 240, and hit send
+	(you only have to do this once as well, the id will persist in EEPROM)
+7. Under calibration resistor value, enter the value of your resistor in ohms, and hit send
+8. You should see the graph changing, the yellow line should slope downwards and then reset 3 time. 
+9. Your ardustat is now calibrated.  You won't have to do this again (unless you delete the calibration file or feel that the values were inaccurate)
+10.  Now go to http://localhost:8888.  You should now see the Potential and Current trace.  Play with the the potentiostsat and galvanostat settings.
+	
+From here on out, all you need to down is start expresserver.js and then go to http://localhost:8888
 
-####Instructions for the “Connection, Manual Operation, Logging” tab
-#####Connection
-The first thing you should do after you have plugged the ardustat in is connect the ardustat to the web interface. Type in the ID number of the ardustat into the field at the top of the web interface (each individual ardustat should have an ID number written on it in sharpie). Normally you would use the autoconnect function to connect the ardustat, go to the field labeled "Start Ardustat," leave it blank, and click the “Submit” button.
-If you are using a version 7 ardustat, you can double-check that you are really connected by clicking the button next to the label “Blink ardustat LED” to blink the LED on your ardustat board. If the LED doesn’t blink, you are not connected. (The LED on the version 8 ardustat is nonfunctional due to a hardware bug.)
+Enjoy!
 
-#####Calibration
-If you haven’t calibrated the ardustat with that ID number before, you need to calibrate it to make sure that your data is accurate. Find a resistor and measure its resistance with a multimeter (actual resistances can be significantly different than labeled resistances). Type in the resistance value into the field underneath the “Calibrate” level and click “Submit.” You can check the progress of the calibration in the terminal window. This may take several minutes.
-
-#####Logging
-You will want to keep a log of your data saved. First, pick a file name for your data. Make sure you don’t pick the same file name as a log file that already exists, since ardustat will overwrite it. The ardustat will save two files, of the form “YourFilename-parsed.csv” and “YourFilename-raw.csv”. Type in the filename in the field labeled “Filename” and press “Submit.”
-Note: You do not need to type in the file extension yourself.
