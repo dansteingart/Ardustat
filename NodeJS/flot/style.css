@@ -1,6 +1,8 @@
 	body
 	{
 		font-family: Helvetica;
+		overflow-x:hidden;
+		
 	}
 	.output
 	{
@@ -15,4 +17,15 @@
 		width:800px;
 		margin: auto auto;
 		text-align: center;
+	}
+	.plots
+	{
+		margin: 10px 30px 10px 30px;
+	}
+	.plot
+	{
+		width:auto;
+		height:300px; 
+		margin: auto auto;
+		padding: 100px 100px;
 	}

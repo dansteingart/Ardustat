@@ -107,7 +107,7 @@ function setStuff(req,res)
 		{
 			console.log("starting log")
 			profix = req.body.datafilename +"_"+ new Date().getTime().toString()
-			datafile = profix+".ardudat"
+			datafile = profix
 			if (db_connected) 
 			{
 				collection = db.collection(profix)
