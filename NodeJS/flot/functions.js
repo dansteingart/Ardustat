@@ -41,15 +41,7 @@
 		fata = data.ardudata
 		if (fata['cv_settings'] != undefined) cvprocess(fata)
 		logcheck(fata)
-		for (var key in fata)
-		{
-			if (fata.hasOwnProperty(key)) 
-			{
-				out_text+=key+": "+fata[key]+"<br>"
-			}
-		}
-	
-		$("#update_values").html(out_text);
+		cvstatus(fata)
 		big_arr.push(data.ardudata)
 		
 		while (big_arr.length > 100) big_arr.shift(0)
@@ -88,6 +80,23 @@
 		}
 	}
 	
+	function cvstatus(fata)
+	{
+		
+		if ($("#cvstatus").length > 0 & fata['cv_settings'] != undefined)
+		{
+			mata = fata['cv_settings']
+			for (var key in mata)
+			{
+				if (mata.hasOwnProperty(key)) 
+				{
+					out_text+=key+": "+mata[key]+"<br>"
+				}
+			}
+	
+			$("#cvstatus").html(out_text);
+		}
+	}
 	
 	$("#send").click(function(){
 		$.ajax({
@@ -260,12 +269,17 @@
 	function plot_all(data)
 	{
 		foo = data;
-		flotfoo = []   
-		flotfoo.push({'data':flotformat(foo,'time','working_potential'),'label':'working_potential','color':'red'});
-		$.plot($("#flot_potential"), flotfoo,options);
-		
-		flotfoo = []   
-		flotfoo.push({'data':flotformat(foo,'time','current'),'label':'current','color':'red'});
-		$.plot($("#flot_current"), flotfoo,options);
-
+		if ($("#flot_potential").length >0)
+		{
+			console.log($("#flot_potential").length )
+			flotfoo = []   
+			flotfoo.push({'data':flotformat(foo,'time','working_potential'),'label':'working_potential','color':'red'});
+			$.plot($("#flot_potential"), flotfoo,options);
+		}
+		if ($("#flot_current").length > 0)
+		{
+			flotfoo = []   
+			flotfoo.push({'data':flotformat(foo,'time','current'),'label':'current','color':'red'});
+			$.plot($("#flot_current"), flotfoo,options);
+		}
 	}
