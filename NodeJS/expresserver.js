@@ -1,3 +1,11 @@
+/*
+TODO:
+
+- Add command line variable for serial port
+- Cycling Routines (think on framework)
+
+*/
+
 //Set it up
 var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
@@ -15,15 +23,18 @@ var SerialPort = require("serialport").SerialPort
 var serialPort = new SerialPort(glob.globSync("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
+
 //MongoDB stuff
 db_connected = false
 try
 {
-	var Mongolian = require("mongolian")
-	var server = new Mongolian
-	var db = server.db("test")
-	var collection = db.collection("holdit")
+	//var Mongolian = require("mongolian")
+	//var server = new Mongolian
+	var mongo = require('mongoskin');
+	var db = mongo.db("localhost:27017/ardustat")
 	db_connected = true
+	central_info = "central_info"
+	
 }
 catch (err)
 {
@@ -96,8 +107,12 @@ function setStuff(req,res)
 		{
 			console.log("starting log")
 			profix = req.body.datafilename +"_"+ new Date().getTime().toString()
-			datafile = profix+".ardudata"
-			if (db_connected) collection = db.collection(profix)
+			datafile = profix+".ardudat"
+			if (db_connected) 
+			{
+				collection = db.collection(profix)
+				
+			}
 		  
 		}
 		else if (logger = "stopped")
@@ -235,6 +250,55 @@ function cv_stepper()
 			potentiostat(cv_step)
 		}
 	}
+}
+
+
+cv_arr = []
+cv_comm = ""
+hold_array = []
+hold_array['x'] = []
+hold_array['y'] = []
+
+function cvprocess(data)
+{	
+	cv_process_out = {}
+	foo = data
+	last_comm = foo['last_comm']
+	if (cv_comm != last_comm & cv_comm != "")
+	{
+		 cv_comm = last_comm
+		 x = 0
+		 y = 0
+		 for (j = 0; j<hold_array['x'].length;j++ )
+		 {
+		 	x = x+hold_array['x'][j]
+		 	y = y+hold_array['y'][j]
+		 }
+		 x = x/hold_array['x'].length
+		 y = y/hold_array['y'].length
+		 hold_array['x'] = []
+		 hold_array['y'] = []
+		if (cv_arr.length > 0) 
+		{
+			old_x = cv_arr[cv_arr.length-1][0]
+		 	if (Math.abs(x-old_x) > .05) cv_arr.push([null]);
+	 	}
+		
+		cv_process_out = {'V':x,'I':y}
+
+	 }
+	 else if (cv_comm == "")
+	 {
+	    cv_comm = last_comm
+		hold_array['x'] = []
+		hold_array['y'] = []
+		
+	 }
+
+	hold_array['x'].push(foo['working_potential'])
+	hold_array['y'].push(foo['current'])
+
+	return cv_process_out
 }
 
 //Set to OCV
@@ -494,13 +558,27 @@ serialPort.on("data", function (data) {
 			calibration_array.push(foo)
 		}
 		
+		atafile = datafile.replace(".ardudat","")
 		if (logger=="started")
 		{
 			if (db_connected) 
 			{
-				collection.insert(foo)
+				to_central_info = {}
+				to_central_info['filename'] = atafile
+				to_central_info['time'] = d
+				to_central_info['ard_id'] = foo['id'] 
+				db.collection(atafile).insert(foo)
+				if (cv)
+				{
+					cv_point = cvprocess(foo)
+					if (cv_point.hasOwnProperty('V')) db.collection(atafile+"_cv").insert(cv_point)
+					
+				}
+				
+				db.collection(central_info).update({filename:to_central_info.filename},to_central_info,{upsert:true});
+				
 			}
-			exec("echo '"+JSON.stringify(foo)+"' >> data/"+datafile);
+			//exec("echo '"+JSON.stringify(foo)+"' >> data/"+datafile);
 			
 		}
 		foo['logger'] = logger	 	

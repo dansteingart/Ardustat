@@ -1,26 +1,7 @@
 <html>
 	<head>
-		<style>
-			body
-			{
-				font-family: Helvetica;
-			}
-			.output
-			{
-				width:800px;
-				margin: auto auto;
-				height: 400px;
-				border: black 1px;
-			}
-			
-			.title
-			{
-				padding:10px;
-				width:800px;
-				margin: auto auto;
-				text-align: center;
-			}
-		</style>
+		<LINK REL=StyleSheet HREF="/flot/style.css" TYPE="text/css" MEDIA=screen>
+	
 	</head>
 	<body>
 	<script language="javascript" type="text/javascript" src="/flot/jquery.js"></script>
@@ -31,14 +12,14 @@
 	<div id="flot_potential" style="width:800px;height:300px; margin: auto auto;"></div>
 	<div class="title">Current (A)</div>	
 	<div id="flot_current" style="width:800px;height:300px; margin: auto auto;"></div>
-
-	<div id="commanders" class="output">
+	<div id="container">
+	<div id="commanders" class="output"> </div>
+	<div id="loggers" class="output"></div>
 	</div>
 	
 	</body>
 	<script src="/flot/build_dom.js"></script>
-	<script src="/flot/functions.js"></script>
-	
+	<script src="/flot/functions.js"></script> 
 	<script>
 	
 		

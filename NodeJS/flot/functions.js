@@ -10,15 +10,36 @@
 		lines: { show: true}
 	};
 	
+	var options_cv = {
+	    yaxis: { },
+	    xaxis: { },
+		points: {
+			show: false ,
+			radius: .5},
+		lines: { show: true}
+	};
+	
+	
 	big_arr = []
 	
-	var socket = io.connect('/');
  
-	//Socket Stuf
+	
+	cv_arr = []
+	cv_comm = ""
+	hold_array = []
+	hold_array['x'] = []
+	hold_array['y'] = []
+	last_comm = ""
+
+	var socket = io.connect('/');
+
+	
+	//Socket Stuff
  	socket.on('new_data', function (data) {
 		
 		out_text = ""
 		fata = data.ardudata
+		if (fata['cv_settings'] != undefined) cvprocess(fata)
 		logcheck(fata)
 		for (var key in fata)
 		{
@@ -54,12 +75,16 @@
 		{
 			$("#logger").html("Stop Log")
 			$("#log_file_name").text(datafile)
+			
+			$("#logfile").hide()
 		
 		}
 		else if (logger == "stopped")
 		{
 			$("#logger").html("Start Log")
 			$("#log_file_name").text("")
+			$("#logfile").show()
+			
 		}
 	}
 	
@@ -124,6 +149,71 @@
 			});
 
 	});
+	
+	$("#startcv").click(function(){
+		cv_arr = []
+		values = {}
+		values['rate'] = $("#rate").val()
+		values['v_max']= $("#v_max").val()
+		values['v_min']= $("#v_min").val()
+		values['v_start']= $("#v_start").val()
+		values['cycles']= $("#cycles").val()
+		
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/senddata',
+		  	data: {command:"cv",value:values},
+		  	success: function(stuff){
+				$("#status").html("all good").fadeIn().fadeOut()
+			}
+		});
+				
+	});
+	
+	
+	function cvprocess(data)
+		{	foo = data
+			last_comm = foo['last_comm']
+			if (cv_comm != last_comm & cv_comm != "")
+			{
+				 cv_comm = last_comm
+				 x = 0
+				 y = 0
+				 for (j = 0; j<hold_array['x'].length;j++ )
+				 {
+				 	x = x+hold_array['x'][j]
+				 	y = y+hold_array['y'][j]
+				 }
+				 x = x/hold_array['x'].length
+				 y = y/hold_array['y'].length
+				 hold_array['x'] = []
+				 hold_array['y'] = []
+				if (cv_arr.length > 0) 
+				{
+					old_x = cv_arr[cv_arr.length-1][0]
+				 	if (Math.abs(x-old_x) > .05) cv_arr.push([null]);
+			 	}
+				 cv_arr.push([x,y]);
+				 
+				 //io.sockets.emit('cv_data',{'cv_data':cv_arr} )
+				$.plot($("#flot_cv"), [cv_arr],options_cv);
+				
+				//console.log(cv_arr)
+
+			 }
+			 else if (cv_comm == "")
+			 {
+			    cv_comm = last_comm
+				hold_array['x'] = []
+				hold_array['y'] = []
+				
+			 }
+			hold_array['x'].push(foo['working_potential'])
+			hold_array['y'].push(foo['current'])
+
+	}
 	
 	function grabData()
 	{
