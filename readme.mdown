@@ -18,14 +18,8 @@ Balasubramanian is supported by NSF CMMI 1031208
 - FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
 - We're now a node shop.  
    - Get node [here](http://nodejs.org/)
+   - Get mongodb [here](http://www.mongodb.org/downloads):
 
-####Initial Setup:
-- Attach your ardustat shield to your arduino
-- Install the ardustat firmware on your arduino
-- Connect your ardustat to your battery or cell
-- Start the python script "startardustat.py"
-- Using your browser, go to http://localhost:8080/
-- Use the HTML interface to interact with the ardustat.
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
 	
