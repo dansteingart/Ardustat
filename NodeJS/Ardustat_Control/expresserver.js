@@ -10,7 +10,7 @@ TODO:
 var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
-var glob = require('glob'); // Easy directory searches (from python)
+var glob = require('glob-whatev'); // Easy directory searches (from python)
 var express = require('express'), //App Framework (similar to web.py abstraction)
     app = express.createServer();
 	app.use(express.bodyParser());
@@ -20,7 +20,7 @@ io.set('log level', 1)
 
 var serialport = require("serialport") //Serial Port Creation
 var SerialPort = require("serialport").SerialPort 
-var serialPort = new SerialPort(glob.globSync("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
+var serialPort = new SerialPort(glob.glob("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
 
@@ -154,7 +154,7 @@ function setStuff(req,res)
 		}
 		if (command == "moveground")
 		{
-			console.log("setting galvanostat");
+			console.log("setting ground");
 			moveground(value)
 		}
 		if (command == "cv")
@@ -326,8 +326,9 @@ function moveground(value)
 //Set Galvanostat
 function galvanostat(value)
 {
+	foovalue = Math.abs(value)
 	//First Match R
-	r_guess = .1/value
+	r_guess = .1/foovalue
 	//console.log(r_guess)
 	target = 1000000
 	r_best = 0

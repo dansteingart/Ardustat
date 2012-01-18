@@ -68,6 +68,7 @@
 	
 	function plot_cv(stuff)
 	{
+		//console.log(stuff)
 		cv_arr = flotformat(stuff,'V','I')
 		$.plot($("#flot_cv"), [cv_arr],options_cv);
 	}
@@ -88,7 +89,7 @@
 			{
 				if (Math.abs(source[i][xlab] - source[i-1][xlab]) > avdiff*10) 
 				{
-					dest.push("null")
+					//dest.push("null")
 				}
 			}
 			dest.push([row[xlab], row[ylab]]);
