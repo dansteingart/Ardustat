@@ -271,7 +271,7 @@
 		foo = data;
 		if ($("#flot_potential").length >0)
 		{
-			console.log($("#flot_potential").length )
+//			console.log($("#flot_potential").length )
 			flotfoo = []   
 			flotfoo.push({'data':flotformat(foo,'time','working_potential'),'label':'working_potential','color':'red'});
 			$.plot($("#flot_potential"), flotfoo,options);

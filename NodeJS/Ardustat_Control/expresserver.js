@@ -20,7 +20,7 @@ io.set('log level', 1)
 
 var serialport = require("serialport") //Serial Port Creation
 var SerialPort = require("serialport").SerialPort 
-var serialPort = new SerialPort(glob.glob("/dev/tty.u*")[0],{baudrate:57600,parser:serialport.parsers.readline("\n") });
+var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
 
