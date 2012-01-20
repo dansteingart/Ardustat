@@ -10,7 +10,6 @@ TODO:
 var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
-var glob = require('glob-whatev'); // Easy directory searches (from python)
 var express = require('express'), //App Framework (similar to web.py abstraction)
     app = express.createServer();
 	app.use(express.bodyParser());
