@@ -28,7 +28,8 @@ Note: This software is not tested with Internet Explorer or older versions of Fi
 2. In the NodeJS directory, type  
 	- npm install serialport (only on the first go)
 3. Then type  
-	- node expresserver.js  
+	- node expresserver.js <serial port>  
+	where serial port is COMX for windows, /dev/tty.usb-whatever for mac, /dev/ttyUSBX for linux
 4. In a browser, go to http://localhost:8888/debug
 	(stuff should be happening)
 5. We now need to calibrate the ardustat.  Put a quality resistor of known value between the working and counter clips, and then attach the reference clip to the counter clip
