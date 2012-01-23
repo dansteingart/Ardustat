@@ -28,7 +28,7 @@ Note: This software is not tested with Internet Explorer or older versions of Fi
 2. In the NodeJS directory, type  
 	- npm install serialport (only on the first go)
 3. Then type  
-	- node expresserver.js <serial port>  
+	- node expresserver.js <serial port> <tcpport e.g. 8888>
 	where serial port is COMX for windows, /dev/tty.usb-whatever for mac, /dev/ttyUSBX for linux
 4. In a browser, go to http://localhost:8888/debug
 	(stuff should be happening)
@@ -43,6 +43,23 @@ Note: This software is not tested with Internet Explorer or older versions of Fi
 10.  Now go to http://localhost:8888.  You should now see the Potential and Current trace.  Play with the the potentiostsat and galvanostat settings.
 	
 From here on out, all you need to down is start expresserver.js and then go to http://localhost:8888
+
+
+##Now with basic cycling
+
+go to http://localhost:port/cycler
+
+enter the following format to cycle
+
+{"mode":"potentiostat","value":0.1,"cutoff\_mode":"time","cutoff_value":5000}
+{"mode":"galvanostat","value":0.0003,"cutoff\_mode":"time","cutoff_value":5000}
+{"mode":"potentiostat","value":0.5,"cutoff\_mode":"time","cutoff_value":5000}
+
+logs log to mongo
+
+potential value = Volts
+current value = Amps
+time value = milliseconds
 
 Enjoy!
 
