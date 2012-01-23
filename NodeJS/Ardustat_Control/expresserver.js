@@ -246,7 +246,7 @@ function cycling_stepper()
 
 function next_step()
 {
-	console.log("NEXT!")
+	//console.log("NEXT!")
 	arb_cycling_step++
 	if (arb_cycling_step >= arb_cycling_settings.length) arb_cycling_step = 0
 	cycling_mode()
@@ -256,7 +256,7 @@ function cycling_mode()
 {
 	arb_cycling_step_start_time = new Date().getTime()
 	this_set = arb_cycling_settings[arb_cycling_step]
-	console.log(this_set)
+	//console.log(this_set)
 	if (this_set['mode']=='potentiostat')
 	{
 		potentiostat(this_set['value'])
@@ -610,7 +610,7 @@ t2 = setInterval(function(){
 		serialPort.write(sout);	
 	}
 
-},20)
+},10)
 
 
 var queuer = []
