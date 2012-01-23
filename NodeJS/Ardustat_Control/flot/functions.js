@@ -40,6 +40,8 @@
 		out_text = ""
 		fata = data.ardudata
 		if (fata['cv_settings'] != undefined) cvprocess(fata)
+		if (fata['arb_cycling_settings'] != undefined) cyclingprocess(fata)
+		
 		logcheck(fata)
 		cvstatus(fata)
 		big_arr.push(data.ardudata)
@@ -181,6 +183,45 @@
 				
 	});
 	
+	$("#startcycling").click(function(){
+		cv_arr = []
+		values = $("#cyclingtext").val().split("\n")
+		
+		
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/senddata',
+		  	data: {command:"cycling",value:values},
+		  	success: function(stuff){
+				$("#status").html("all good").fadeIn().fadeOut()
+			}
+		});
+				
+	});
+	
+	function cyclingprocess(data)
+	{
+		if ($("#cyclingtext").length == 1)
+		{
+			
+			if ($("#cyclingtext").val() == "")
+			{
+				this_foo = data['arb_cycling_settings']
+				console.log(this_foo)
+				out = ""
+				for  (var o = 0; o < this_foo.length ;o++)
+				{
+					out += JSON.stringify(this_foo[o])+"\n"
+				}
+				$("#cyclingtext").val(out)
+				
+				
+			}
+			
+		}
+	}
 	
 	function cvprocess(data)
 		{	foo = data

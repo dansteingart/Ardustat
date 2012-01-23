@@ -22,6 +22,7 @@ var SerialPort = require("serialport").SerialPort
 var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
+tcpport = process.argv[3]
 
 //MongoDB stuff
 db_connected = false
@@ -72,6 +73,12 @@ app.get('/cv', function(req, res){
     res.send(indexer);
 });
 
+//CV Page
+app.get('/cycler', function(req, res){
+	indexer = fs.readFileSync('cycler.html').toString()
+    res.send(indexer);
+});
+
 
 //Accept data (all pages, throws to setStuff()
 app.post('/senddata', setStuff,function(req, res,next){
@@ -87,7 +94,7 @@ app.post('/getdata',function(req, res){
 
 //Start listener on this port
 //TODO: link to aruino id: e.g. board 16 is port 8016
-app.listen(8888);
+app.listen(tcpport);
 console.log('Express server started on port %s', app.address().port);
 
 //Program Functions
@@ -163,6 +170,13 @@ function setStuff(req,res)
 			cv_start_go(value)
 		}
 		
+		if (command == "cycling")
+		{
+			console.log("setting cycler!");
+		
+			cycling_start_go(value)
+		}
+		
 	}
 	res.send(req.body)
 	
@@ -191,7 +205,68 @@ datafile = ""
 
 //Global Variablew for Arb Cyclingq
 arb_cycling = false
-arb_cycling_settings = {}
+arb_cycling_settings = []
+arb_cycling_step = 0
+arb_cycling_step_start_time = 0
+last_current = 0
+last_potential = 0
+function cycling_start_go(value)
+{
+	arb_cycling_settings = []
+	arb_cycling_step = 0
+	arb_cycling = false
+	arb_cycling_step_start_time = new Date().getTime()	
+	console.log(value)
+	for (var i = 0; i < value.length; i++)
+	{
+		cleaned_up = JSON.parse(value[i])
+		arb_cycling_settings.push(cleaned_up)
+	}
+
+	console.log(arb_cycling_settings)
+	arb_cycling = true
+	cycling_mode()
+}
+
+function cycling_stepper()
+{
+	
+	time = new Date().getTime()	
+	this_set = arb_cycling_settings[arb_cycling_step]
+	next_time = this_set['cutoff_value']
+	this_time = time-arb_cycling_step_start_time
+	//console.log(next_time - this_time)
+	if (this_set['cutoff_mode'] == 'time' & (next_time < this_time))
+	{
+		next_step()
+	}
+}
+
+
+
+function next_step()
+{
+	console.log("NEXT!")
+	arb_cycling_step++
+	if (arb_cycling_step >= arb_cycling_settings.length) arb_cycling_step = 0
+	cycling_mode()
+}
+
+function cycling_mode()
+{
+	arb_cycling_step_start_time = new Date().getTime()
+	this_set = arb_cycling_settings[arb_cycling_step]
+	console.log(this_set)
+	if (this_set['mode']=='potentiostat')
+	{
+		potentiostat(this_set['value'])
+	}
+	if (this_set['mode']=='galvanostat')
+	{
+		galvanostat(this_set['value'])
+	}
+	
+}
 
 //Abstracted Electrochemical Functions
 
@@ -519,6 +594,11 @@ t1 = setInterval(function(){
 		cv_stepper()
 	}
 	
+	if (arb_cycling)
+	{
+		cycling_stepper()
+	}
+	
 },100)
 
 t2 = setInterval(function(){
@@ -551,7 +631,7 @@ serialPort.on("data", function (data) {
 		foo['time'] = d
 		
 		if (cv) foo['cv_settings'] = cv_settings
-		if (arb_cycling) foo['arb_cycling'] = arb_cycling_settings
+		if (arb_cycling) foo['arb_cycling_settings'] = arb_cycling_settings
 		
 		if (calibrate)
 		{

@@ -23,6 +23,11 @@ Cycle Count<input type="textbox" id="cycles" value="1"> </input> <br>\
 <button id="startcv">CV Start</button></span><br><br>'
 
 
+divvers['cyclingcommanders'] = 'Setting Commands <br>\
+<textarea id="cyclingtext" class="areatext"></textarea><br> \
+<button id="startcycling">Cycling Start</button></span><br><br>'
+
+
 for (key in divvers)
 {
 	divved = "#"+key;
