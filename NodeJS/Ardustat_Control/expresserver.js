@@ -465,7 +465,13 @@ function data_parse(data)
 		id = out['id'];
 		res_table = undefined
 	}
-	
+    
+	//force ocv when dac_set and dac_adc don't match up
+     if (out['mode'] != 1 & out['dac_set'] - out['dac_adc'] > 900)
+    {
+        ocv();
+    }
+
 	
 	if (mode != out['mode'])
 	{
