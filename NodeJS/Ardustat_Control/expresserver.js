@@ -233,13 +233,32 @@ function cycling_stepper()
 	
 	time = new Date().getTime()	
 	this_set = arb_cycling_settings[arb_cycling_step]
-	next_time = this_set['cutoff_value']
+	next_time = this_set['cutoff_time']
+	direction = this_set['direction']
+	cutoff_potential = this_set['cutoff_potential']
+	
+	way = 1
+	if (direction == "discharge") way = -1
+	
 	this_time = time-arb_cycling_step_start_time
 	//console.log(next_time - this_time)
-	if (this_set['cutoff_mode'] == 'time' & (next_time < this_time))
+	if (next_time != 0  & (next_time < this_time))
 	{
 		next_step()
 	}
+	
+	if (direction == "charge" & last_potential > cutoff_potential)
+	{
+		next_step()
+	}
+	
+	
+	if (direction == "discharge" & last_potential < cutoff_potential)
+	{
+		next_step()
+	}
+	
+	
 }
 
 
@@ -483,7 +502,7 @@ function data_parse(data)
 	out['ref_potential'] = out['ref_adc']*volts_per_tick
 	out['gnd_potential'] = out['gnd_adc']*volts_per_tick
 	out['working_potential'] = (out['cell_adc'] - out['ref_adc']) * volts_per_tick
-	
+	last_potential = out['working_potential']
 	if (res_table == undefined)
 	{
 		try

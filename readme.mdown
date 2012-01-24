@@ -51,9 +51,10 @@ go to http://localhost:port/cycler
 
 enter the following format to cycle
 
-{"mode":"potentiostat","value":0.1,"cutoff\_mode":"time","cutoff_value":5000}
-{"mode":"galvanostat","value":0.0003,"cutoff\_mode":"time","cutoff_value":5000}
-{"mode":"potentiostat","value":0.5,"cutoff\_mode":"time","cutoff_value":5000}
+{"mode":"galvanostat","value":0.004,"cutoff\_time":0,"direction":"charge","cutoff_potential":1.5}
+{"mode":"galvanostat","value":-0.002,"cutoff\_time":0,"direction":"discharge","cutoff_potential":0.6}
+
+a cutoff\_time of 0 means there is no cutoff time.  be careful!  
 
 logs log to mongo
 
