@@ -42,6 +42,27 @@
 		});
 		
 	}
+	
+	
+	function frontPage(dict)
+	{
+		out = JSON.stringify(dict)
+		$.ajax({
+			type: 'POST',
+		  	dataType: "json",
+		  	async: true,
+		  	url: '/getdata',
+			data: {'data':out},
+		  	success: function(stuff){
+			
+
+			if ($("#central_info").length > 0 & collect == 'central_info') listCollections(stuff)
+
+
+			}
+		});
+
+	}
 
 	function listCollections(stuff)
 	{
@@ -56,6 +77,8 @@
 					doob = stuff[j][key].replace("ardustat.","")
 					link = ""
 					if (stuff[j][key].search("_cv") > -1) link ="<a href='/cv/"+doob+"'>link</a>"	
+					else if (stuff[j][key].search("_") > -1) link ="<a href='/plotter/"+doob+"'>link</a>"	
+					
 					out_text+="<td>"+doob+" "+link+"</td>"
 				}	
 			}

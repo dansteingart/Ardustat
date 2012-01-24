@@ -80,24 +80,21 @@ function setStuff(req,res)
 
 function getStuff(req,res)
 {
-	collection = req.body.collection
-	q = req.body.query
+	foo = JSON.parse(req.body.data)
+	console.log(foo)
+	collection = foo.collection
+	q = foo.query
+	l = 15
+	s = {}	
+	if (foo.limit != undefined) l = foo.limit
+	if (foo.sort != undefined) s = foo.sort
+	if (foo.fields != undefined) f = foo.fields
 	if (q == '') q = null
-	if (collection == 'central_info')
-	{		
-		db.collectionNames(function(err,data){res.send(data)})
-	}
-	else
+	db.collection(collection).find(q,f).limit(l).sort(s).toArray(function(err,data)
 	{
-		console.log(req.body)
-		db.collection(collection).find(q).toArray(function(err,data)
-		{
 			res.send(data)
 			
-		})
-	}
-
-
+	})
 }
 
 
