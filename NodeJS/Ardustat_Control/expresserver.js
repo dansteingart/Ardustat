@@ -649,7 +649,7 @@ function toArd(command,value)
 }
 
 everyxlogcounter = 0
-
+biglogger = 0
 serialPort.on("data", function (data) {
 	if (data.search("GO")>-1)
 	{
@@ -684,6 +684,8 @@ serialPort.on("data", function (data) {
 				everyxlogcounter++
 				if (everyxlogcounter > everyxlog)
 				{
+					foo['seq_no'] = biglogger
+					biglogger++;
 					db.collection(atafile).insert(foo)
 					db.collection(central_info).update({filename:to_central_info.filename},to_central_info,{upsert:true});
 					everyxlogcounter = 0
@@ -691,6 +693,10 @@ serialPort.on("data", function (data) {
 			}
 			//exec("echo '"+JSON.stringify(foo)+"' >> data/"+datafile);
 			
+		}
+		else
+		{
+			biglogger = 0
 		}
 		foo['logger'] = logger	 	
 		foo['datafile'] = datafile

@@ -121,20 +121,18 @@ function getStuff(req,res)
 		db.collection(collection).find(q,f).limit(l).sort(s).count(function(err,count)
 		{
 			console.log(count)
-			
-			if (count > 1000)
+			max_docsish = 500
+			if (count > max_docsish)
 			{
-				ranger = count/1000
-				if (q['time'] != undefined) q['time']['$mod'] = [ranger,0]
-				else
-				{
-					q['time'] = {}
-					q['time']['$mod'] = [ranger,0]
-				}
+				ranger = Math.floor(parseFloat(count)/parseFloat(max_docsish))
+				q['seq_no'] = {}
+				q['seq_no']['$mod'] = [ranger,0]
+				
 			}
 			
 			db.collection(collection).find(q,f).limit(l).sort(s).toArray(function(err,data)
 			{
+				console.log(data.length)
 				res.send({collect:collection,data:data})	
 			})			
 		})
