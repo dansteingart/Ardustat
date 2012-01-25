@@ -9,7 +9,9 @@
 		points: {
 			show: false ,
 			radius: .5},
-		lines: { show: true}
+		lines: { show: true},
+		selection: { mode: "x" }
+		
 	};
 	
 	var options_cv = {
@@ -24,20 +26,23 @@
 	
 	big_arr = []
 	
-	function grabData(collect,quer)
+	function grabData(dict)
 	{
+		dict = JSON.stringify(dict)
 		$.ajax({
 			type: 'POST',
 		  	dataType: "json",
 		  	async: true,
 		  	url: '/getdata',
-			data: {collection:collect,query:quer},
+			data: {'data':dict},
 		  	success: function(stuff){
 							
-				if ($("#central_info").length > 0 & collect == 'central_info') listCollections(stuff)
-				else if ($("#flot_cv").length > 0 & collect.search("_cv")>-1) plot_cv(stuff)
-				else (console.log(stuff))
-				
+				if ($("#central_info").length > 0 & stuff['collect'] == 'central_info') listCollections(stuff)
+				else if ($("#plots").length > 0 ) plot_all(stuff['data'])
+				else {
+				console.log("what the hell do I do with this")
+				console.log(stuff)
+				}
 			}
 		});
 		
@@ -63,26 +68,20 @@
 		});
 
 	}
+	
+	function plotlinker(filename)
+	{
+		return '<a href="/plotter/'+filename+'">'+filename+'</a>'
+	}
 
 	function listCollections(stuff)
 	{
+		stuff = stuff['data']
 		out_text = "<table>"
 		for (j = 0; j < stuff.length;j++)
 		{
-			out_text+="<tr>"
-			for (var key in stuff[j])
-			{
-				if (stuff[j].hasOwnProperty(key) ) 
-				{   
-					doob = stuff[j][key].replace("ardustat.","")
-					link = ""
-					if (stuff[j][key].search("_cv") > -1) link ="<a href='/cv/"+doob+"'>link</a>"	
-					else if (stuff[j][key].search("_") > -1) link ="<a href='/plotter/"+doob+"'>link</a>"	
-					
-					out_text+="<td>"+doob+" "+link+"</td>"
-				}	
-			}
-			out_text+="</tr>"
+			out_text+="<tr><td>"+plotlinker(stuff[j]['filename'])+"</td><td>"+new Date(stuff[j]['time']).toLocaleString()+"</td></tr>"
+			
 		}
 		out_text += "</table>"
 		$("#central_info").html(out_text)
@@ -120,6 +119,7 @@
     	return dest;
 	}
 	
+	foo = []
 	function plot_all(data)
 	{
 		foo = data;
@@ -138,4 +138,12 @@
 		}
 	}
 	
+	function plot_all_range(event,ranges)
+	{
+		options['xaxis']['min'] = ranges.xaxis.from;
+		options['xaxis']['max'] = ranges.xaxis.to;
+		plot_all(foo)
+	}
+	
+	$(window).resize(function(){plot_all(foo)})
 	

@@ -11,7 +11,8 @@ divvers['commanders'] = 'Setting Commands <br> \
 
 
 divvers['loggers'] = 'Log Functions<br> \
-<input type="textbox" id="logfile"> </input></span><br> \
+<div id="logentrybox">Log Name<input type="textbox" id="logfile"> </input><br> \
+Log Every <input type="textbox" id="everyxlog" value="1"> </input> events (roughly 100 ms per event)</div> \
 <button id="logger">Start Log</button> <span id="log_file_name"> </span>'
 
 divvers['cvcommanders'] = 'Setting Commands <br>\

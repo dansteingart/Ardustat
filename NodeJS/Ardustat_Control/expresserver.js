@@ -108,6 +108,7 @@ function setStuff(req,res)
 	{
 		
 		logger = req.body.logger
+		everyxlog = parseInt(req.body.everyxlog)
 		//console.log(logger)
 		if (logger == "started")
 		{
@@ -201,7 +202,7 @@ cv_settings = {}
 //Global Variables for Logging
 logger = "stopped"
 datafile = ""
-
+everyxlog = 1
 
 //Global Variablew for Arb Cyclingq
 arb_cycling = false
@@ -647,6 +648,7 @@ function toArd(command,value)
 	//console.log(queuer)
 }
 
+everyxlogcounter = 0
 
 serialPort.on("data", function (data) {
 	if (data.search("GO")>-1)
@@ -672,7 +674,6 @@ serialPort.on("data", function (data) {
 				to_central_info['filename'] = atafile
 				to_central_info['time'] = d
 				to_central_info['ard_id'] = foo['id'] 
-				db.collection(atafile).insert(foo)
 				if (cv)
 				{
 					cv_point = cvprocess(foo)
@@ -680,8 +681,13 @@ serialPort.on("data", function (data) {
 					
 				}
 				
-				db.collection(central_info).update({filename:to_central_info.filename},to_central_info,{upsert:true});
-				
+				everyxlogcounter++
+				if (everyxlogcounter > everyxlog)
+				{
+					db.collection(atafile).insert(foo)
+					db.collection(central_info).update({filename:to_central_info.filename},to_central_info,{upsert:true});
+					everyxlogcounter = 0
+				}
 			}
 			//exec("echo '"+JSON.stringify(foo)+"' >> data/"+datafile);
 			

@@ -70,14 +70,14 @@
 			$("#logger").html("Stop Log")
 			$("#log_file_name").text(datafile)
 			
-			$("#logfile").hide()
+			$("#logentrybox").hide()
 		
 		}
 		else if (logger == "stopped")
 		{
 			$("#logger").html("Start Log")
 			$("#log_file_name").text("")
-			$("#logfile").show()
+			$("#logentrybox").show()
 			
 		}
 	}
@@ -146,14 +146,14 @@
 	$("#logger").click(function(){
 			if (logger == "stopped") logger = "started"
 			else logger = "stopped"
-			
-			console.log(logger)
+			everyxlog = $("#everyxlog").val()
+			console.log(logger);
 			$.ajax({
 				type: 'POST',
 			  	dataType: "json",
 			  	async: true,
 			  	url: '/senddata',
-			  	data: {logger:logger,datafilename:$("#logfile").val()},
+			  	data: {logger:logger,datafilename:$("#logfile").val(),everyxlog:everyxlog},
 			  	success: function(stuff){
 					console.log(stuff);
 				}

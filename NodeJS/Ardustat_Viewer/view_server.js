@@ -53,6 +53,13 @@ app.get('/cv/*', function(req, res){
     res.send(indexer);
 });
 
+app.get('/plotter/*', function(req, res){
+	
+	indexer = fs.readFileSync('plotter.html').toString()
+    res.send(indexer);
+});
+
+
 //Accept data (all pages, throws to setStuff()
 app.post('/senddata', setStuff,function(req, res,next){
 	//console.log(req.body)
@@ -80,21 +87,59 @@ function setStuff(req,res)
 
 function getStuff(req,res)
 {
+	console.log(req.body.data)
 	foo = JSON.parse(req.body.data)
 	console.log(foo)
 	collection = foo.collection
+	
+	if (collection == "central_info")
+	{
 	q = foo.query
-	l = 15
+	l = undefined
 	s = {}	
+	f = {}
 	if (foo.limit != undefined) l = foo.limit
 	if (foo.sort != undefined) s = foo.sort
 	if (foo.fields != undefined) f = foo.fields
 	if (q == '') q = null
 	db.collection(collection).find(q,f).limit(l).sort(s).toArray(function(err,data)
 	{
-			res.send(data)
-			
+		res.send({collect:collection,data:data})	
 	})
+	}
+	else
+	{
+		
+		q = foo.query
+		l = undefined
+		s = {}	
+		f = {}
+		if (foo.limit != undefined) l = foo.limit
+		if (foo.sort != undefined) s = foo.sort
+		if (foo.fields != undefined) f = foo.fields
+		if (q == '') q = null
+		db.collection(collection).find(q,f).limit(l).sort(s).count(function(err,count)
+		{
+			console.log(count)
+			
+			if (count > 1000)
+			{
+				ranger = count/1000
+				if (q['time'] != undefined) q['time']['$mod'] = [ranger,0]
+				else
+				{
+					q['time'] = {}
+					q['time']['$mod'] = [ranger,0]
+				}
+			}
+			
+			db.collection(collection).find(q,f).limit(l).sort(s).toArray(function(err,data)
+			{
+				res.send({collect:collection,data:data})	
+			})			
+		})
+	}
+
 }
 
 

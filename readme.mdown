@@ -64,3 +64,7 @@ time value = milliseconds
 
 Enjoy!
 
+##Now with basic viewing
+from Ardustat\_Viewer start node view_server.js 
+
+go to localhost:8000
