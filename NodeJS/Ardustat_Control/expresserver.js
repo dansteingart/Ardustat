@@ -302,7 +302,7 @@ function cycling_stepper()
 
 function next_step()
 {
-	//console.log("NEXT!")
+	console.log("NEXT!")
 	arb_cycling_step++
 	if (arb_cycling_step >= arb_cycling_settings.length) arb_cycling_step = 0
 	cycling_mode()
@@ -312,7 +312,7 @@ function cycling_mode()
 {
 	arb_cycling_step_start_time = new Date().getTime()
 	this_set = arb_cycling_settings[arb_cycling_step]
-	//console.log(this_set)
+	console.log(this_set)
 	if (this_set['mode']=='potentiostat')
 	{
 		potentiostat(this_set['value'])
@@ -484,6 +484,9 @@ function galvanostat(value)
 	value_to_ardustat = delta_potential / volts_per_tick;
 	toArd("r",parseInt(set_best))
 	toArd("g",parseInt(value_to_ardustat))
+	toArd("r",parseInt(set_best))
+	toArd("g",parseInt(value_to_ardustat))
+	
 	
 }
 
@@ -672,7 +675,7 @@ t2 = setInterval(function(){
 		serialPort.write(sout);	
 	}
 
-},10)
+},15)
 
 
 var queuer = []
@@ -681,7 +684,7 @@ function toArd(command,value)
 	last_comm = ardupadder(command,value)
 	//serialPort.write(ardupadder(command,value));	
 	queuer.push(ardupadder(command,value))
-	//console.log(queuer)
+	console.log(queuer)
 }
 
 everyxlogcounter = 0
