@@ -279,9 +279,9 @@ function cycling_stepper()
 	
 	this_time = time-arb_cycling_step_start_time
 	//console.log(next_time - this_time)
-	if (next_time != 0) 
+	if (next_time != 0 & next_time < this_time) 
 	{
-		if (next_time < this_time) next_step()
+	 	next_step()
 	}
 
 	else if (direction == "charge" & last_potential > cutoff_potential)
