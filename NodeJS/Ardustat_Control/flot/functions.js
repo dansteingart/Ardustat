@@ -201,6 +201,59 @@
 				
 	});
 	
+	
+	$("#cyclingsave").click(function(){ 
+			values = {name:$("#cyclingname").val(),program:$("#cyclingtext").val()}
+		
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {command:"cyclingsave",value:values},
+			  	success: function(stuff){
+					fillprograms(stuff)
+					$("#status").html("all good").fadeIn().fadeOut()
+					
+				}
+			});
+		
+		
+		})
+	
+	cycling_programs = {}
+	
+	function fillprograms(stuff)
+	{
+		out = ""
+		for (var i = 0; i < stuff.length;i++)
+		{
+			cycling_programs[stuff[i]['name']] = stuff[i]['program']
+			out+="<option>"+stuff[i]['name']+"</option>" 
+		}
+		$("#cyclingpresets").html(out)
+	}
+	
+	$("#cyclingpresets").change(function()
+	{
+		$("#cyclingtext").val(cycling_programs[$("#cyclingpresets option:selected").text()])
+	})
+	
+	if 	($("#cyclingpresets").length == 1)
+	{
+			$.ajax({
+				type: 'POST',
+			  	dataType: "json",
+			  	async: true,
+			  	url: '/senddata',
+			  	data: {command:"cyclingpresetsget",value:{}},
+			  	success: function(stuff){
+					fillprograms(stuff)
+					
+				}}
+			)
+	}
+	
 	function cyclingprocess(data)
 	{
 		if ($("#cyclingtext").length == 1)
@@ -265,18 +318,23 @@
 
 	}
 	
-	function grabData()
+	function grabData(dict)
 	{
+		dict = JSON.stringify(dict)
 		$.ajax({
 			type: 'POST',
 		  	dataType: "json",
 		  	async: true,
 		  	url: '/getdata',
+			data: {'data':dict},
 		  	success: function(stuff){
-				//console.log(stuff);
-				big_arr.push(stuff.ardudata)
-				while (big_arr > 100) big_arr.shift(0)
-				plot_all(big_arr)
+							
+				if ($("#central_info").length > 0 & stuff['collect'] == 'central_info') listCollections(stuff)
+				else if ($("#plots").length > 0 ) plot_all(stuff['data'])
+				else {
+				console.log("what the hell do I do with this")
+				console.log(stuff)
+				}
 			}
 		});
 		

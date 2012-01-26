@@ -127,7 +127,7 @@ function setStuff(req,res)
 			console.log("stopping log")
 		}
 	}
-
+	var holdup = false
 	//If abstracted command (potentiostat,cv, etc)
 	if (req.body.command != undefined)
 	{
@@ -178,10 +178,46 @@ function setStuff(req,res)
 			cycling_start_go(value)
 		}
 		
+		if (command == "cyclingsave")
+		{
+			console.log("saving cycler!");
+			holdup = true;
+			cyclingsave(value,res)
+				
+		}
+		if (command == "cyclingpresetsget")
+		{
+			console.log("getting cycler!");
+			holdup = true;
+			db.collection("cycling_presets").find().toArray(function(err,data)
+			{
+				console.log(data)
+				res.send(data)	
+			})
+				
+		}
+		
+		
 	}
-	res.send(req.body)
+	if (!holdup) res.send(req.body)
 	
 }
+
+
+//cycling save
+
+function cyclingsave(value,res)
+{
+	console.log(value)
+	value['time'] = new Date().getTime()
+	db.collection("cycling_presets").update({name:value.name},value,{upsert:true})
+	db.collection("cycling_presets").find().toArray(function(err,data)
+	{
+		console.log(data)
+		res.send(data)	
+	})
+}
+
 
 //Global Variables for CV
 cv = false

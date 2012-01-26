@@ -25,7 +25,8 @@ Cycle Count<input type="textbox" id="cycles" value="1"> </input> <br>\
 
 
 divvers['cyclingcommanders'] = 'Setting Commands <br>\
-<textarea id="cyclingtext" class="areatext"></textarea><br> \
+<textarea id="cyclingtext" class="areatext"></textarea><br>\
+<select id="cyclingpresets"> </select> <input id="cyclingname"></input><button id="cyclingsave">Save Cycling Parameters</button>\
 <button id="startcycling">Cycling Start</button></span><br><br>'
 
 
