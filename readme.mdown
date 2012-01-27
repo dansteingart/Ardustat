@@ -18,14 +18,8 @@ Balasubramanian is supported by NSF CMMI 1031208
 - FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
 - We're now a node shop.  
    - Get node [here](http://nodejs.org/)
+   - Get mongodb [here](http://www.mongodb.org/downloads):
 
-####Initial Setup:
-- Attach your ardustat shield to your arduino
-- Install the ardustat firmware on your arduino
-- Connect your ardustat to your battery or cell
-- Start the python script "startardustat.py"
-- Using your browser, go to http://localhost:8080/
-- Use the HTML interface to interact with the ardustat.
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
 	
@@ -34,7 +28,8 @@ Note: This software is not tested with Internet Explorer or older versions of Fi
 2. In the NodeJS directory, type  
 	- npm install serialport (only on the first go)
 3. Then type  
-	- node expresserver.js  
+	- node expresserver.js <serial port> <tcpport e.g. 8888>
+	where serial port is COMX for windows, /dev/tty.usb-whatever for mac, /dev/ttyUSBX for linux
 4. In a browser, go to http://localhost:8888/debug
 	(stuff should be happening)
 5. We now need to calibrate the ardustat.  Put a quality resistor of known value between the working and counter clips, and then attach the reference clip to the counter clip
@@ -49,5 +44,27 @@ Note: This software is not tested with Internet Explorer or older versions of Fi
 	
 From here on out, all you need to down is start expresserver.js and then go to http://localhost:8888
 
+
+##Now with basic cycling
+
+go to http://localhost:port/cycler
+
+enter the following format to cycle
+
+{"mode":"galvanostat","value":0.004,"cutoff\_time":0,"direction":"charge","cutoff_potential":1.5}
+{"mode":"galvanostat","value":-0.002,"cutoff\_time":0,"direction":"discharge","cutoff_potential":0.6}
+
+a cutoff\_time of 0 means there is no cutoff time.  be careful!  
+
+logs log to mongo
+
+potential value = Volts
+current value = Amps
+time value = milliseconds
+
 Enjoy!
 
+##Now with basic viewing
+from Ardustat\_Viewer start node view_server.js 
+
+go to localhost:8000
