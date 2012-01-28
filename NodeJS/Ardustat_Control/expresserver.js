@@ -176,29 +176,34 @@ function setStuff(req,res)
 			console.log("setting cycler!");
 		
 			cycling_start_go(value)
-		}
+		}		
 		
-		if (command == "cyclingsave")
+	}
+	
+	if (req.body.programs != undefined)
+	{
+	
+		if (req.body.programs == "cyclingsave")
 		{
+			holdup = true
 			console.log("saving cycler!");
 			holdup = true;
 			cyclingsave(value,res)
 				
 		}
-		if (command == "cyclingpresetsget")
+		if (req.body.programs == "cyclingpresetsget")
 		{
+			holdup = true
 			console.log("getting cycler!");
 			holdup = true;
 			db.collection("cycling_presets").find().toArray(function(err,data)
 			{
 				console.log(data)
 				res.send(data)	
-			})
-				
+			})		
 		}
-		
-		
 	}
+
 	if (!holdup) res.send(req.body)
 	
 }

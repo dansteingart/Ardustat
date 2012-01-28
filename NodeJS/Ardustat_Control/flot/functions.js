@@ -210,7 +210,7 @@
 			  	dataType: "json",
 			  	async: true,
 			  	url: '/senddata',
-			  	data: {command:"cyclingsave",value:values},
+			  	data: {programs:"cyclingsave",value:values},
 			  	success: function(stuff){
 					fillprograms(stuff)
 					$("#status").html("all good").fadeIn().fadeOut()
@@ -246,7 +246,7 @@
 			  	dataType: "json",
 			  	async: true,
 			  	url: '/senddata',
-			  	data: {command:"cyclingpresetsget",value:{}},
+			  	data: {programs:"cyclingpresetsget",value:{}},
 			  	success: function(stuff){
 					fillprograms(stuff)
 					
