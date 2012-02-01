@@ -324,7 +324,8 @@ function cycling_mode()
 	}
 	if (this_set['mode']=='galvanostat')
 	{
-		galvanostat(this_set['value'])
+		if (this_set['value'] == 0) ocv()
+		else galvanostat(this_set['value'])
 	}
 	
 }
