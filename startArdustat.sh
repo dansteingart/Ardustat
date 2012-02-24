@@ -8,11 +8,16 @@ NUM_PORTS=$(ls -l /dev/ttyACM* | wc -l)
 
 #read port_num
 
-google-chrome "http://localhost:8000"&
+
+rm /data/db/mongod.lock
+sleep 1
 mongod&
+sleep 1
 cd NodeJS/Ardustat_Viewer
 node view_server.js&
-
+sleep 1
+google-chrome "http://localhost:8000"&
+sleep 1
 
 cd ../Ardustat_Control
 
@@ -20,10 +25,12 @@ for ((  i = 0 ;  i < $NUM_PORTS;  i++  ))
 do
   PORT=/dev/ttyACM$i
   node expresserver.js $PORT $((8888+$i))&
+  sleep 1
   google-chrome "http://localhost:$((8888+$i))/cycler"&
+  sleep 1
 done
 
-
+$SHELL
 
 
 #while true; do
