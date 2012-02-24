@@ -252,6 +252,11 @@ arb_cycling_step = 0
 arb_cycling_step_start_time = 0
 last_current = 0
 last_potential = 0
+
+
+//Globals for Speed
+s000_sample_rate = 100
+
 function cycling_start_go(value)
 {
 	arb_cycling_settings = []
@@ -670,7 +675,7 @@ t1 = setInterval(function(){
 		cycling_stepper()
 	}
 	
-},100)
+},s000_sample_rate)
 
 t2 = setInterval(function(){
 	
