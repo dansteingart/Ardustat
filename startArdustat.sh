@@ -24,7 +24,7 @@ cd ../Ardustat_Control
 for ((  i = 0 ;  i < $NUM_PORTS;  i++  ))
 do
   PORT=/dev/ttyACM$i
-  node expresserver.js $PORT $((8888+$i))&
+  node expresserver.js $PORT $((8888+$i)) 500&
   sleep 1
   google-chrome "http://localhost:$((8888+$i))/cycler"&
   sleep 1
