@@ -23,6 +23,8 @@ var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialpor
 var datastream = ""
 
 tcpport = process.argv[3]
+if (process.argc == 4) s000_sample_rate = 100
+else s000_sample_rate = process.argv[4]
 
 //MongoDB stuff
 db_connected = false
@@ -252,6 +254,10 @@ arb_cycling_step = 0
 arb_cycling_step_start_time = 0
 last_current = 0
 last_potential = 0
+
+
+
+
 function cycling_start_go(value)
 {
 	arb_cycling_settings = []
@@ -670,7 +676,7 @@ t1 = setInterval(function(){
 		cycling_stepper()
 	}
 	
-},100)
+},s000_sample_rate)
 
 t2 = setInterval(function(){
 	
