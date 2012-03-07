@@ -71,7 +71,7 @@
 	
 	function plotlinker(filename)
 	{
-		return '<a href="/plotter/'+filename+'">'+filename+'</a>'
+		return '<a href="/plotter/'+filename.replace("%","%25")+'">'+filename+'</a>'
 	}
 
 	function listCollections(stuff)
