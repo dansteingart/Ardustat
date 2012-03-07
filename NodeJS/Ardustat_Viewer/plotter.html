@@ -22,7 +22,7 @@
 <script>
 
 foo = window.location.pathname.split("/")
-db_to_get = foo[foo.length-1]
+db_to_get = foo[foo.length-1].replace("%25","%")
 grabData({collection:db_to_get,query:{},fields:{'time':1,'working_potential':1,'current':1}})
 $("#flot_potential").bind("plotselected",function (event, ranges) {
 	

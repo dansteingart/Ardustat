@@ -96,7 +96,6 @@
 	}
 	
 	function flotformat(source,xlab,ylab) {
-		console.log(source)
 		start = source[0][xlab]
 		end = source[source.length - 1][xlab]
 		diff = Math.abs(start - end)
