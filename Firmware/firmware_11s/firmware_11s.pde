@@ -711,7 +711,7 @@ void sendout()
 void testdac ()
 {
 //  digitalWrite(3,LOW);
-  PORTD |= B00001000;
+  PORTD &= B11110111;
   write_dac(0,testcounter);
   outvolt = testcounter;
   testcounter = testcounter + 1;
@@ -722,7 +722,8 @@ void testdac ()
 
 void testr ()
 {
-  digitalWrite(3,HIGH);
+//  digitalWrite(3,HIGH);
+  PORTD |= B00001000;
   write_dac(0,1023);
   outvolt = 1023;
   res = testcounter;
@@ -831,8 +832,8 @@ byte readWiper()
 //    digitalWrite(DATAOUT,LOW);
     PORTB &= B11110111;
     delayMicroseconds(10);
-//    data[i] = digitalRead(DATAIN);
-    data[i] = PINB;
+    data[i] = digitalRead(DATAIN);
+//    data[i] = PINB;
 //    digitalWrite(SPICLOCK,HIGH);
     PORTB |= B00100000;
     delayMicroseconds(10);
