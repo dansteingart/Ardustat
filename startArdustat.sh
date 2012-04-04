@@ -9,10 +9,10 @@ NUM_PORTS=$(ls -l /dev/ttyACM* | wc -l)
 #read port_num
 
 
-rm /data/db/mongod.lock
-sleep 1
-mongod&
-sleep 1
+#rm /data/db/mongod.lock
+#sleep 1
+#mongod&
+#sleep 1
 cd NodeJS/Ardustat_Viewer
 node view_server.js&
 sleep 1
