@@ -21,7 +21,7 @@ Balasubramanian is supported by NSF CMMI 1031208
    - Get mongodb [here](http://www.mongodb.org/downloads):
 
 
-Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
+Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid unpredictable results, please use a modern browser.
 	
 ###General Ardustat Instructions (tested against mac os x)
 1. Install Version of Firmware 7s on your ardustat (Firmware/Firmware 7_s/)
