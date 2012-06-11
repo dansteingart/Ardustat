@@ -68,7 +68,7 @@ void setup()
   Serial.begin(57600);
   //  Serial.println("Hi Dan!");
 
-
+  analogReference(EXTERNAL);
   //SPI
   byte i;
   //byte clr;
