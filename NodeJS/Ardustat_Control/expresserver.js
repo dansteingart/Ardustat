@@ -26,6 +26,11 @@ tcpport = process.argv[3]
 if (process.argc == 4) s000_sample_rate = 100
 else s000_sample_rate = process.argv[4]
 
+
+resistance=587.6
+coefficient=475
+error=0
+
 //MongoDB stuff
 db_connected = false
 try
@@ -171,6 +176,13 @@ function setStuff(req,res)
 			console.log("setting cv!");
 		
 			cv_start_go(value)
+		}
+		
+		
+		if (command == "find_error")
+		{
+			console.log("Finding error!");
+			find_error(value)
 		}
 		
 		if (command == "cycling")
@@ -469,6 +481,7 @@ function moveground(value)
 function galvanostat(value)
 {
 	foovalue = Math.abs(value)
+	val=(value/coefficient)*resistance
 	//First Match R
 	r_guess = .1/foovalue
 	//console.log(r_guess)
@@ -488,7 +501,8 @@ function galvanostat(value)
 	} 
 
 	//now solve for V
-	delta_potential = value*r_best
+	// delta_potential = value*r_best
+	delta_potential = val
 	//console.log(r_best)
 	//console.log(set_best)
 	//console.log(delta_potential)
@@ -502,7 +516,10 @@ function galvanostat(value)
 	
 }
 
-
+function find_error(value)
+{
+	error=value
+}
 
 //Global Functions for Data Parsing
 id = 20035;
@@ -526,10 +543,11 @@ function data_parse(data)
 	out['gnd_adc'] = parseFloat(parts[8])
 	out['ref_adc'] = parseFloat(parts[9])
 	out['twopointfive_adc'] = parseFloat(parts[10])
-	out['id'] = parseInt(parts[11])
+	out['currentpin'] = parseFloat(parts[11])
+	out['id'] = parseInt(parts[12])
 	out['last_comm'] = last_comm
 	//making sense of it
-	volts_per_tick = 	2.5/out['twopointfive_adc']
+	volts_per_tick = 	5/1024
 	if (vpt == undefined) vptt = volts_per_tick;
 	if (id != out['id'])
 	{
@@ -555,6 +573,13 @@ function data_parse(data)
 	out['gnd_potential'] = out['gnd_adc']*volts_per_tick
 	out['working_potential'] = (out['cell_adc'] - out['ref_adc']) * volts_per_tick
 	last_potential = out['working_potential']
+	
+	out['Current_pin'] = (((out['currentpin']-out['gnd_adc'])*volts_per_tick)/resistance)*coefficient*-1
+	out['Current Pin Resistance']=resistance
+	out['Error']=((error-out['Current_pin'])/error)*100
+	
+	
+	
 	if (res_table == undefined)
 	{
 		try

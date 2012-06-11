@@ -23,6 +23,9 @@ CV rate<input type="textbox" id="rate" value="1"> </input> (mV/s)<br>\
 Cycle Count<input type="textbox" id="cycles" value="1"> </input> <br>\
 <button id="startcv">CV Start</button></span><br><br>'
 
+divvers['finding_error']='Finding Error<br>\
+Measured Current<input type="textbox" id="input_current"> </input> \
+<button id="find_error">Find!</button><br>'
 
 divvers['cyclingcommanders'] = 'Setting Commands <br>\
 <textarea id="cyclingtext" class="areatext"></textarea><br>\
