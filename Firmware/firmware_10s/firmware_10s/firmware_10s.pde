@@ -13,6 +13,7 @@ float dac;    //out of main dac
 float adcgnd; //adc at ground
 float adcref; //ref electrode
 float refvolt;//ref voltage 2.5V
+float current_adc;
 int firstdac= 0;
 int seconddac = 0;
 int dacaddr = 0;
@@ -567,17 +568,18 @@ int checkvolt(int volt)
 void galvanostat()
 {
   //get values
-  adc = betteranaread(0);
-  dac = betteranaread(1);
+  current_adc = betteranaread(4);
+  adcgnd = betteranaread(2);
+  
 
   int move = 1;
-  int diff = 0;
+  float diff = 0;
 
 
   //if charging current
   if (sign > 0)
   {
-    diff = dac - adc;
+    diff = adcgnd - current_adc;
     //if over current step dac down
     if( ((diff) > (setting)) && (outvolt > 0))
     {
@@ -601,7 +603,7 @@ void galvanostat()
   //if discharge current
   if (sign < 0)
   {
-    diff = adc - dac;
+    diff = current_adc - adcgnd;
     //if over current step dac up
     if( (diff) > (setting) && (outvolt < 1023))
     {
@@ -628,6 +630,7 @@ void sendout()
   dac = betteranaread(1);
   adcgnd = betteranaread(2);
   adcref = betteranaread(3);
+  current_adc = betteranaread(4);
   refvolt = betteranaread(5);
 
   if (pstat) mode = 2;
@@ -660,6 +663,8 @@ void sendout()
   Serial.print(adcref);
   Serial.print(",");
   Serial.print(refvolt);
+  Serial.print(",");
+  Serial.print(current_adc);
   Serial.print(",");
   Serial.print(int(EEPROM.read(32)));
   Serial.println(",ST");
