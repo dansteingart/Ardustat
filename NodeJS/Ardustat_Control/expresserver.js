@@ -112,7 +112,7 @@ function setStuff(req,res)
 {
 	//loops to false
 	//If arducomm (e.g. direct signal to ardustat)
-	if (req.body.arducomm != undefined) queuer.push(req.body.arducomm)
+	if (req.body.arducomm != undefined) serialPort.write(req.body.arducomm)
 	
 	if (req.body.logger != undefined)
 	{
