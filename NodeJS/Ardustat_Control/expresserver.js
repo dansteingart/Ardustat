@@ -17,15 +17,9 @@ var express = require('express'), //App Framework (similar to web.py abstraction
 io = require('socket.io').listen(app); //Socket Creations
 io.set('log level', 1)
 
-var SerialPort = require("serialport2").SerialPort 
-var serialPort = new SerialPort();
-serialPort.open(process.argv[2],{
-	baudRate: 57600,
-	dataBits: 8,
-	parity: 'none',
-	stopBits: 1,
-	flowControl: false
-});
+var serialport = require("serialport") //Serial Port Creation
+var SerialPort = require("serialport").SerialPort 
+var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
 var datastream = ""
 
 tcpport = process.argv[3]
@@ -732,8 +726,7 @@ function toArd(command,value)
 
 everyxlogcounter = 0
 biglogger = 0
-
-function gotData(data) {
+serialPort.on("data", function (data) {
 	if (data.search("GO")>-1)
 	{
 		foo = data_parse(data);
@@ -789,26 +782,7 @@ function gotData(data) {
 
 	}
 		
-}
-
-//Because serialport2 has no parser for serial data, we use the
-//serialport.on function to split up the data into individual lines
-//and then run gotData() when we get a new full line. gotData() replaces
-//the old serialPort.on function
-var line = ""
-serialPort.on("data", function (rawdata) {
-	data = rawdata.toString();
-	if (data.search("\n") > -1)
-	{
-		line = line + data.substring(0,data.indexOf('\n'));
-		gotData(line);
-		line = data.substring(data.indexOf('\n')+1,data.length);
-	}
-	else
-	{
-		line = line + data;
-	}
-		
+	
 });
 
 function ardupadder(command,number)
