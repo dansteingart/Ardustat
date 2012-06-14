@@ -1,10 +1,4 @@
-/*
-TODO:
-
-- Add command line variable for serial port
-- Cycling Routines (think on framework)
-
-*/
+//expresserver.js: main ardustat control code
 
 //Set it up
 var http = require("http"); //HTTP Server
@@ -17,12 +11,20 @@ var express = require('express'), //App Framework (similar to web.py abstraction
 io = require('socket.io').listen(app); //Socket Creations
 io.set('log level', 1)
 
-var serialport = require("serialport") //Serial Port Creation
-var SerialPort = require("serialport").SerialPort 
-var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
+//connecting to serial port
+if (process.argv.length == 2) {
+	console.log("Please specify a serial port in the command line args")
+	process.exit(0)
+}
+else {
+	var serialport = require("serialport")
+	var SerialPort = require("serialport").SerialPort
+	var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
+}
 
-tcpport = process.argv[3] //port of the HTTP server
-if (process.argc == 4) s000_sample_rate = 150 //delay in milliseconds between requests to the arduino for data
+if (process.argv.length == 3) tcpport = 8888
+else tcpport = process.argv[3] //port of the HTTP server
+if (process.argv.length == 4) s000_sample_rate = 150 //delay in milliseconds between requests to the arduino for data
 else s000_sample_rate = process.argv[4]
 queue_write_rate = 15 //delay in milliseconds between command writes to the arduino
 
