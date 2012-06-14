@@ -20,12 +20,11 @@ io.set('log level', 1)
 var serialport = require("serialport") //Serial Port Creation
 var SerialPort = require("serialport").SerialPort 
 var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
-var datastream = ""
 
-tcpport = process.argv[3]
-if (process.argc == 4) s000_sample_rate = 100
+tcpport = process.argv[3] //port of the HTTP server
+if (process.argc == 4) s000_sample_rate = 150 //delay in milliseconds between requests to the arduino for data
 else s000_sample_rate = process.argv[4]
-
+queue_write_rate = 15 //delay in milliseconds between command writes to the arduino
 
 resistance=587.6
 coefficient=475
@@ -49,9 +48,9 @@ catch (err)
 }
 
 //Logging Hack because I'm tired 
-var sys = require('sys')
+var util = require('util')
 var exec = require('child_process').exec;
-function puts(error, stdout, stderr) { sys.puts(stdout) }
+function puts(error, stdout, stderr) { util.puts(stdout) }
 //exec("ls -la", puts);
 
 
@@ -60,6 +59,8 @@ function puts(error, stdout, stderr) { sys.puts(stdout) }
 app.use("/flot", express.static(__dirname + '/flot'));
 app.use("/socket.io", express.static(__dirname + '/node_modules/socket.io/lib'));
 
+
+//User interface code:
 
 //On Home Page
 app.get('/', function(req, res){
@@ -90,11 +91,10 @@ app.get('/cycler', function(req, res){
 //Accept data (all pages, throws to setStuff()
 app.post('/senddata', setStuff,function(req, res,next){
 	//console.log(req.body)
-	res.send(req.body)
-	
+	res.send(req.body)	
 });
 
-//Presocket Connect, may reuse when flat files/mongodb is implements
+//Presocket Connect, may reuse when flat files/mongodb is implemented
 app.post('/getdata',function(req, res){
 	res.send(req.app.settings)
 });
@@ -102,36 +102,36 @@ app.post('/getdata',function(req, res){
 //Start listener on this port
 //TODO: link to aruino id: e.g. board 16 is port 8016
 app.listen(tcpport);
-console.log('Express server started on port %s', app.address().port);
+console.log('Express server started on port ' + app.address().port.toString() + 
+			'\nGo to http://localhost:'+app.address().port.toString() + '/ with your web browser.');
 
 //Program Functions
+
+//setStuff: handles POST requests from web interface
 function setStuff(req,res)
 {
 	//loops to false
 	//If arducomm (e.g. direct signal to ardustat)
-	if (req.body.arducomm != undefined) serialPort.write(req.body.arducomm)
+	if (req.body.arducomm != undefined) queuer.push(req.body.arducomm)
 	
 	if (req.body.logger != undefined)
 	{
-		
 		logger = req.body.logger
 		everyxlog = parseInt(req.body.everyxlog)
 		//console.log(logger)
 		if (logger == "started")
 		{
-			console.log("starting log")
+			console.log("Starting log")
 			profix = req.body.datafilename +"_"+ new Date().getTime().toString()
 			datafile = profix
 			if (db_connected) 
 			{
-				collection = db.collection(profix)
-				
+				collection = db.collection(profix)	
 			}
-		  
 		}
 		else if (logger = "stopped")
 		{
-			console.log("stopping log")
+			console.log("Stopping log")
 		}
 	}
 	var holdup = false
@@ -146,69 +146,61 @@ function setStuff(req,res)
 		value = req.body.value;
 		if (command == "calibrate")
 		{
-			console.log("calibration should start");
+			console.log("Starting calibration");
 			calibrator(req.body.value);
 		}
 		
 		if (command == "ocv")
 		{
-			console.log("setting ocv");
+			console.log("Setting OCV");
 			ocv()
 		}
 		
 		if (command == "potentiostat")
 		{
-			console.log("setting potentiostat");
+			console.log("Setting potentiostat");
 			potentiostat(value)
 		}
 		if (command == "galvanostat")
 		{
-			console.log("setting galvanostat");
+			console.log("Setting galvanostat");
 			galvanostat(value)
 		}
 		if (command == "moveground")
 		{
-			console.log("setting ground");
+			console.log("Setting ground");
 			moveground(value)
 		}
 		if (command == "cv")
 		{
-			console.log("setting cv!");
-		
+			console.log("Setting cv");
 			cv_start_go(value)
 		}
-		
-		
 		if (command == "find_error")
 		{
-			console.log("Finding error!");
+			console.log("Finding error");
 			find_error(value)
 		}
-		
 		if (command == "cycling")
 		{
-			console.log("setting cycler!");
-		
+			console.log("Setting cycler");
 			cycling_start_go(value)
 		}		
-		
 	}
 	
 	if (req.body.programs != undefined)
 	{
-	
 		if (req.body.programs == "cyclingsave")
 		{
 			holdup = true
-			console.log("saving cycler!");
+			console.log("Saving cycler");
 			holdup = true;
-			cyclingsave(value,res)
-				
+			cyclingsave(value,res)	
 		}
 		if (req.body.programs == "cyclingpresetsget")
 		{
 			holdup = true
-			console.log("getting cycler!");
+			console.log("Getting cycler");
 			holdup = true;
 			db.collection("cycling_presets").find().toArray(function(err,data)
 			{
@@ -312,22 +304,18 @@ function cycling_stepper()
 		next_step()
 	}
 	
-	
 	else if (direction == "discharge" & last_potential < cutoff_potential)
 	{
 		next_step()
 	}
 	
-	
 }
-
-
 
 function next_step()
 {
-	console.log("NEXT!")
 	arb_cycling_step++
 	if (arb_cycling_step >= arb_cycling_settings.length) arb_cycling_step = 0
+	console.log("Switching to cycling step",arb_cycling_step);
 	cycling_mode()
 }
 
@@ -375,7 +363,6 @@ function cv_start_go(value)
 //Step through CV
 function cv_stepper()
 {
-	
 	time = new Date().getTime()	
 	if (time - cv_time > cv_rate)
 	{
@@ -459,6 +446,7 @@ function cvprocess(data)
 function ocv()
 {
 	toArd("-",0000)
+	console.log("Set OCV")
 }
 
 //Set Potentiostat
@@ -466,7 +454,7 @@ function potentiostat(value)
 {
 	value_to_ardustat = value / volts_per_tick;
 	toArd("p",value_to_ardustat)
-	
+	console.log("Set potentiostat to",value)
 }
 
 //Allow negative values
@@ -474,6 +462,7 @@ function moveground(value)
 {
 	value_to_ardustat = value / volts_per_tick;
 	toArd("d",value_to_ardustat)
+	console.log("Moved ground to",value)
 	ocv()
 }
 
@@ -512,8 +501,7 @@ function galvanostat(value)
 	toArd("g",parseInt(value_to_ardustat))
 	toArd("r",parseInt(set_best))
 	toArd("g",parseInt(value_to_ardustat))
-	
-	
+	console.log("Set galvanostat to",value)
 }
 
 function find_error(value)
@@ -556,8 +544,9 @@ function data_parse(data)
 	}
     
 	//force ocv when dac_set and dac_adc don't match up
-     if (out['mode'] != 1 & out['dac_set'] - out['dac_adc'] > 900)
+    if (out['mode'] != 1 & out['dac_set'] - out['dac_adc'] > 900)
     {
+		console.log("DAC setting and measurement differ by over 4.4V, setting OCV")
         ocv();
     }
 
@@ -565,7 +554,6 @@ function data_parse(data)
 	if (mode != out['mode'])
 	{
 		mode = out['mode'];
-		
 	}
 	out['cell_potential'] = (out['cell_adc'] - out['gnd_adc']) * volts_per_tick
 	out['dac_potential'] = (out['dac_adc'] - out['gnd_adc'])*volts_per_tick
@@ -585,14 +573,14 @@ function data_parse(data)
 		try
 		{
 			res_table = JSON.parse(fs.readFileSync("unit_"+id.toString()+".json").toString())
-			console.log("loaded table "+id.toString())
+			console.log("Loaded calibration table for ID#"+id.toString())
 			
 			
 		}
 		catch (err)
 		{
-			console.log(err)
-			console.log("no table "+id.toString())
+			//console.log(err)
+			console.log("Warning: Couldn't find calibration table for ID#"+id.toString())
 			res_table = "null"
 		}
 	}
@@ -629,7 +617,7 @@ function calibrator(value)
 	calibrate = false
 	counter = 0
 	calloop = 0
-	serialPort.write("R0255")
+	queuer.push("R0255")
 	setTimeout(function(){calibrate = true},100)
 }
 
@@ -684,7 +672,7 @@ function calibrate_step()
 //Serial Port Interactions
 
 
-t1 = setInterval(function(){
+dataGetter = setInterval(function(){
 	queuer.push("s0000");
 	if (calibrate)
 	{   
@@ -703,8 +691,7 @@ t1 = setInterval(function(){
 	
 },s000_sample_rate)
 
-t2 = setInterval(function(){
-	
+commandWriter = setInterval(function(){
 	if (queuer.length > 0)
 	{
 		sout = queuer.shift();
@@ -712,20 +699,20 @@ t2 = setInterval(function(){
 		serialPort.write(sout);	
 	}
 
-},15)
+},queue_write_rate)
 
 
 var queuer = []
 function toArd(command,value)
 {
 	last_comm = ardupadder(command,value)
-	//serialPort.write(ardupadder(command,value));	
 	queuer.push(ardupadder(command,value))
-	console.log(queuer)
+	console.log("Sending commands:",queuer)
 }
 
 everyxlogcounter = 0
 biglogger = 0
+//Called every time a new line of data is recived from the arduino
 serialPort.on("data", function (data) {
 	if (data.search("GO")>-1)
 	{
@@ -753,8 +740,7 @@ serialPort.on("data", function (data) {
 				if (cv)
 				{
 					cv_point = cvprocess(foo)
-					if (cv_point.hasOwnProperty('V')) db.collection(atafile+"_cv").insert(cv_point)
-					
+					if (cv_point.hasOwnProperty('V')) db.collection(atafile+"_cv").insert(cv_point)	
 				}
 				
 				everyxlogcounter++
@@ -779,12 +765,12 @@ serialPort.on("data", function (data) {
 		io.sockets.emit('new_data',{'ardudata':foo} )
 		app.set('ardudata',foo)
 		
-
 	}
-		
 	
 });
 
+//ardupadder: cleans up commands before they're sent to the ardustat
+//e.g. g10 -> g0010
 function ardupadder(command,number)
 {
 	number = parseInt(number)
