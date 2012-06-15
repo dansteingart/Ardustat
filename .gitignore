@@ -4,3 +4,4 @@
 *.pickle
 *.json
 *.ardudata
+./NodeJS/Ardustat_Control/node_modules
