@@ -25,12 +25,12 @@ if [[ $arduinos == "" ]]; then
 	exit
 fi
 if [[ $numofarduinos == "1" ]]; then
-	node expresserver.js $arduinos
+	node expressserver.js $arduinos
 	exit
 fi
 echo You appear to have multiple arduinos connected. Please select one:
 select fname in $arduinos;
 do
-	node expresserver.js $fname
+	node expressserver.js $fname
 	break;
 done
