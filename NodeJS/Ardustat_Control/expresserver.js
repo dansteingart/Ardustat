@@ -4,6 +4,7 @@
 var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
+var os = require("os"); //OS lib, used here for detecting which operating system we're using
 var express = require('express'), //App Framework (similar to web.py abstraction)
     app = express.createServer();
 	app.use(express.bodyParser());
@@ -13,18 +14,38 @@ io.set('log level', 1)
 
 //connecting to serial port
 if (process.argv.length == 2) {
-	console.log("Please specify a serial port in the command line args")
+	//no serial port in command line
+	console.log("Please enter the serial port via the command line")
 	process.exit(0)
 }
 else {
-	var serialport = require("serialport")
-	var SerialPort = require("serialport").SerialPort
-	var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.readline("\n") });
+	if (os.platform() == "darwin" || os.platform() == "linux") {
+		//Operating system is linux or OS X
+		var serialport = require("serialport")
+		var SerialPort = require("serialport").SerialPort
+		var serialPort = new SerialPort(process.argv[2],{baudrate:57600,parser:serialport.parsers.raw});
+	}
+	else if (os.platform().substring(0,3) == "win") {
+		//Operating system is Windows
+		var SerialPort = require("serialport2").SerialPort
+		var serialPort = new SerialPort();
+		serialPort.open(process.argv[2], {
+			baudRate: 57600,
+			dataBits: 8,
+			parity: 'none',
+			stopBits: 1,
+			flowControl: false
+		});
+	}
+	else {
+		console.log("Your operating system isn't supported.")
+		process.exit(0)
+	}
 }
 
-if (process.argv.length == 3) tcpport = 8888
+if (process.argv.length <= 3) tcpport = 8888
 else tcpport = process.argv[3] //port of the HTTP server
-if (process.argv.length == 4) s000_sample_rate = 150 //delay in milliseconds between requests to the arduino for data
+if (process.argv.length <= 4) s000_sample_rate = 150 //delay in milliseconds between requests to the arduino for data
 else s000_sample_rate = process.argv[4]
 queue_write_rate = 15 //delay in milliseconds between command writes to the arduino
 
@@ -714,8 +735,10 @@ function toArd(command,value)
 
 everyxlogcounter = 0
 biglogger = 0
-//Called every time a new line of data is recived from the arduino
-serialPort.on("data", function (data) {
+
+
+//GotData: Called from dataParser every time a new line of data is recieved
+function gotData(data) {
 	if (data.search("GO")>-1)
 	{
 		foo = data_parse(data);
@@ -729,7 +752,6 @@ serialPort.on("data", function (data) {
 		{
 			calibration_array.push(foo)
 		}
-		
 		atafile = datafile.replace(".ardudat","")
 		if (logger=="started")
 		{
@@ -742,7 +764,8 @@ serialPort.on("data", function (data) {
 				if (cv)
 				{
 					cv_point = cvprocess(foo)
-					if (cv_point.hasOwnProperty('V')) db.collection(atafile+"_cv").insert(cv_point)	
+					if (cv_point.hasOwnProperty('V')) db.collection(atafile+"_cv").insert(cv_point)
+					
 				}
 				
 				everyxlogcounter++
@@ -756,7 +779,6 @@ serialPort.on("data", function (data) {
 				}
 			}
 			//exec("echo '"+JSON.stringify(foo)+"' >> data/"+datafile);
-			
 		}
 		else
 		{
@@ -766,10 +788,28 @@ serialPort.on("data", function (data) {
 		foo['datafile'] = datafile
 		io.sockets.emit('new_data',{'ardudata':foo} )
 		app.set('ardudata',foo)
-		
 	}
-	
-});
+		
+}
+
+//dataParser: parses raw serial data chunks from ardustat into individual lines
+var line = ""
+function dataParser(rawdata) {
+	data = rawdata.toString();
+	if (data.search("\n") > -1)
+	{
+		line = line + data.substring(0,data.indexOf('\n'));
+		gotData(line);
+		line = data.substring(data.indexOf('\n')+1,data.length);
+	}
+	else
+	{
+		line = line + data;
+	}		
+}
+
+//called every time a new chunk of serial data is recieved
+serialPort.on("data", dataParser);
 
 //ardupadder: cleans up commands before they're sent to the ardustat
 //e.g. g10 -> g0010
