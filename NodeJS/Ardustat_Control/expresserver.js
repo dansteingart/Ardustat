@@ -47,7 +47,8 @@ if (process.argv.length <= 3) tcpport = 8888
 else tcpport = process.argv[3] //port of the HTTP server
 if (process.argv.length <= 4) s000_sample_rate = 150 //delay in milliseconds between requests to the arduino for data
 else s000_sample_rate = process.argv[4]
-queue_write_rate = 15 //delay in milliseconds between command writes to the arduino
+if (process.argv.length <= 5) queue_write_rate = 30 //delay in milliseconds between command writes to the arduino
+else queue_write_rate = process.argv[5]
 
 resistance=587.6
 coefficient=475
