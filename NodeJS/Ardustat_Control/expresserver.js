@@ -1,6 +1,9 @@
 //expresserver.js: main ardustat control code
 
-//Set it up
+//********************
+//Initialization/Setup
+//********************
+
 var http = require("http"); //HTTP Server
 var url = require("url"); // URL Handling
 var fs = require('fs'); // Filesystem Access (writing files)
@@ -12,7 +15,6 @@ var express = require('express'), //App Framework (similar to web.py abstraction
 io = require('socket.io').listen(app); //Socket Creations
 io.set('log level', 1)
 
-//connecting to serial port
 if (process.argv.length == 2) {
 	//no serial port in command line
 	console.log("Please enter the serial port via the command line")
@@ -71,20 +73,14 @@ catch (err)
 	console.log(err)
 }
 
-//Logging Hack because I'm tired 
-var util = require('util')
-var exec = require('child_process').exec;
-function puts(error, stdout, stderr) { util.puts(stdout) }
-//exec("ls -la", puts);
-
-
 //Express Redirects
 //Static Redirects
 app.use("/flot", express.static(__dirname + '/flot'));
 app.use("/socket.io", express.static(__dirname + '/node_modules/socket.io/lib'));
 
-
-//User interface code:
+//*******************
+//User interface code
+//*******************
 
 //On Home Page
 app.get('/', function(req, res){
@@ -123,13 +119,14 @@ app.post('/getdata',function(req, res){
 	res.send(req.app.settings)
 });
 
-//Start listener on this port
-//TODO: link to aruino id: e.g. board 16 is port 8016
+//Start web server
 app.listen(tcpport);
 console.log('Express server started on port ' + app.address().port.toString() + 
 			'\nGo to http://localhost:'+app.address().port.toString() + '/ with your web browser.');
 
+//*****************
 //Program Functions
+//*****************
 
 //setStuff: handles POST requests from web interface
 function setStuff(req,res)
@@ -692,27 +689,16 @@ function calibrate_step()
 		setTimeout(function(){toArd("r",counter)},50);
 }
 
-
+//************************
 //Serial Port Interactions
-
+//************************
 
 dataGetter = setInterval(function(){
 	queuer.push("s0000");
-	if (calibrate)
-	{   
-		calibrate_step()
-	}
-	
-	if(cv)
-	{
-		cv_stepper()
-	}
-	
-	if (arb_cycling)
-	{
-		cycling_stepper()
-	}
-	
+	if (calibrate) calibrate_step()
+	if (cv) cv_stepper()
+	if (arb_cycling) cycling_stepper()
+
 },s000_sample_rate)
 
 commandWriter = setInterval(function(){
@@ -722,10 +708,12 @@ commandWriter = setInterval(function(){
 		//if (sout != "s0000") console.log(sout);
 		serialPort.write(sout);	
 	}
-
 },queue_write_rate)
 
 
+//toArd: functionally equivalent to queuer.push(command), but slightly
+//fancier, since it prints the command and records it as the last command
+//sent
 var queuer = []
 function toArd(command,value)
 {
