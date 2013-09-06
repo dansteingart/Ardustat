@@ -456,7 +456,7 @@ void flushSerialString(char *strArray) {
 //Read String In
 void readSerialString (char *strArray) {
   int i = 0;
-  if(Serial.available()) {
+  if(Serial.available() > 5) {
     Serial.println("    ");  //optional: for confirmation
     while (Serial.available()){
       strArray[i] = Serial.read();
