@@ -1,16 +1,15 @@
 #Ardustat Code
 
 Authors:
-
-- Barry Van Tassell <bajavata@gmail.com>
-- Eddie Nolan <tapd260@gmail.com>
 - Dan Steingart <dan.steingart@gmail.com>
-- Balasubramanian Anantharaman <balaanantharaman@gmail.com>
-- Rigers Qeraj <rigersqeraj@gmail.com>
-- Susan Tan <onceuponatimeforever@gmail.com>
+- Barry Van Tassell <bajavata@gmail.com>
+
+Past Contributors:
+- Eddie Nolan 
+- Rigers Qeraj 
+- Susan Tan 
 
 Rigers, Susan and Eddie were able to work on this because of inspiration by NSF CMMI 1031208  
-Balasubramanian is supported by NSF CMMI 1031208
 
 ###Installation:
 ####Software that you need to have installed to use the ardustat:

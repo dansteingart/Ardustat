@@ -9,6 +9,7 @@ Any Arduino compatible circuit -> board layouts from arduino v3 on up
 - POT
     - Microchip MCP4261 
         - http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en531252
+
 - Relay  
     - 526-R561D.56 NTE General Purpose Relays 
         - http://www.mouser.com/Search/Refine.aspx?Keyword=526-R561D.56+NTE+General+Purpose+Relays
