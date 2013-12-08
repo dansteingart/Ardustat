@@ -11,9 +11,8 @@ Any Arduino compatible circuit -> board layouts from arduino v3 on up
         - http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en531252
 
 - Relay  
-    - 526-R561D.56 NTE General Purpose Relays 
-        - http://www.mouser.com/Search/Refine.aspx?Keyword=526-R561D.56+NTE+General+Purpose+Relays
-
+    - R561D.56 NTE General Purpose Relays 
+        - http://www.newark.com/nte-electronics/r56-1d-5-6/reed-relay/dp/73C0091?ost=526-R561D.56&rpsku=526-R561D.56
 - Resistors 
     - (2) 100 Ohm
     - (2) 10 kOhm
