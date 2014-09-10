@@ -5,16 +5,14 @@
 #define SPICLOCK  13//sck
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
 long watchdog = 0;
 long watchdogdiff = 30000; //one minute
-float adc;    //out of pot
-float dac;    //out of main dac
-float adcgnd; //adc at ground
-float adcref; //ref electrode
-float refvolt;//ref voltage 2.5V
+int adc;    //out of pot
+int dac;    //out of main dac
+int adcgnd; //adc at ground
+int adcref; //ref electrode
+int refvolt;//ref voltage 2.5V
 int firstdac= 0;
 int seconddac = 0;
 int dacaddr = 0;
@@ -64,43 +62,30 @@ byte clr;
 
 void setup()
 {
-  
+
+
   //Startup Serial
   Serial.begin(57600);
   //  Serial.println("Hi Dan!");
 
-  cbi(ADCSRA,ADPS0);
-  cbi(ADCSRA,ADPS1);
-  sbi(ADCSRA,ADPS2);
-  
 
   //SPI
   byte i;
   //byte clr;
-//  pinMode(DATAOUT, OUTPUT);
-//  pinMode(3,OUTPUT);
-//  pinMode(DATAIN, INPUT);
-//  pinMode(SPICLOCK,OUTPUT);
-//  pinMode(SLAVESELECTD,OUTPUT);
-//  pinMode(5,OUTPUT);
-//  pinMode(6,OUTPUT);
-//  pinMode(SLAVESELECTP,OUTPUT);
-//  pinMode(cl, OUTPUT);
-  DDRB = B00101111;
-  DDRD = B11111110;
-  DDRC = B00000000;
-  
-  
-//  digitalWrite(SLAVESELECTD,HIGH); //disable device
-//  digitalWrite(SLAVESELECTP,HIGH); //disable device
-//  digitalWrite(cl, LOW);
-  PORTB = B00000100;
-  PORTD = B10000000;
-
+  pinMode(DATAOUT, OUTPUT);
+  pinMode(3,OUTPUT);
+  pinMode(DATAIN, INPUT);
+  pinMode(SPICLOCK,OUTPUT);
+  pinMode(SLAVESELECTD,OUTPUT);
+  pinMode(5,OUTPUT);
+  pinMode(6,OUTPUT);
+  pinMode(SLAVESELECTP,OUTPUT);
+  pinMode(cl, OUTPUT);
+  digitalWrite(SLAVESELECTD,HIGH); //disable device
+  digitalWrite(SLAVESELECTP,HIGH); //disable device
+  digitalWrite(cl, LOW);
   delay(1000);
-//  digitalWrite(cl,HIGH);
-  PORTD |= B00000100;
-
+  digitalWrite(cl,HIGH);
   //SPCR is 01010000.  write_pot turns off the SPI interface,
   // which means SPCR becomes 00010000 temporarily
   //SPCR = (1<<SPE)|(1<<MSTR);
@@ -123,9 +108,6 @@ void setup()
   write_pot(pot,resistance1,res);
   for (int i=1;i<11;i++) lastData[i]=0;
   watchdog = millis();
-  
-  
-  
 }
 
 void loop()
@@ -167,18 +149,16 @@ void loop()
         outvolt = out;
 
         send_dac(0,checkvolt(outvolt));
-//        digitalWrite(3,HIGH);
-        PORTD |= B00001000;
+        digitalWrite(3,HIGH);
         speed = 1;
         countto = 10;
       }
       if (serInString[0] == 100)
       {
-
+        
         outvolt = out;
         send_dac(1,outvolt);
-//        digitalWrite(3,LOW);
-        PORTD &= B11110111;
+        digitalWrite(3,LOW);
         speed = 1;
         countto = 10;
       }
@@ -187,8 +167,7 @@ void loop()
         //outvolt = -1;
         ocv = true;
         //if(out >= 1) write_dac(1,out);
-//        digitalWrite(3,LOW);
-        PORTD &= B11110111;
+        digitalWrite(3,LOW);
         //speed = 5;
         //countto = 10;
 
@@ -235,7 +214,7 @@ void loop()
         dacon();
         gstat = true;
 
-        outvolt = betteranaread(0);
+        outvolt = analogRead(0);
         write_dac(0,checkvolt(outvolt));
         //speed = 5;
         //countto = 20;
@@ -254,14 +233,13 @@ void loop()
         }
 
         setting = out;
-        outvolt = betteranaread(0)+(sign*out);
+        outvolt = analogRead(0)+(sign*out);
         if (outvolt > 1023) outvolt = 1023;
         if (outvolt < 0) outvolt = 0;
         write_dac(0,checkvolt(outvolt));
 
-//        digitalWrite(3,HIGH);
-        PORTD |= B00001000;
-        
+        digitalWrite(3,HIGH);
+
       }
       if (serInString[0] == 112)
       {
@@ -287,8 +265,7 @@ void loop()
         //countto = 20;
         setting = out*sign;
         //outvolt = setting; //initial guess
-//        digitalWrite(3,HIGH);
-        PORTD |= B00001000;
+        digitalWrite(3,HIGH);
         write_dac(0,setting);
       }
 
@@ -312,23 +289,18 @@ void loop()
         setting = sign*out;
         //outvolt = setting; //initial guess
         dacon();
-//        digitalWrite(3,HIGH);
-        PORTD |= B00001000;
+        digitalWrite(3,HIGH);
       }
     }
 
     else if (serInString[0] == 32)
     {
-//      digitalWrite(5,HIGH);
-      PORTD |= B00100000;
-//      digitalWrite(6,LOW);
-      PORTD &= B10111111;
-      
+      digitalWrite(5,HIGH);
+      digitalWrite(6,LOW);
       delay(100);
-//      digitalWrite(5,LOW);
-//      digitalWrite(6,LOW);
-      PORTD &= B10011111;
-      
+      digitalWrite(5,LOW);
+      digitalWrite(6,LOW);
+
     }
 
 
@@ -347,21 +319,16 @@ void loop()
     ocv = true;
     gstat = false;
     pstat = false;
-//    digitalWrite(3,LOW);
-    PORTD &= B11110111;
+    digitalWrite(3,LOW);
 
     //blink 3 times
     for (int i = 0; i < 3; i++)
     {
-//      digitalWrite(5,HIGH);
-      PORTD |= B00100000;
-//      digitalWrite(6,LOW);
-      PORTD &= B10111111;
-      
+      digitalWrite(5,HIGH);
+      digitalWrite(6,LOW);
       delay(100);
-//      digitalWrite(5,LOW);
-//      digitalWrite(6,LOW);
-      PORTD &= B10011111;
+      digitalWrite(5,LOW);
+      digitalWrite(6,LOW);
       delay(100);
     }
   }
@@ -414,13 +381,11 @@ byte send_dac(int address, int value)
   SPCR = B01010000;
   firstdac = (address << 6) + (3 << 4) + (value >> 6);
   seconddac = (value << 2 )&255;
-//  digitalWrite(SLAVESELECTD,LOW);
-  PORTB &= B11111011;
+  digitalWrite(SLAVESELECTD,LOW);
   //2 byte opcode
   spi_transfer(firstdac);
   spi_transfer(seconddac);
-//  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
-  PORTB |= B00000100;
+  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
   //delay(3000);*/
   SPCR = B00010000;
 }
@@ -430,13 +395,11 @@ byte dacoff()
   SPCR = B01010000;
   firstdac = (3 << 6) ;
   seconddac = 0;
-//  digitalWrite(SLAVESELECTD,LOW);
-  PORTB &= B11111011;
+  digitalWrite(SLAVESELECTD,LOW);
   //2 byte opcode
   spi_transfer(firstdac);
   spi_transfer(seconddac);
-//  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
-  PORTB |= B00000100;
+  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
   //delay(3000);*/
   SPCR = B00010000;
 }
@@ -446,13 +409,11 @@ byte dacon()
   SPCR = B01010000;
   firstdac = (1 << 6) ;
   seconddac = 0;
-//  digitalWrite(SLAVESELECTD,LOW);
-  PORTB &= B11111011;
+  digitalWrite(SLAVESELECTD,LOW);
   //2 byte opcode
   spi_transfer(firstdac);
   spi_transfer(seconddac);
-//  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
-  PORTB |= B00000100;
+  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
   //delay(3000);*/
   SPCR = B00010000;
 }
@@ -495,7 +456,7 @@ void flushSerialString(char *strArray) {
 //Read String In
 void readSerialString (char *strArray) {
   int i = 0;
-  if(Serial.available()) {
+  if(Serial.available() > 4) {
     Serial.println("    ");  //optional: for confirmation
     while (Serial.available()){
       strArray[i] = Serial.read();
@@ -537,11 +498,11 @@ long powerOfTen(char digit, int power) {
 void potentiostat()
 {
   //read in values
-  adc = betteranaread(0);
-  float adc_set = adc - betteranaread(3);
+  adc = analogRead(0);
+  int adc_set = adc - analogRead(3);
   // if ( ! adc_set ) adc_set = adc;
   //  if ( sign == -1 ) {  adc_set = analogRead(3) - adc;  if ( ! analogRead(3) ) adc_set = analogRead(2) - adc;}
-  dac = betteranaread(1);
+  dac = analogRead(1);
   int resmove = 0;
   int move = 0;
   //if potential is too high
@@ -606,8 +567,8 @@ int checkvolt(int volt)
 void galvanostat()
 {
   //get values
-  adc = betteranaread(0);
-  dac = betteranaread(1);
+  adc = analogRead(0);
+  dac = analogRead(1);
 
   int move = 1;
   int diff = 0;
@@ -662,20 +623,18 @@ void galvanostat()
 
 void sendout()
 {
-
-  adc = betteranaread(0);
-  dac = betteranaread(1);
-  adcgnd = betteranaread(2);
-  adcref = betteranaread(3);
-  refvolt = betteranaread(5);
-
+  adc = analogRead(0);
+  dac = analogRead(1);
+  adcgnd = analogRead(2);
+  adcref = analogRead(3);
+  refvolt = analogRead(5);
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
   else mode = 0;
   int setout = sign*setting;
-  Serial.print("GO,");
+  Serial.print("GO.");
   Serial.print(checkvolt(outvolt),DEC);
   Serial.print(",");
   Serial.print(adc);
@@ -699,8 +658,8 @@ void sendout()
   Serial.print(adcref);
   Serial.print(",");
   Serial.print(refvolt);
-  Serial.print(",");
-  Serial.print(int(EEPROM.read(32)));
+  //Serial.print(",");
+  //Serial.print(int(EEPROM.read(32)));
   Serial.println(",ST");
   //res=res+1;
   //if (res > 255) res = 0;
@@ -710,8 +669,7 @@ void sendout()
 
 void testdac ()
 {
-//  digitalWrite(3,LOW);
-  PORTD |= B00001000;
+  digitalWrite(3,LOW);
   write_dac(0,testcounter);
   outvolt = testcounter;
   testcounter = testcounter + 1;
@@ -762,12 +720,10 @@ byte value;
 
 byte sendBit(boolean state)
 {
-//  digitalWrite(SPICLOCK,LOW);
-  PORTB &= B11011111;
+  digitalWrite(SPICLOCK,LOW);
   delayMicroseconds(10);
-  digitalWrite(DATAOUT,state);////////////////////////////////////////////////////
-//  digitalWrite(SPICLOCK,HIGH);
-  PORTB |= B00100000;
+  digitalWrite(DATAOUT,state);
+  digitalWrite(SPICLOCK,HIGH);
   delayMicroseconds(10);
 }
 
@@ -777,8 +733,7 @@ byte sendValue(int wiper, int val)
   value =  byte(val);
   //digitalWrite(SPICLOCK,LOW);
   //digitalWrite(DATAOUT,LOW);
-//  digitalWrite(SLAVESELECTP,LOW);
-  PORTD &= B01111111;
+  digitalWrite(SLAVESELECTP,LOW);
   delayMicroseconds(10);
 
   //Select wiper
@@ -801,8 +756,7 @@ byte sendValue(int wiper, int val)
   sendBit(HIGH && (value & B00000010));
   sendBit(HIGH && (value & B00000001));
   //sendBit(true);  //fudge
-//  digitalWrite(SLAVESELECTP,HIGH);
-  PORTD |= B10000000;
+  digitalWrite(SLAVESELECTP,HIGH);
   //Serial.println(in);
   delayMicroseconds(10);
 }
@@ -810,8 +764,7 @@ byte sendValue(int wiper, int val)
 byte readWiper()
 {
   //send read command
-//  digitalWrite(SLAVESELECTP,LOW);
-  PORTD &= B01111111;
+  digitalWrite(SLAVESELECTP,LOW);
   delayMicroseconds(10);
   sendBit(false);
   sendBit(false);
@@ -825,33 +778,19 @@ byte readWiper()
   //Serial.print("  ");
   for(int i=0;i<9;i++)
   {
-//    digitalWrite(SPICLOCK,LOW);
-    PORTB &= B11011111;
+    digitalWrite(SPICLOCK,LOW);
     delayMicroseconds(10);
-//    digitalWrite(DATAOUT,LOW);
-    PORTB &= B11110111;
+    digitalWrite(DATAOUT,LOW);
     delayMicroseconds(10);
-//    data[i] = digitalRead(DATAIN);
-    data[i] = PINB;
-//    digitalWrite(SPICLOCK,HIGH);
-    PORTB |= B00100000;
+    data[i] = digitalRead(DATAIN);
+    digitalWrite(SPICLOCK,HIGH);
     delayMicroseconds(10);
     Serial.print(data[i]);
   }
-//  digitalWrite(SLAVESELECTP,HIGH);
-  PORTD |= B10000000;
+  digitalWrite(SLAVESELECTP,HIGH);
 }
 
 
-float betteranaread(int adcin)
-{
-  int limit = 50;
-  int goer = 0;
-  float out = 0;
-  for (goer = 0; goer < limit; goer ++)
-  {
-    out = out + float(analogRead(adcin));
-  }
-  float limer = float(limit);
-  return out/limer;
-}
+
+
+
