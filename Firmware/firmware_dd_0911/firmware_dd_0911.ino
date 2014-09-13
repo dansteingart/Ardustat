@@ -8,14 +8,22 @@
 int oldsetting = 0;
 int olddac = 0;
 int oldmode = 0;
-int wepcounter = 1;
-long wept = 0;
-int wepcounterlimit = 20;
+int wepcounter = 1; //for potentiostat
+long wept = 0; // for potentiostat
+int wepcounterlimit = 5; // for potentiostat
 int pflag = 0;
 int ranger_positive = 1; //when calling the resgainer_dd tells whether postivie or negative current flowing
 
+// stuff for averaging the g counter stuff
+// might need to do some pot_dan stuff here too
+int gcounter = 1;
+long gdiff_avg = 0;
+int gcounterlimit = 5;
+int gflag = 0;
+
+
 long watchdog = 0;
-long watchdogdiff = 30000;
+long watchdogdiff = 3000000;
 int adc;    //out of pot
 int dac;    //out of main dac
 int adcgnd; //adc at ground
@@ -218,9 +226,10 @@ void loop()
       {
         dacon();
         gstat = true;
+        gflag = 1;
 
         outvolt = analogRead(0);
-        write_dac(0,outvolt);
+        write_dac(0,outvolt); // might need to remove this puppy
         //speed = 5;
         //countto = 20;
 
@@ -350,8 +359,18 @@ void loop()
     //potentiostat();
     pot_dan();
   }
+    if ((gstat) && (gflag == 0)) {
+    galvanostat();
+  }
+  if ((gstat) && (gflag == 1)) {
+    gdiff_avg =0;
+    gcounter = 1;
+    Serial.print(" gflag is ");
+    Serial.println(gflag);
+    galvanostat();
+    gflag = 0;
+  }
 
-  if (gstat) galvanostat();
   //if (cv)
   if (dactest) testdac();
   if (rtest) testr();
@@ -373,18 +392,21 @@ void loop()
     dacrun = 0;
 
   } 
- //sendout();
- //delay(50);
+ sendout();
+ delay(50);
  //FLAG STUFF
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
   else mode = 0;
- if ((mode == 3) || (mode == 1)){
+ if ((mode == 1)){
     //Serial.println("i havent gone into this bs have i?");
     oldsetting = dac;
   }
+ else if (mode == 3){
+   oldsetting = adc-adcref;
+ }
   else{
     //Serial.println("i've gone into something");
     oldsetting = setting;
@@ -548,6 +570,7 @@ void pot_dan()
   else {
     adcref = analogRead(3);
     adc = analogRead(0);
+    //Serial.print("setting, oldsetting ");
     //Serial.print(setting);
     //Serial.print(",");
     //Serial.println(oldsetting);
@@ -580,7 +603,7 @@ void potentiostat()
   wept = (wept + wep);
   //Serial.print(", wept ");
   //Serial.println(wept);
-  if (wepcounter == wepcounterlimit)
+  if (wepcounter >= wepcounterlimit)
   {
     wept = wept/wepcounter;
 //Serial.print("control wept ");
@@ -669,53 +692,95 @@ void galvanostat()
   dac = analogRead(1);
   int move = 1;
   int diff = 0;
+  /*
+  wep = adc - adcref; // wep = working electrode potential
+  //Serial.print("wep ");
+  //Serial.print(wep);
+  wept = (wept + wep);
+  //Serial.print(", wept ");
+  //Serial.println(wept);
+  if (wepcounter == wepcounterlimit)
+  */
+  diff = dac - adc;
+  Serial.print(" diff ");
+  Serial.println(diff);
+  gdiff_avg = gdiff_avg + diff;
+  Serial.print(" gcounter ");
+  Serial.println(gcounter);
+  Serial.print( "gdiff avg ");
+  Serial.println(gdiff_avg);
 
-
-  //if charging current
-  if (sign > 0)
+  if (gcounter >= gcounterlimit)
   {
-    diff = dac - adc;
-    //if over current step dac down
-    if( ((diff) > (setting)) && (outvolt > 0))
+    gdiff_avg = gdiff_avg/gcounter;
+    //if charging current
+    if (sign > 0)
     {
-     
-      move = gainer(diff,setting);
-      outvolt = outvolt-move;
-      write_dac(0,outvolt);
-
+      //diff = dac - adc;
+      //if over current step dac down
+      if( ((gdiff_avg) > (setting)) && (outvolt > 0))
+      {
+       
+        move = gainer(gdiff_avg,setting);
+        outvolt = outvolt-move;
+        write_dac(0,outvolt);
+  
+      }
+  
+      //if under current step dac up
+      if (((gdiff_avg) <(setting)) && (outvolt < 1023))
+      {
+        move = gainer(gdiff_avg,setting);
+        outvolt = outvolt+move;
+        write_dac(0,outvolt);
+  
+      }
     }
-
-    //if under current step dac up
-    if (((diff) <(setting)) && (outvolt < 1023))
+  
+    //if discharge current
+    if (sign < 0)
     {
-      move = gainer(diff,setting);
-      outvolt = outvolt+move;
-      write_dac(0,outvolt);
-
+      //diff = adc - dac;
+      //Serial.print(" gdiff_avg before ");
+      //Serial.print(gdiff_avg);
+      gdiff_avg = gdiff_avg * sign;
+      Serial.print(" gdiff_avg ");
+      Serial.println(gdiff_avg);
+      Serial.print("setting");
+      Serial.println(setting);
+      //if over current step dac up
+      if( (gdiff_avg) > (setting) && (outvolt < 1023))
+      {
+        move = gainer(gdiff_avg,setting);
+        outvolt =outvolt+move;
+        Serial.print(" move ");
+        Serial.print(move);
+        Serial.print(" outvolt ");
+        Serial.println(outvolt);
+        write_dac(0,outvolt);
+      }
+  
+      //if under current step dac down
+      if ((gdiff_avg) < (setting) && (outvolt > 0))
+      {
+        move = gainer(gdiff_avg,setting);
+        outvolt = outvolt-move;
+        Serial.print(" move ");
+        Serial.print(move);
+        Serial.print(" outvolt ");
+        Serial.println(outvolt);
+        write_dac(0,outvolt);
+  
+      }
     }
-  }
-
-  //if discharge current
-  if (sign < 0)
-  {
-    diff = adc - dac;
-    //if over current step dac up
-    if( (diff) > (setting) && (outvolt < 1023))
-    {
-      move = gainer(diff,setting);
-      outvolt =outvolt+move;
-      write_dac(0,outvolt);
-    }
-
-    //if under current step dac down
-    if ((diff) < (setting) && (outvolt > 0))
-    {
-      move = gainer(diff,setting);
-      outvolt = outvolt-move;
-      write_dac(0,outvolt);
-
-    }
-  }
+    gcounter = 1;
+    gdiff_avg = 0;
+    
+  
+}
+else {
+  gcounter = gcounter + 1;
+}
 }
 
 int checkvolt(int volt)

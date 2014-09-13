@@ -202,8 +202,8 @@ void loop()
       //Write ID to EEPROM
       if (serInString[0] == 86)  
       {
-        Serial.println("fudge");
-        Serial.println(out);
+        //Serial.println("fudge");
+        //Serial.println(out);
 
         EEPROM.write(32,byte(out)) ;
 
@@ -457,7 +457,7 @@ void flushSerialString(char *strArray) {
 void readSerialString (char *strArray) {
   int i = 0;
   if(Serial.available() > 4) {
-    Serial.println("    ");  //optional: for confirmation
+    //Serial.println("    ");  //optional: for confirmation
     while (Serial.available()){
       strArray[i] = Serial.read();
       i++;
