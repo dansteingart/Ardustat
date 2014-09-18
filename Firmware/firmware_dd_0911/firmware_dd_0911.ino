@@ -10,7 +10,7 @@ int olddac = 0;
 int oldmode = 0;
 int wepcounter = 1; //for potentiostat
 long wept = 0; // for potentiostat
-int wepcounterlimit = 5; // for potentiostat
+int wepcounterlimit = 100; // for potentiostat
 int pflag = 0;
 int ranger_positive = 1; //when calling the resgainer_dd tells whether postivie or negative current flowing
 
@@ -18,12 +18,12 @@ int ranger_positive = 1; //when calling the resgainer_dd tells whether postivie 
 // might need to do some pot_dan stuff here too
 int gcounter = 1;
 long gdiff_avg = 0;
-int gcounterlimit = 5;
+int gcounterlimit = 1000;
 int gflag = 0;
 
 
 long watchdog = 0;
-long watchdogdiff = 3000000;
+long watchdogdiff = 30000;
 int adc;    //out of pot
 int dac;    //out of main dac
 int adcgnd; //adc at ground
@@ -365,8 +365,8 @@ void loop()
   if ((gstat) && (gflag == 1)) {
     gdiff_avg =0;
     gcounter = 1;
-    Serial.print(" gflag is ");
-    Serial.println(gflag);
+   //Serial.print(" gflag is ");
+   //Serial.println(gflag);
     galvanostat();
     gflag = 0;
   }
@@ -392,8 +392,8 @@ void loop()
     dacrun = 0;
 
   } 
- sendout();
- delay(50);
+ //sendout();
+ //delay(50);
  //FLAG STUFF
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
@@ -702,13 +702,13 @@ void galvanostat()
   if (wepcounter == wepcounterlimit)
   */
   diff = dac - adc;
-  Serial.print(" diff ");
-  Serial.println(diff);
+ //Serial.print(" diff ");
+ //Serial.println(diff);
   gdiff_avg = gdiff_avg + diff;
-  Serial.print(" gcounter ");
-  Serial.println(gcounter);
-  Serial.print( "gdiff avg ");
-  Serial.println(gdiff_avg);
+ //Serial.print(" gcounter ");
+ //Serial.println(gcounter);
+ //Serial.print//Serial.print( "gdiff avg ");
+ //Serial.println(gdiff_avg);
 
   if (gcounter >= gcounterlimit)
   {
@@ -744,19 +744,19 @@ void galvanostat()
       //Serial.print(" gdiff_avg before ");
       //Serial.print(gdiff_avg);
       gdiff_avg = gdiff_avg * sign;
-      Serial.print(" gdiff_avg ");
-      Serial.println(gdiff_avg);
-      Serial.print("setting");
-      Serial.println(setting);
+     //Serial.print(" gdiff_avg ");
+     //Serial.println(gdiff_avg);
+     //Serial.print("setting");
+     //Serial.println(setting);
       //if over current step dac up
       if( (gdiff_avg) > (setting) && (outvolt < 1023))
       {
         move = gainer(gdiff_avg,setting);
         outvolt =outvolt+move;
-        Serial.print(" move ");
-        Serial.print(move);
-        Serial.print(" outvolt ");
-        Serial.println(outvolt);
+       //Serial.print(" move ");
+       //Serial.print(move);
+       //Serial.print(" outvolt ");
+       //Serial.println(outvolt);
         write_dac(0,outvolt);
       }
   
@@ -765,10 +765,10 @@ void galvanostat()
       {
         move = gainer(gdiff_avg,setting);
         outvolt = outvolt-move;
-        Serial.print(" move ");
-        Serial.print(move);
-        Serial.print(" outvolt ");
-        Serial.println(outvolt);
+       //Serial.print(" move ");
+       //Serial.print(move);
+       //Serial.print(" outvolt ");
+       //Serial.println(outvolt);
         write_dac(0,outvolt);
   
       }
