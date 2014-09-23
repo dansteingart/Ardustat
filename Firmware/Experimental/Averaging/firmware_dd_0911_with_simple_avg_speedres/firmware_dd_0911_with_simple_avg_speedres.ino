@@ -6,10 +6,13 @@
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
 
+int countto = 10;
 boolean rcalled = false;
 int res_last = 100;
 int res_last_limit = 100;
 //extra averaging stuff
+
+
 int dacrun;
 int adcrun;
 int adcrefrun;
@@ -41,7 +44,7 @@ int dac;    //out of main dac
 int adcgnd; //adc at ground
 int adcref; //ref electrode
 int refvolt;//ref voltage 2.5V
-int wep; //working electrode potential(adc - adcref)
+int wep; //working electrode potential (adc - adcref)
 int firstdac= 0;
 int seconddac = 0;
 int dacaddr = 0;
@@ -83,7 +86,7 @@ boolean ocv = true;
 boolean cv = false;
 int setting = 0;
 int speed = 1;
-int countto = 10;
+
 byte clr;
 
 void setup()
@@ -205,7 +208,7 @@ void loop()
         //countto = 10;
       }
 
-      if (serInString[0] == 82)
+      if (serInString[0] == 82) // R
       {
         rtest = true;
         testcounter = 0;
@@ -652,35 +655,23 @@ void potentiostat()
     if ((outvolt > 1022) && (res > 0))
     {
       res_last = 0;
-      rcalled  = true;
+      rcalled = true;
       outvolt = 1000;
-      write_dac(0,checkvolt(outvolt));
-      resmove = resgainer(wept,setting);
-      res = res - resmove;
-      res = constrain(res,0,255);
-      write_pot(pot,resistance1,res);
-      //ranger_positive = 1; //might break this outvolt thing but thats ok
-      //resgainer_dd(ranger_positive);
+      ranger_positive = 1; //might break this outvolt thing but thats ok
+      resgainer_dd(ranger_positive);
     }
     else if ((outvolt < 1) && (res > 0))
     {
       res_last = 0;
-      rcalled  = true;
+      rcalled = true;
       outvolt = 23;
-      write_dac(0,checkvolt(outvolt));
-      resmove = resgainer(wept,setting);
-      res = res - resmove;
-      res = constrain(res,0,255);
-      write_pot(pot,resistance1,res);
-      //ranger_positive = 0;
-      //resgainer_dd(ranger_positive);
-      
+      ranger_positive = 0;
+      resgainer_dd(ranger_positive);
     }
   
     //if range is truncated increase R
     int dude = abs(dac-adc);
-    //if ((dude < 50) && (res < 255) && (((sign ==  1) && (dac < 850)) || ((sign == -1) && (dac > 150)) ))
-    if (( dude < 100) && (res < 255))
+    if ((dude < 50) && (res < 255) && (((sign ==  1) && (dac < 850)) || ((sign == -1) && (dac > 150)) ))
     {
       //Serial.println("the truncatonator has been called ");
       //Serial.print(" sign: ");
@@ -688,7 +679,7 @@ void potentiostat()
       //Serial.print(", dac: ");
       //Serial.println(dac);
       res_last = 0;
-      rcalled  = true;
+      rcalled = true;
       res = res+1;
       res = constrain(res,1,255);
       write_pot(pot,resistance1,res);
@@ -702,7 +693,7 @@ void potentiostat()
     //Serial.println(outvolt);
     wept = 0;
     wepcounter = 1;
-    res_last = res_last +1;
+    res_last = res_last + 1;
     //Serial.print("outvolt from potentiostat ");
     //Serial.println(outvolt);
   }
@@ -834,7 +825,8 @@ void sendout()
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
   else if (rcalled) 
-  {mode = 5;
+  {
+    mode = 5;
     rcalled = false;
   }
   else mode = 0;

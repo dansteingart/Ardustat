@@ -654,6 +654,7 @@ void potentiostat()
       res_last = 0;
       rcalled  = true;
       outvolt = 1000;
+      
       write_dac(0,checkvolt(outvolt));
       resmove = resgainer(wept,setting);
       res = res - resmove;
@@ -670,7 +671,7 @@ void potentiostat()
       write_dac(0,checkvolt(outvolt));
       resmove = resgainer(wept,setting);
       res = res - resmove;
-      res = constrain(res,0,255);
+      res = constrain(res,1,255);
       write_pot(pot,resistance1,res);
       //ranger_positive = 0;
       //resgainer_dd(ranger_positive);
@@ -687,7 +688,7 @@ void potentiostat()
       //Serial.print(sign);
       //Serial.print(", dac: ");
       //Serial.println(dac);
-      res_last = 0;
+      //res_last = 0;
       rcalled  = true;
       res = res+1;
       res = constrain(res,1,255);
@@ -829,11 +830,12 @@ void sendout()
   adcgnd = analogRead(2);
   //adcref = analogRead(3);
   refvolt = analogRead(5);
-  if (pstat) mode = 2;
+  if ((pstat) && (rcalled)) mode = 5;
+  else if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
-  else if (rcalled) 
+  if (rcalled) 
   {mode = 5;
     rcalled = false;
   }
