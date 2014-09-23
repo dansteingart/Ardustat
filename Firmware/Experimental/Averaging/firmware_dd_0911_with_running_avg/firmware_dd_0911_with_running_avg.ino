@@ -29,7 +29,7 @@ int olddac = 0;
 int oldmode = 0;
 int wepcounter = 1; //for potentiostat
 long wept = 0; // for potentiostat
-int wepcounterlimit = 50; // for potentiostat
+int wepcounterlimit = 10; // for potentiostat
 int pflag = 0;
 int ranger_positive = 1; //when calling the resgainer_dd tells whether postivie or negative current flowing
 
