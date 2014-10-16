@@ -43,7 +43,7 @@ int gflag = 0;
 
 
 long watchdog = 0;
-long watchdogdiff = 30000;
+long watchdogdiff = 3000000;
 int adc;    //out of pot
 int dac;    //out of main dac
 int adcgnd; //adc at ground
