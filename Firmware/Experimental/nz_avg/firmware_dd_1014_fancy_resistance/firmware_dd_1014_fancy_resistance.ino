@@ -14,11 +14,15 @@ int wepcounterlimit = 100;
 int gcounterlimit = 10;
 //---------------------------------------------------------------------//
 
-float est
+//resistance fixing stuff
+//---------------------------------------------------------------------//
+float est_resistance = 0;
+float est_current = 0;
+
 int countto = countto_setting;
 boolean rcalled = false;
 //int res_last = res_last_limit;
-//extra averaging stuff
+//extra averaging stuffF
 int dacrun;
 int adcrun;
 int adcrefrun;
@@ -415,7 +419,7 @@ void loop()
 
   } 
  //sendout();
- ///delay(50);
+ //delay(50);
  //FLAG STUFF
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
@@ -660,32 +664,20 @@ void potentiostat()
     //from here stuff has been changed
 //-------------------------------------------------
     // if range is limited decrease R
-    if ((outvolt > 1022) && (res > 0))
+    if ((outvolt > 1022) && (res > 1))
     {
       //res_last = 0;
       rcalled  = true;
-      outvolt = 1000;
+      ranger_positive = 1; //might break this outvolt thing but thats ok
+      res_ranger_fancy(ranger_positive,wept,setting);
       
-      write_dac(0,checkvolt(outvolt));
-      resmove = resgainer(wept,setting);
-      res = res - resmove;
-      res = constrain(res,0,255);
-      write_pot(pot,resistance1,res);
-      //ranger_positive = 1; //might break this outvolt thing but thats ok
-      //resgainer_dd(ranger_positive);
     }
-    else if ((outvolt < 1) && (res > 0))
+    else if ((outvolt < 1) && (res > 1))
     {
       //res_last = 0;
       rcalled  = true;
-      outvolt = 23;
-      write_dac(0,checkvolt(outvolt));
-      resmove = resgainer(wept,setting);
-      res = res - resmove;
-      res = constrain(res,1,255);
-      write_pot(pot,resistance1,res);
-      //ranger_positive = 0;
-      //resgainer_dd(ranger_positive);
+      ranger_positive = 0;
+      res_ranger_fancy(ranger_positive,wept,setting);
       
     }
   
@@ -694,12 +686,7 @@ void potentiostat()
     if ((dude < 50) && (res < 255) && (((sign ==  1) && (dac < 850)) || ((sign == -1) && (dac > 150)) )) //dd rules - not sure if fool proof - should probably do some math here
     //if (( dude < 100) && (res < 255))
     {
-      //Serial.println("the truncatonator has been called ");
-      //Serial.print(" sign: ");
-      //Serial.print(sign);
-      //Serial.print(", dac: ");
-      //Serial.println(dac);
-      //res_last = 0;
+
       rcalled  = true;
       res = res+1;
       res = constrain(res,1,255);
@@ -978,11 +965,15 @@ int resgainer_dd(int ranger_positive) //don't actually need to be sending and re
 int res_ranger_fancy(int ranger_positive, int whatitis, int whatitshouldbe)
 {
   //read in values - estimate current
+  //Serial.println("res_ranger_fancy called ");
   dac = analogRead(1); // could probably do this so that it takes average - but for now can't be bothered
   adc = analogRead(0); // ditto
-  est_resistance = 40 * res + 137; (numbers calculated from python)
+  est_resistance = 40 * res + 137; //(numbers calculated from python)
   float est_current = ((dac) - (adc))/float(est_resistance);
-  
+  //Serial.print("old outvolt ");
+  //Serial.print(outvolt);
+  //Serial.print("  est_current  ");
+  //Serial.print(est_current);
   //change res
   
   int move = 0;
@@ -990,13 +981,18 @@ int res_ranger_fancy(int ranger_positive, int whatitis, int whatitshouldbe)
   if (diff > 20) move = 30;
   else move = 10;
   //now if ranger is positive - then move up or down etc. work this out
-  
-  
+  res = res - move;
+  res = constrain(res,1,255);
   write_pot(pot,resistance1,res);
-  
   est_resistance = 40 * res + 137;
+  
+  
   //now need to write to the dac - using estimated current stuff
-  outvolt = est_resistance * est_current + adc;
+  if (ranger_positive == 1)outvolt = est_resistance * est_current + adc;
+  else outvolt = adc + (est_resistance * est_current);
+  //outvolt = est_resistance * est_current + adc;
+  //Serial.print(" new outvolt ");
+  //Serial.println(outvolt);
   write_dac(0,checkvolt(outvolt));
   
   // to do the thing where i take out the values that are fucked from the resistance changing - maybe I could do the thing where I look for when the current is similar to what it was before.
