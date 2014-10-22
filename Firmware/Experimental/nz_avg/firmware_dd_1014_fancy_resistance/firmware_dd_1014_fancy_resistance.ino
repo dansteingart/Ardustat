@@ -14,6 +14,7 @@ int wepcounterlimit = 100;
 int gcounterlimit = 10;
 //---------------------------------------------------------------------//
 
+float est
 int countto = countto_setting;
 boolean rcalled = false;
 //int res_last = res_last_limit;
@@ -656,7 +657,8 @@ void potentiostat()
       outvolt=outvolt+move;
       write_dac(0,checkvolt(outvolt));
     }
-  
+    //from here stuff has been changed
+//-------------------------------------------------
     // if range is limited decrease R
     if ((outvolt > 1022) && (res > 0))
     {
@@ -704,6 +706,8 @@ void potentiostat()
       write_pot(pot,resistance1,res);
       delay(waiter);
     }
+    //---------------------------------------------
+    //end changes. 
     //Serial.print("wept ");
     //Serial.print(wept);
     //Serial.print(", setting ");
@@ -943,6 +947,8 @@ int resgainer_dd(int ranger_positive) //don't actually need to be sending and re
   //Serial.print(dac);
   //Serial.print(", adc ");
   //Serial.print(adc);
+  
+  est_resistance = 40 * res + 137;
   float est_current = ((dac) - (adc))/float(res);
   //Serial.print(", current ");
   //Serial.print(est_current);
@@ -968,6 +974,47 @@ int resgainer_dd(int ranger_positive) //don't actually need to be sending and re
   //Serial.println(outvolt);
   write_dac(0,checkvolt(outvolt));
 }
+
+int res_ranger_fancy(int ranger_positive, int whatitis, int whatitshouldbe)
+{
+  //read in values - estimate current
+  dac = analogRead(1); // could probably do this so that it takes average - but for now can't be bothered
+  adc = analogRead(0); // ditto
+  est_resistance = 40 * res + 137; (numbers calculated from python)
+  float est_current = ((dac) - (adc))/float(est_resistance);
+  
+  //change res
+  
+  int move = 0;
+  int diff = abs(whatitis-whatitshouldbe); 
+  if (diff > 20) move = 30;
+  else move = 10;
+  //now if ranger is positive - then move up or down etc. work this out
+  
+  
+  write_pot(pot,resistance1,res);
+  
+  est_resistance = 40 * res + 137;
+  //now need to write to the dac - using estimated current stuff
+  outvolt = est_resistance * est_current + adc;
+  write_dac(0,checkvolt(outvolt));
+  
+  // to do the thing where i take out the values that are fucked from the resistance changing - maybe I could do the thing where I look for when the current is similar to what it was before.
+  // when it hits that limit - then switch out of the flag. The only issue is that it might never change there - but - could take the flag away if the arduino recieves a new command
+  // not fool proof or battle proof - but should be a lot better I think / hope - might stil get the odd spike - so its better to do things without this little hack. 
+  
+  //set outvolt to be what i think it should be
+  //based on what old current was - just do a guestimate 
+  
+  //so two things before anything else -
+  //1. work out whether this system will be effective - looking at old data
+  //2. work out how to write something so that while there is resistance stuff a flag is sent.
+  
+  
+  
+  
+}
+  
   
   
 

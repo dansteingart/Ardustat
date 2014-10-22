@@ -6,12 +6,17 @@
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
 
+//timing counter
+ //long timeloop = 0;
+ //int loopcounter = 0;
+
 //important setup stuff
 //---------------------------------------------------------------------//
-int countto_setting = 10;
+int countto_setting = 60; //adjust this based on how often the forwarder is calling things
+// not actually sure if it will work but yolo.
 //int res_last_limit = 100;
-int wepcounterlimit = 100; 
-int gcounterlimit = 10;
+int wepcounterlimit = 100; // i feel like this could be lower but changing potential steps takes sooo long
+int gcounterlimit = 10; //ignoring this stuff for now
 //---------------------------------------------------------------------//
 
 int countto = countto_setting;
@@ -43,7 +48,7 @@ int gflag = 0;
 
 
 long watchdog = 0;
-long watchdogdiff = 30000;
+long watchdogdiff = 3000000;
 int adc;    //out of pot
 int dac;    //out of main dac
 int adcgnd; //adc at ground
@@ -280,8 +285,9 @@ void loop()
         {
           dacon();
         }
-        //Serial.println("ser in string = p");
-        //Serial.println(); 
+        Serial.println("ser in string = p");
+        Serial.println(); 
+        
         pflag = 1;
         pstat = true;
         pMode = 1;
@@ -416,6 +422,11 @@ void loop()
  //sendout();
  ///delay(50);
  //FLAG STUFF
+ //timeloop = millis();
+ //loopcounter = loopcounter+1;
+ //Serial.print(loopcounter);
+ //Serial.print("   ");
+ //Serial.println(timeloop);
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
