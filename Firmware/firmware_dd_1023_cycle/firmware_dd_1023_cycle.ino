@@ -11,6 +11,8 @@
 int countto_setting = 10; //averaging for sendout
 int wepcounterlimit = 100; //number of reads before control
 int gcounterlimit = 10;
+
+int cycle_number = 0;
 //---------------------------------------------------------------------//
 
 //resistance fixing stuff
@@ -195,6 +197,7 @@ void loop()
         countto = countto_setting;
         ocv = true;
       }
+      
       if (serInString[0] == 45) // -
       {
         //outvolt = -1;
@@ -217,7 +220,10 @@ void loop()
         testcounter = 0;
         testlimit = 255;
       }
-
+      if (serInString[0] == 121) //y
+      {
+        cycle_number = out;
+      }
 
       if (serInString[0] == 114) //r
       {
@@ -774,7 +780,7 @@ void sendout()
   Serial.print(",");
   Serial.print(res);
   Serial.print(",");
-  Serial.print(setout);
+  Serial.print(cycle_number);
   Serial.print(",");
   Serial.print(mode);
   Serial.print(",");
