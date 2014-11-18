@@ -5,32 +5,14 @@
 #define SPICLOCK  13//sck
 #define SLAVESELECTD 10//ss
 #define SLAVESELECTP 7//ss
-
-//important setup stuff
-//---------------------------------------------------------------------//
-int countto_setting = 100;
-//int res_last_limit = 100;
-int wepcounterlimit = 100; 
-int gcounterlimit = 10;
-//---------------------------------------------------------------------//
-
-int countto = countto_setting;
 boolean rcalled = false;
-//int res_last = res_last_limit;
-//extra averaging stuff
-int dacrun;
-int adcrun;
-int adcrefrun;
-int adc_avg;
-int dac_avg;
-int adcref_avg;
 
 int oldsetting = 0;
 int olddac = 0;
 int oldmode = 0;
 int wepcounter = 1; //for potentiostat
 long wept = 0; // for potentiostat
-// for potentiostat
+int wepcounterlimit = 100; // for potentiostat
 int pflag = 0;
 int ranger_positive = 1; //when calling the resgainer_dd tells whether postivie or negative current flowing
 
@@ -38,7 +20,7 @@ int ranger_positive = 1; //when calling the resgainer_dd tells whether postivie 
 // might need to do some pot_dan stuff here too
 int gcounter = 1;
 long gdiff_avg = 0;
-
+int gcounterlimit = 1000;
 int gflag = 0;
 
 
@@ -49,7 +31,7 @@ int dac;    //out of main dac
 int adcgnd; //adc at ground
 int adcref; //ref electrode
 int refvolt;//ref voltage 2.5V
-int wep; //working electrode potential(adc - adcref)
+int wep; //working electrode potential (adc - adcref)
 int firstdac= 0;
 int seconddac = 0;
 int dacaddr = 0;
@@ -72,6 +54,8 @@ int waiter = 0;
 int mode = 1;  //tells computer what's what
 int pMode = 0; //saved variable to remember if the last mode was pstat or not
 int lastData[10]; //previous error values for use in pstat's PID algorithm
+int dacrun;
+int adcrun;
 int resmove;
 
 //Serial Comm Stuff
@@ -91,7 +75,7 @@ boolean ocv = true;
 boolean cv = false;
 int setting = 0;
 int speed = 1;
-
+int countto = 0;
 byte clr;
 
 void setup()
@@ -179,18 +163,18 @@ void loop()
       {
         outvolt = out;
 
-        send_dac(0,checkvolt(outvolt));
+        send_dac(0,outvolt);
         digitalWrite(3,HIGH);
         speed = 1;
-        countto = countto_setting;
+        countto = 10;
       }
       if (serInString[0] == 100) //d
       {
         outvolt = out;
-        send_dac(1,checkvolt(outvolt));
+        send_dac(1,outvolt);
         digitalWrite(3,LOW); //changed this to prevent current spikes
         speed = 1;
-        countto = countto_setting;
+        countto = 10;
         ocv = true;
       }
       if (serInString[0] == 45) // -
@@ -247,7 +231,7 @@ void loop()
         gflag = 1;
 
         outvolt = analogRead(0);
-        write_dac(0,checkvolt(outvolt)); // might need to remove this puppy
+        write_dac(0,outvolt); // might need to remove this puppy
         //speed = 5;
         //countto = 20;
 
@@ -268,7 +252,7 @@ void loop()
         outvolt = analogRead(0)+(sign*out);
         if (outvolt > 1023) outvolt = 1023;
         if (outvolt < 0) outvolt = 0;
-        write_dac(0,checkvolt(outvolt));
+        write_dac(0,outvolt);
 
         digitalWrite(3,HIGH);
 
@@ -394,27 +378,24 @@ void loop()
   if (rtest) testr();
   delay(speed);
   counter++;
-  adc = analogRead(0);
-  dac = analogRead(1);
-  adcref = analogRead(3);
   adcrun = adc + adcrun;
   dacrun = dac + dacrun;
-  //simple averaging
-  adcrefrun = adcref + adcrefrun;
   if (counter > countto)
   {
-    dac_avg = dacrun/counter;
-    adc_avg = adcrun/counter;
-    adcref_avg = adcrefrun/counter;
+
+    dac = dacrun/counter;
+
+    adc = adcrun/counter;
+
+  
     
     counter = 0;
     adcrun =0;
     dacrun = 0;
-    adcrefrun = 0;
 
   } 
  //sendout();
- ///delay(50);
+ //delay(50);
  //FLAG STUFF
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
@@ -602,7 +583,7 @@ void pot_dan()
   //Serial.println(outvolt);
   //Serial.print("writing to outvolt ");
   //Serial.println(outvolt);
-  write_dac(0,checkvolt(outvolt)); // should just work...
+  write_dac(0,outvolt); // should just work...
   //need to keep this next line in so that it breaks out of pot_dan
   //and into potentiostat
 }
@@ -645,7 +626,7 @@ void potentiostat()
     {
       move = gainer(wept,setting);
       outvolt=outvolt-move;
-      write_dac(0,checkvolt(outvolt));
+      write_dac(0,outvolt);
   
     }
   
@@ -654,55 +635,46 @@ void potentiostat()
     {
       move = gainer(wept,setting);
       outvolt=outvolt+move;
-      write_dac(0,checkvolt(outvolt));
+      write_dac(0,outvolt);
     }
   
     // if range is limited decrease R
     if ((outvolt > 1022) && (res > 0))
     {
-      //res_last = 0;
-      rcalled  = true;
       outvolt = 1000;
-      
       write_dac(0,checkvolt(outvolt));
       resmove = resgainer(wept,setting);
       res = res - resmove;
       res = constrain(res,0,255);
       write_pot(pot,resistance1,res);
-      //ranger_positive = 1; //might break this outvolt thing but thats ok
-      //resgainer_dd(ranger_positive);
+      rcalled = true;
     }
     else if ((outvolt < 1) && (res > 0))
     {
-      //res_last = 0;
-      rcalled  = true;
-      outvolt = 23;
-      write_dac(0,checkvolt(outvolt));
-      resmove = resgainer(wept,setting);
-      res = res - resmove;
-      res = constrain(res,1,255);
-      write_pot(pot,resistance1,res);
-      //ranger_positive = 0;
-      //resgainer_dd(ranger_positive);
-      
+    outvolt = 23;
+    write_dac(0,checkvolt(outvolt));
+    resmove = resgainer(wept,setting);
+    res = res - resmove;
+    res = constrain(res,0,255);
+    write_pot(pot,resistance1,res);
+    delay(waiter);
+    rcalled = true;
     }
   
     //if range is truncated increase R
     int dude = abs(dac-adc);
-    if ((dude < 50) && (res < 255) && (((sign ==  1) && (dac < 850)) || ((sign == -1) && (dac > 150)) )) //dd rules - not sure if fool proof - should probably do some math here
-    //if (( dude < 100) && (res < 255))
+    if ((dude < 50) && (res < 255) && (((sign ==  1) && (dac < 850)) || ((sign == -1) && (dac > 150)) ))
     {
       //Serial.println("the truncatonator has been called ");
       //Serial.print(" sign: ");
       //Serial.print(sign);
       //Serial.print(", dac: ");
       //Serial.println(dac);
-      //res_last = 0;
-      rcalled  = true;
       res = res+1;
       res = constrain(res,1,255);
       write_pot(pot,resistance1,res);
       delay(waiter);
+      rcalled = true;
     }
     //Serial.print("wept ");
     //Serial.print(wept);
@@ -712,7 +684,6 @@ void potentiostat()
     //Serial.println(outvolt);
     wept = 0;
     wepcounter = 1;
-    //res_last = res_last +1;
     //Serial.print("outvolt from potentiostat ");
     //Serial.println(outvolt);
   }
@@ -764,7 +735,7 @@ void galvanostat()
        
         move = gainer(gdiff_avg,setting);
         outvolt = outvolt-move;
-        write_dac(0,checkvolt(outvolt));
+        write_dac(0,outvolt);
   
       }
   
@@ -773,7 +744,7 @@ void galvanostat()
       {
         move = gainer(gdiff_avg,setting);
         outvolt = outvolt+move;
-        write_dac(0,checkvolt(outvolt));
+        write_dac(0,outvolt);
   
       }
     }
@@ -798,7 +769,7 @@ void galvanostat()
        //Serial.print(move);
        //Serial.print(" outvolt ");
        //Serial.println(outvolt);
-        write_dac(0,checkvolt(outvolt));
+        write_dac(0,outvolt);
       }
   
       //if under current step dac down
@@ -810,7 +781,7 @@ void galvanostat()
        //Serial.print(move);
        //Serial.print(" outvolt ");
        //Serial.println(outvolt);
-        write_dac(0,checkvolt(outvolt));
+        write_dac(0,outvolt);
   
       }
     }
@@ -834,31 +805,31 @@ int checkvolt(int volt)
 
 void sendout()
 {
-  //adc = analogRead(0);
-  //dac = analogRead(1);
+  adc = analogRead(0);
+  dac = analogRead(1);
   adcgnd = analogRead(2);
-  //adcref = analogRead(3);
+  adcref = analogRead(3);
   refvolt = analogRead(5);
-  //actual flag stuff - can remove the other stuff
-  if ((pstat) && (rcalled)) 
-  {
-    mode = 5;
-    rcalled = false;
-  }
+  if ((pstat) && (rcalled))
+ { 
+   rcalled = false;
+   mode = 5;
+ }
   else if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
+  else mode = 0;
   int setout = sign*setting;
   //DEBUG
   //taken out pstat - in 112 - taken out the write to the dac -- see if performance goes to shit or improves...
   //Serial.println();
   Serial.print("GO.");
-  Serial.print(checkvolt(outvolt),DEC); //going through and changing all of these
+  Serial.print(outvolt,DEC);
   Serial.print(",");
-  Serial.print(adc_avg);
+  Serial.print(adc);
   Serial.print(",");
-  Serial.print(dac_avg);
+  Serial.print(dac);
   Serial.print(",");
   Serial.print(res);
   Serial.print(",");
@@ -874,7 +845,7 @@ void sendout()
   Serial.print(",");
   Serial.print(adcgnd);
   Serial.print(",");
-  Serial.print(adcref_avg);
+  Serial.print(adcref);
   Serial.print(",");
   Serial.print(refvolt);
   //Serial.print(",");
@@ -966,7 +937,7 @@ int resgainer_dd(int ranger_positive) //don't actually need to be sending and re
   }
   //Serial.print(", outvolt ");
   //Serial.println(outvolt);
-  write_dac(0,checkvolt(outvolt));
+  write_dac(0,outvolt);
 }
   
   
