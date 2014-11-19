@@ -1,0 +1,137 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <title>Setup CV</title>
+</head>
+<body>
+
+  <div id="tabs">
+    <ul class = "nav nav-tabs">
+        <li class="active"><a href="#tabs-1">Setup</a></li>
+        <li><a href="#tabs-2">Plotting</a></li>
+    </ul>
+    
+    <section id="tabs-1" class="active">
+    <div>
+
+        <div class="row marketing">
+            <div class="col-lg-12">
+                <h1>Cyclic Voltammetry Setup</h1>
+            </div>
+        </div>
+    <form id='cv_setup_input' action='/senddata' method='post'>
+      <input type='hidden' name='electro_function' value='cyclic_voltammetry'>
+      Http Port: <input type='text' name='http_port' value='8001'><br>
+      Serial Port: <input type='text' name='serial_port' value='/dev/ttyACM0'><br>
+      Ardustat Id: <input type='text' name='ardustat_id' value='25'><br>
+      Folder Name: <input type='text' name='folder_name' value='folder'><br>
+      Experiment Name: <input type='text' name='file_name' value='file_name'><br>
+      Rest Time: <input type='text' name='rest_time' value='10'><br>
+      Number of Cycles <input type='text' name='number_of_cycles' value='2'><br>
+      Minimum Potential <input type='text' name='min_potential' value='-.5'><br>
+      Maximum Potential <input type='text' name='max_potential' value='1'><br>
+      Rate: <input type='text' name='rate' value='0.5'> mV/s<br>
+      DAC2 Val: <input type='text' name='DAC2_value' value='2.5'><br>
+      Max and Min Potentials relative to OCV? <input type='checkbox' name='relative_to_ocv' value='True'> True <br>
+      Start CV at OCV? <input type = 'checkbox' name='start_at_ocv' value='True'> If other - Please Specify 
+      <input type='text' name='other_start_volt'><br>
+      Start Dircetion <select name='cv_dir'> 
+        <option value='charging'> Charge </option>
+        <option value='discharging'> Dishcarge</option>
+        </select>
+      
+
+      
+    </form>
+    <p id="cv_confirm"> Waiting for Properties to be Confirmed
+    
+    <button onclick = "sendValues()" >send_data</button>
+      
+
+  </section>
+  
+  <section id="tabs-2" class="hide">
+      
+    <div class="row marketing">
+      <h1>Live Plotting</h1>
+      <p>Click links to display different live plots</p>
+    </div>
+
+    <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff">
+    
+    <p><tt id="results"></tt></p>
+
+  </section>
+  <script src="/javascripts/flot/jquery.js"></script>
+	<script src="/javascripts/flot/jquery.flot.js"></script>
+	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+  
+$.fn.serializeObject = function()
+{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    o['type_of_experiment'] = 'cyclic voltammetry';
+    return o;
+};
+
+function sendValues() {
+
+  var form = $('#cv_setup_input');
+  datatosend = form.serializeObject();
+  console.log(datatosend);
+  $.ajax({
+    type:'POST',
+    url:'/senddata',
+    dataType: 'json',
+    async: true,
+    data: datatosend,
+    success: function(){
+      console.log('successful sending of things :)');
+    }
+  });
+    
+  
+}
+  
+    
+
+		$("#cv_submit_button").click(function(){
+		  console.log('something got clicked');
+		  var jim = document.forms['cv_setup_input'].elements
+		  var array = document.forms['cv_setup_input'].elements.value
+		  console.log(array);
+					
+		});  
+        
+        
+        
+    /*
+    // do on click thing - then loop through to find each element - then post it.
+    
+        
+        $.ajax({
+          type: 'POST',
+        	dataType: "json",
+        	async: true,
+        	url: '/senddata',
+        	data: {cv_setup:$("#cv_setup_input").val()},
+        	success: function("here is the stuff "+stuff){
+            console.log(stuff);
+          }
+      });
+    });
+    */
+  </script>
+</body>

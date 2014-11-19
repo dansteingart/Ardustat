@@ -202,8 +202,8 @@ void loop()
       //Write ID to EEPROM
       if (serInString[0] == 86)  
       {
-        //Serial.println("fudge");
-        //Serial.println(out);
+        Serial.println("fudge");
+        Serial.println(out);
 
         EEPROM.write(32,byte(out)) ;
 
@@ -456,8 +456,8 @@ void flushSerialString(char *strArray) {
 //Read String In
 void readSerialString (char *strArray) {
   int i = 0;
-  if(Serial.available() > 4) {
-    //Serial.println("    ");  //optional: for confirmation
+  if(Serial.available() > 5) {
+    Serial.println("    ");  //optional: for confirmation
     while (Serial.available()){
       strArray[i] = Serial.read();
       i++;
@@ -634,7 +634,7 @@ void sendout()
   else if (dactest) mode = 4;
   else mode = 0;
   int setout = sign*setting;
-  Serial.print("GO.");
+  Serial.print("GO,");
   Serial.print(checkvolt(outvolt),DEC);
   Serial.print(",");
   Serial.print(adc);
@@ -658,8 +658,8 @@ void sendout()
   Serial.print(adcref);
   Serial.print(",");
   Serial.print(refvolt);
-  //Serial.print(",");
-  //Serial.print(int(EEPROM.read(32)));
+  Serial.print(",");
+  Serial.print(int(EEPROM.read(32)));
   Serial.println(",ST");
   //res=res+1;
   //if (res > 255) res = 0;
