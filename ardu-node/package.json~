@@ -14,6 +14,7 @@
     "debug": "~2.0.0",
     "jade": "~1.6.0",
     "ejs": "*",
-    "serialport": "*"
+    "serialport": "*",
+    "socket.io":"*"
   }
 }

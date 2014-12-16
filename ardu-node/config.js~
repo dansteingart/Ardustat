@@ -1,0 +1,20 @@
+//TODO: create a flag that tells program if serialPort open.
+
+
+var serialport = require('serialport');
+var SerialPort = serialport.SerialPort;
+
+serialport.list(function(err, ports){
+  ports.forEach(function(port) {
+    console.log(port.comName);
+  });
+});
+
+var serialPort = new SerialPort('/dev/ttyACM0',{
+  baudrate:57600,
+  parser:serialport.parsers.readline('\n')
+});
+
+module.exports = ({
+  serialPort: serialPort
+});

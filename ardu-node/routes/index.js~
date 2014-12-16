@@ -3,18 +3,37 @@ app_page = require('../app.js');
 var router = express.Router();
 var fs = require('fs');
 var functions = require('../functions.js');
-reader = app_page.reader;
-  writer = app_page.writer,
-  starter = app_page.starter,
-  stopper = app_page.stopper,
-  name_setter:name_setter,
-  killer: killer,
-  reviver:reviver,
+reader = functions.reader;
+writer = functions.writer,
+starter = functions.starter,
+stopper = functions.stopper,
+name_setter = functions.name_setter,
+killer = functions. killer,
+reviver = functions.reviver,
 
-
-router.get('/read',function(req,res) {
+// urls for forwarder - serialport interactions. 
+router.get('/write/*',function(req,res) {
+  writer(req,res);
+});
+router.get('/read/',function(req,res) {
   reader(req,res);
 });
+router.get('/startCSV/*',function(req,res) {
+  starter(req,res);
+});
+router.get('/stopCSV/',function(req,res) {
+  stopper(req,res);
+});
+router.get('/kill/',function(req,res) {
+  killer(req,res);
+});
+router.get('/unkill/',function(req,res) {
+  reviver(req,res);
+});
+router.get('/setName/*',function(req,res) {
+  name_setter(req,res);
+});
+
 
 /* GET home page. */
 router.get('/', function(req, res) {

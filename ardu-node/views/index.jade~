@@ -8,4 +8,4 @@ block content
   a(href='/debug') Debug Page
   
   script(src='/javascripts/flot/jquery.js')
-  script(src='../socket.io/socket.io.js')
+  script(src='/socket.io/socket.io.js')

@@ -91,7 +91,7 @@
 			  	dataType: "json",
 			  	async: true,
 			  	url: '/senddata',
-			  	data: {command:"calibrate",value:$("#calibrate_r_fixed").val()},
+			  	data: {electro_function:"calibrate",value:$("#calibrate_r_fixed").val()},
 			  	success: function(stuff){
 					console.log(stuff);
 				}
