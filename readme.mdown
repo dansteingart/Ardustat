@@ -20,9 +20,9 @@ Rigers, Susan and Eddie were able to work on this because of inspiration by NSF 
 - FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
 - We're now a node shop.  
    - Get node [here](http://nodejs.org/)
+- If using the python client, we recommend getting pithy [here] (https://github.com/dansteingart/pithy)
 
-In this repostitory there is a python client, run using [pithy.] (https://github.com/dansteingart/pithy) And a node-client. Both clients use a node.js forwarder to talk to the arduino. (Serial communication support in Python isn't great). 
-The python client should be easy enough to read / hack around in. 
+In this repostitory there is a python client, run using [pithy]. (https://github.com/dansteingart/pithy) And a node-client. Both clients use a node.js forwarder to talk to the arduino. (Serial communication support in Python isn't great). 
 
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
