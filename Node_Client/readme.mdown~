@@ -13,17 +13,11 @@
 ###Usage:
 1. Clone this repository
 2. CD into the directory
-3. Install the dependencies by typing: 
-'''
-npm install && bower install
-'''
-4. Run by typing: 
-'''
-npm start 
-''' 
-into the directory
+3. Install the dependencies by typing: `npm install && bower install`
+4. Run by typing: `npm start` into the directory
 5. Open http://localhost:3001 in a browser
-6. On first time use 
+6. On first time use make sure to calibrate the ardustat
+7. The website should be pretty self explanatory
 
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
