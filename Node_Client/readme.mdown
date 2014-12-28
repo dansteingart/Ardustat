@@ -13,15 +13,8 @@
 ###Usage:
 1. Clone this repository
 2. CD into the directory
-3. Install the dependencies by typing: 
-'''
-npm install && bower install
-'''
-4. Run by typing: 
-'''
-npm start 
-''' 
-into the directory
+3. Install the dependencies by typing: `npm install && bower install`
+4. Run by typing: `npm start` into the directory
 5. Open http://localhost:3001 in a browser
 6. On first time use 
 
