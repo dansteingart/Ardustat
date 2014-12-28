@@ -1,6 +1,6 @@
 #Ardustat Code
 
-##Most recent development is on branch davies14
+##This is where the most recent development is
 
 Authors:
 - Dan Steingart <dan.steingart@gmail.com>
@@ -22,30 +22,14 @@ Rigers, Susan and Eddie were able to work on this because of inspiration by NSF 
    - Get node [here](http://nodejs.org/)
 - If using the python client, we recommend getting pithy [here] (https://github.com/dansteingart/pithy)
 
-In this repostitory there is a python client, run using [pithy]. (https://github.com/dansteingart/pithy) And a node-client. Both clients use a node.js forwarder to talk to the arduino. (Serial communication support in Python isn't great). 
+###Usage:
 
+In this repostitory there is a python client, run using [pithy] (https://github.com/dansteingart/pithy). And a node-client. Both clients use a node.js forwarder to talk to the arduino. (Serial communication support in Python isn't great). 
+
+Use the Node Client if you want a nice, hassel free interface (Right now it is still under development). Use the python client for ease of understanding and customization.
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
-	
-###General Ardustat Instructions (ubuntu linux)
-1. Install Version of Firmware 7s on your ardustat (Firmware/Firmware 7_s/)
-2. In the NodeJS directory, type  
-	- npm install serialport (only on the first go)
-3. Then type  
-	- node expresserver.js <serial port> <tcpport e.g. 8888>
-	where serial port is COMX for windows, /dev/tty.usb-whatever for mac, /dev/ttyUSBX for linux
-4. In a browser, go to http://localhost:8888/debug
-	(stuff should be happening)
-5. We now need to calibrate the ardustat.  Put a quality resistor of known value between the working and counter clips, and then attach the reference clip to the counter clip
-6. Give your ardustat an id: in the "Ardustat Commands"  box type   
-	 - V0XXX  
-	where XXX is an integer between 0 and 240, and hit send
-	(you only have to do this once as well, the id will persist in EEPROM)
-7. Under calibration resistor value, enter the value of your resistor in ohms, and hit send
-8. You should see the graph changing, the yellow line should slope downwards and then reset 3 time. 
-9. Your ardustat is now calibrated.  You won't have to do this again (unless you delete the calibration file or feel that the values were inaccurate)
-10.  Now go to http://localhost:8888.  You should now see the Potential and Current trace.  Play with the the potentiostsat and galvanostat settings.
-	
-From here on out, all you need to down is start expresserver.js and then go to http://localhost:8888
+
+##Go into either the python client or the node-js client to see usage instructions
 
 
