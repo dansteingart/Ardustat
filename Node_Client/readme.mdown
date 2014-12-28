@@ -1,0 +1,36 @@
+#Node_Client
+
+###This section is under development
+
+###Installation:
+####If you haven't installed the software, do that now:
+- Arduino (http://arduino.cc/en/Main/Software)
+- FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
+- We're now a node shop.  
+   - Get node [here](http://nodejs.org/)
+- If using the python client, we recommend getting pithy [here] (https://github.com/dansteingart/pithy)
+
+###Usage:
+1. Clone this repository
+2. CD into the directory
+3. Install the dependencies by typing: ''' npm install && bower install '''
+4. Run by typing: ''' npm start ''' into the directory
+5. Open http://localhost:3001 in a browser
+6. On first time use 
+
+
+Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
+
+##Go into either the python client or the node-js client to see usage instructions
+
+Authors:
+- Dan Steingart <dan.steingart@gmail.com>
+- Barry Van Tassell <bajavata@gmail.com>
+- Dan Davies  <danielmdavies@gmail.com>
+
+Past Contributors:
+- Eddie Nolan 
+- Rigers Qeraj 
+- Susan Tan 
+
+Rigers, Susan and Eddie were able to work on this because of inspiration by NSF CMMI 1031208
