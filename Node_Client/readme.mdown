@@ -21,14 +21,3 @@
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
 
-Authors:
-- Dan Steingart <dan.steingart@gmail.com>
-- Barry Van Tassell <bajavata@gmail.com>
-- Dan Davies  <danielmdavies@gmail.com>
-
-Past Contributors:
-- Eddie Nolan 
-- Rigers Qeraj 
-- Susan Tan 
-
-Rigers, Susan and Eddie were able to work on this because of inspiration by NSF CMMI 1031208

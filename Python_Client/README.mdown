@@ -17,22 +17,14 @@
     - HttpPort is user defined, usually 8001 
     - SerialPort is whichever port the ardustat is connected to, often /dev/ttyACM0 for Mac, or COMX for Windows
     - BaudRate is 57600, and BufferLength should be 300
-3. 
+3. Start pithy. Copy the pithy files on this github page into your own pithy files.
+4. Each time you run a pithy file, make sure that the hostsite and ardustat_id correspond with the ardustat you are using.
+5. Run the calibration script first
+6. After that, run any script that you need to.
 
 
 Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
 
-Authors:
-- Dan Steingart <dan.steingart@gmail.com>
-- Barry Van Tassell <bajavata@gmail.com>
-- Dan Davies  <danielmdavies@gmail.com>
-
-Past Contributors:
-- Eddie Nolan 
-- Rigers Qeraj 
-- Susan Tan 
-
-Rigers, Susan and Eddie were able to work on this because of inspiration by NSF CMMI 1031208
 
 
 
