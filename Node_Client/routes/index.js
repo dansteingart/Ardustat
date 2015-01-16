@@ -8,7 +8,6 @@ writer = functions.writer,
 starter = functions.starter,
 stopper = functions.stopper,
 name_setter = functions.name_setter,
-killer = functions. killer,
 reviver = functions.reviver,
 
 // urls for forwarder - serialport interactions. 
@@ -33,11 +32,21 @@ router.get('/unkill/',function(req,res) {
 router.get('/setName/*',function(req,res) {
   name_setter(req,res);
 });
+router.get('/killing/',function(req,res) {
+  functions.killer(req,res);
+});
+router.get('/reviver/',function(req,res) {
+  functions.reviver(req,res);
+});
+router.get('/step_skip/',function(req,res) {
+  functions.step_skip(req,res);
+});
 
+/* GET home page. */  // changed home page
 
-/* GET home page. */
-router.get('/', function(req, res) {
-  res.render('index', { title: 'Express' });
+router.get('/', function(req, res){
+  indexer = fs.readFileSync('views/index.html').toString()
+  res.send(indexer);
 });
 
 //this is hacky and there has to be a better way to do it but it works. so for now, it stays.
@@ -56,14 +65,26 @@ router.post('/senddata', functions.setstuff, function(req, res, next) {
   res.send("Working on it...");
 });
 
-router.get('/cv', function(req, res) {
-  indexer = fs.readFileSync('views/cv.html').toString()
+//Channel 1 routes
+router.get('/Channel1', function(req, res){
+	indexer = fs.readFileSync('views/Channel1/index.html').toString()
   res.send(indexer);
 });
 
-router.get('/cycler', function(req, res) {
-  indexer = fs.readFileSync('views/cycler.html').toString()
+router.get('/Channel1/CV', function(req, res) {
+  indexer = fs.readFileSync('views/Channel1/cv.html').toString()
   res.send(indexer);
 });
+
+router.get('/Channel1/Cycler', function(req, res) {
+  indexer = fs.readFileSync('views/Channel1/cycler.html').toString()
+  res.send(indexer);
+});
+//killing, pausing, skipping
+//kill
+
+
+
+//Channel 2 routes - tbdl
 
 module.exports = router;

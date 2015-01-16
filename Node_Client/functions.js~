@@ -46,8 +46,8 @@ serialPort.on("open", function() {
   {
 	  res_table = JSON.parse(fs.readFileSync("unit_"+id.toString()+".json").toString())
 	  console.log("loaded table "+id.toString())
-	  console.log('here is the res_table')
-	  console.log(res_table)
+	  //console.log('here is the res_table')
+	  //console.log(res_table)
 	
 	
   }
@@ -106,11 +106,11 @@ buf = ""
 last_ardu_reading = {}
 // TODO: make this more robust.
 serialPort.on('data', function(data) {
-
+  //console.log(data);
   if (data.search('GO') > -1)
   {
     parsed_data = data_parse(data);
-    last_ardu_reading = data_parse(data);
+    last_ardu_reading = parsed_data;
     
     if (calibrate)
     {
@@ -227,9 +227,9 @@ function data_parse(data)
 
   
 
-//TODO: if document already exists - don't overwrite? 
+//TODO: if document already exists - don't overwrite?
 function write2CSV(chunk) {
-
+  console.log('write2CSV called');
 	//start of document
     //console.log("this is the chunk that gets sent to write2csv ", chunk);
     //TODO: remove this debugging stuff
@@ -370,23 +370,26 @@ function l_reader() { //returns string
 
 //TODO:this is where we can stop overwrites... or send warning to the user... that would be sweet.
 function l_starter(folder_file) {
+  console.log('l_starter has been called');
 	if(CSV_ON == false) {
 	if(folder_file!="") { CSV_NAME = 'Data/' + folder_file +'.csv'; }
 
-//stuff to create folder if not already there  
-    var CSV_PARTS = CSV_NAME.split("/");
-    for (var i = 0; i < CSV_PARTS.length-1; i++){
+  //stuff to create folder if not already there  
+  var CSV_PARTS = CSV_NAME.split("/");
+  for (var i = 0; i < CSV_PARTS.length-1; i++)
+  {
     CSV_FOLDER += CSV_PARTS[i] + "/";
-}
-    CSV_FOLDER = CSV_FOLDER.substring(0,CSV_FOLDER.length-1);
-    console.log("CSV_folder "+CSV_FOLDER);
-    mkdirp(CSV_FOLDER, function(err) { //TODO: make this recursive - just need to set call-back to make sure that
-    //TODO: make sure this is in a callback sequence so that nothing super fucked up happens.
+  }
+  CSV_FOLDER = CSV_FOLDER.substring(0,CSV_FOLDER.length-1);
+  console.log("CSV_folder "+CSV_FOLDER);
+  mkdirp(CSV_FOLDER, function(err) { //TODO: make this recursive - just need to set call-back to make sure that
+  //TODO: make sure this is in a callback sequence so that nothing super fucked up happens.
     
-    //this might not happen synchronously but it shouldn't matter too much
+  //this might not happen synchronously but it shouldn't matter too much
 });
 //TODO: add Data folder to git ignore. 
 	CSV_ON = true;
+	kill = false; // added kill = false to starter.
 	//res.send('CSV WRITING HAS BEGUN! Current output file: ' + CSV_NAME);
 	console.log('writing data to: ' + CSV_NAME);
 	}
@@ -395,6 +398,9 @@ function l_starter(folder_file) {
 	console.log('something messed up with the startCSV');
 	}
 };
+
+//killer, reviver, and skipper are at end where the abstracted functions are.
+
 //============================================================================================================================
 
 //takes in data and sends to right place
@@ -603,7 +609,7 @@ function cv_stepper()
 		if (cv_cycle > cv_cycle_limit) 
 		{
 			cv = false
-			setTimeout(function(){ocv()},1000)
+			setTimeout(function(){set_ocv()},1000)
 		}
 		else
 		{
@@ -645,6 +651,7 @@ http_port = 8001
 function cycling_start_go(value)
 {
   console.log("this is cycling_start_go");
+  moveground(2.5)
   arb_cycling_settings = []
 	arb_cycling_step = 0
 	arb_cycling = false
@@ -892,7 +899,7 @@ function galvanostat(value)//TODO:go through and fix this.
 			
 		}
 	} 
-	console.log(res_table) //why is this undefined?
+	//console.log(res_table) //why is this undefined?
 
 	//now solve for V
 	delta_potential = Math.abs(value*r_best)
@@ -1019,19 +1026,32 @@ name_setter = function(req,res) {
 	console.log('Original output file: \"' + OLD_NAME + '\" --> New output file: \"' + CSV_NAME + "\"");
 };
 
-killer = function(req,res) {
-	serialPort.write("-0000");
+//kill the interaction - used for both KILL and PAUSE
+function killer(req,res) 
+{
+	set_ocv();
 	kill = true;
-	console.log('python-forwarder interaction has been killed, and CSV writing has been paused');
-	res.send('python-forwarder interaction has been killed, and CSV writing has been paused');
+	console.log('method control has been stopped, and CSV writing has been killed');
+	res.send('method control has been stopped, and CSV writing has been killed');
 	CSV_ON = false;
 };
 
-reviver =  function(req,res) {
+//resume control and forwarding to csv
+function reviver(req,res) {
 	kill = false;
-	console.log('python-forwarder interaction has resumed!');
-	res.send('python-forwarder interaction has resumed!');
+	CSV_ON = true;
+	console.log('reviver called');
+	res.send('reviver called');
+	if (cv) { cv_time = new Date().getTime()	 }
+  if (arb_cycling) { arb_cycling_step_start_time = new Date().getTime()	 }
+  console.log('time set to start of step')
 };
+
+//skip a step of the cycler
+step_skip = function(req,res)
+{
+console.log('step skip has been called')
+}
 
 //This is the thing that runs everything! 
 //==========================================================
@@ -1040,9 +1060,9 @@ t2 = setInterval(function()
 {
   command_list.push('s0000');
   if (calibrate) calibrate_step()
-  if (cv_resting) cv_rester()
-  if (cv) cv_stepper()
-  if (arb_cycling) cycling_stepper()
+  if (cv_resting) cv_rester() //this is the resting phase at the start of a cv
+  if ((cv) && (kill == false)) cv_stepper()
+  if ((arb_cycling) && (kill == false)) cycling_stepper()
 }, 100);
 
 t1 = setInterval(function()
@@ -1067,7 +1087,8 @@ module.exports = {
   stopper:stopper,
   name_setter:name_setter,
   killer: killer,
-  reviver:reviver
+  reviver:reviver,
+  step_skip:step_skip
 };
 
 
