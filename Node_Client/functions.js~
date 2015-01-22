@@ -86,7 +86,7 @@ var kill = false;
 var command_list = [];
 blen = 300; // buffer length
 
-var ts = new Date().getTime();
+var ts;
 
 var headers = {};
 for(var j = 0; j<11;j++) {
@@ -104,6 +104,7 @@ var lastTime = 0;
 //Save a dictionary of the last ardustat reading to be used by cv and cycler
 buf = ""
 last_ardu_reading = {}
+var now_time; //needed for write2csv aswell
 // TODO: make this more robust.
 serialPort.on('data', function(data) {
   //console.log(data);
@@ -118,7 +119,10 @@ serialPort.on('data', function(data) {
       //console.log(parsed_data);
       calibration_array.push(parsed_data)
     }
-    ts = new Date().getTime();
+    now_time = new Date().getTime();
+    ts = now_time;  //some debugging rubbish
+    //console.log('now_time '+now_time.toString());
+    //console.log('pause time '+total_pause_time.toString());
     buf += data;
     var n = buf.indexOf("GO.");
     buf = buf.substr(0,n+2)+","+ts+","+buf.substr(n+3,buf.length);
@@ -229,13 +233,15 @@ function data_parse(data)
 
 //TODO: if document already exists - don't overwrite?
 function write2CSV(chunk) {
-  console.log('write2CSV called');
+  //console.log('write2CSV called');
 	//start of document
     //console.log("this is the chunk that gets sent to write2csv ", chunk);
     //TODO: remove this debugging stuff
-    fs.appendFile('log.txt',chunk, function (err){
-        if (err) throw err;
-    });
+  fs.appendFile('log.txt',chunk, function (err){
+      if (err) throw err;
+  });
+  //for debug
+  if (total_pause_time > 0) fs.appendFileSync('log.txt', 'jimmy \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 	if(count==0) {
 		//write column headers to csv file (optional) -- using 'writeFile' here to overwrite old data on file
 		json2csv({data: headers, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
@@ -264,52 +270,58 @@ function write2CSV(chunk) {
 			    orig = orig.substr(end+2,orig.length);
 			    //create array of data values
 			    var chunks = chunk.split(",");
-                if (parseInt(chunks[0]) < 10000) {
-                    //console.log("woah chunky timestamp is small");
-                    fs.appendFile('log.txt', "chunky timestamp is smaller than 10000", function (err) {
-                        if (err) throw err;
-                    });
-                }
-                else {
-                
-			        //don't write entries more than once
-                    fs.appendFile('log.txt',"attempting to go into if statement", function (err){
+          if (parseInt(chunks[0]) < 10000) 
+          {
+              //console.log("woah chunky timestamp is small");
+            fs.appendFile('log.txt', "chunky timestamp is smaller than 10000", function (err) 
+            {
+              if (err) throw err;
+            });
+          }
+          else 
+          {
+            
+            chunks[0] = parseInt(chunks[0]) - total_pause_time
+            //don't write entries more than once
+            fs.appendFile('log.txt',"attempting to go into if statement", function (err)
+            {
+              if (err) throw err;
+            });
+            if(parseInt(chunks[0])>parseInt(lastTime)) 
+            {
+	            //count++;
+	            foo = {};
+	            for(var j = 0; j<11;j++) {
+		            foo[j]=chunks[j];
+	            }
+	            //write data values to appropriate columns in csv 
+	            json2csv({data: foo, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
+		            if (err) console.log(err);
+                          //console.log("this is the part from write2CSV that gets written: ",csv);
+                          fs.appendFile('log.txt',csv, function (err){
+                              if (err) throw err;
+                          });
+		            fs.appendFileSync(CSV_NAME, csv)
+	            });
+	            //set lastTime to current time if current time is greater
+	            lastTime=chunks[0];
+            }
+            else
+            {
+                //console.log("chunks timestamp is less than last time");
+                //console.log("chunks[0] is ",chunks[0]," lastTime is ",lastTime);
+                fs.appendFile('log.txt','chunks is ' + chunks[0] + " ", function (err){
                     if (err) throw err;
-                    });
-			        if(parseInt(chunks[0])>parseInt(lastTime)) {
-                        
-				        //count++;
-				        foo = {};
-				        for(var j = 0; j<11;j++) {
-					        foo[j]=chunks[j];
-				        }
-				        //write data values to appropriate columns in csv 
-				        json2csv({data: foo, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
-					        if (err) console.log(err);
-                            //console.log("this is the part from write2CSV that gets written: ",csv);
-                            fs.appendFile('log.txt',csv, function (err){
-                                if (err) throw err;
-                            });
-					        fs.appendFileSync(CSV_NAME, csv)
-				        });
-				        //set lastTime to current time if current time is greater
-				        lastTime=chunks[0];
-			        }
-                    else{
-                        //console.log("chunks timestamp is less than last time");
-                        //console.log("chunks[0] is ",chunks[0]," lastTime is ",lastTime);
-                        fs.appendFile('log.txt',chunks[0] + " ", function (err){
-                            if (err) throw err;
-                        });
-                        fs.appendFile('log.txt',lastTime + " ", function (err){
-                            if (err) throw err;
-                        });
-                        chunk = '';
-                        chunks = '';
-                        }
-                    }
-              }
-	}
+                });
+                fs.appendFile('log.txt',' last time is ' + lastTime + " ", function (err){
+                    if (err) throw err;
+                });
+                chunk = '';
+                chunks = '';
+            }
+          }
+    }
+  }
 }
 //======================================================================================================
 //functions to communicate how urls used to 
@@ -370,6 +382,7 @@ function l_reader() { //returns string
 
 //TODO:this is where we can stop overwrites... or send warning to the user... that would be sweet.
 function l_starter(folder_file) {
+  fs.writeFileSync("log.txt",'hey dan')
   console.log('l_starter has been called');
 	if(CSV_ON == false) {
 	if(folder_file!="") { CSV_NAME = 'Data/' + folder_file +'.csv'; }
@@ -399,70 +412,89 @@ function l_starter(folder_file) {
 	}
 };
 
+function l_stopper() 
+{
+  test_running = false;
+	kill = true;
+	console.log('method control has been stopped, and CSV writing has been killed');
+	CSV_ON = false;
+}
 //killer, reviver, and skipper are at end where the abstracted functions are.
 
 //============================================================================================================================
 
+//could write a flag that decides if things are already running, if they are - tell the browser to fuck off
+
+
 //takes in data and sends to right place
 function setstuff(req,res)
 {
-  try {
-  
+  if (!test_running)
+  {
+    console.log('for some reason setstuff has been called');
+    try {
     
-    //var parsed = JSON.parse(req.body);
-    //console.log(parsed);
-  //from the debug page
-    if (req.body.arducomm != undefined){
-      console.log("this is the function setstuff, this is the req.body " +  req.body.arducomm);
-      res.send(req.body.arducomm);
-    }
-    
-  //checks if abstracted command (cv, cycle etc)
-    else if (req.body.electro_function != undefined) 
-    {
-      console.log('gonna do some ' + req.body.electro_function);
-      calibrate = false;
-      cv = false
-      arb_cycling = false;
       
-      //see what the commmand is - then send the values
-      command = req.body.electro_function;
-      value = req.body
-
-      if (command == "calibrate")
-		  {
-			  console.log("calibration should start");
-			  calibrator(req.body.value);
-		  }
-      //now check what kind of function user wants - and call that function
-      if (command == 'cyclic_voltammetry')
+      //var parsed = JSON.parse(req.body);
+      //console.log(parsed);
+    //from the debug page
+      if (req.body.arducomm != undefined){
+        //console.log("this is the function setstuff, this is the req.body " +  req.body.arducomm);
+        //res.send(req.body.arducomm);
+      }
+      
+    //checks if abstracted command (cv, cycle etc)
+      else if (req.body.electro_function != undefined) 
       {
-        console.log("setting cv now!");
-        //for debugging
-        console.log(value);
-        cv_start_go(value);
+        console.log('gonna do some ' + req.body.electro_function);
+        calibrate = false;
+        cv = false
+        arb_cycling = false;
+        
+        //see what the commmand is - then send the values
+        command = req.body.electro_function;
+        value = req.body
+
+        if (command == "calibrate")
+	      {
+		      console.log("calibration should start");
+		      calibrator(req.body.value);
+	      }
+        //now check what kind of function user wants - and call that function
+        if (command == 'cyclic_voltammetry')
+        {
+          console.log("setting cv now!");
+          //for debugging
+          console.log(value);
+          cv_start_go(value);
+        }
+      }
+      
+      else if (req.body.cycle_array != undefined) 
+      {
+        calibrate = false;
+        cv = false
+        //console.log("req.body.cycle_array");
+        var parsed = JSON.parse(req.body.cycle_array);
+        //console.log(parsed);
+        arb_cycling = true;
+        cycling_start_go(parsed);
+      }
+      else
+      {
+      console.log("something else was sent");
+      console.log(req.body);
       }
     }
-    
-    else if (req.body.cycle_array != undefined) 
-    {
-      calibrate = false;
-      cv = false
-      console.log("req.body.cycle_array");
-      var parsed = JSON.parse(req.body.cycle_array);
-      console.log(parsed);
-      arb_cycling = true;
-      cycling_start_go(parsed);
-    }
-    else
-    {
-    console.log("something else was sent");
-    console.log(req.body);
+    catch (e) {
+      console.log(e);
     }
   }
-  catch (e) {
-    console.log(e);
+  else 
+  {
+  console.log('test already running');
   }
+  res.send('hello') //trying to shut this thing up
 }
 
 //CV stuff
@@ -510,6 +542,8 @@ function readingLog() {
 function cv_start_go(value)
 {
     //read in values and put them in the global variables. yay.
+    test_running = true;
+    
     console.log('cv_start_go called, yay');
 		cv_arr = [] // ??
 		cv_filename = value['file_name'];
@@ -587,8 +621,8 @@ function cv_rester(){
 
 function cv_stepper()
 {
-	console.log('stepped into cv');
-	console.log(cv_step);
+	//console.log('stepped into cv');
+	//console.log(cv_step);
 	time = new Date().getTime()	
 	if (time - cv_time > cv_rate)
 	{
@@ -623,6 +657,8 @@ function cv_stepper()
 // Cycling Section
 //==============================================================================================================
 //Global Variablew for Arb Cyclingq
+
+test_running = false;
 arb_cycling = false
 arb_cycling_settings = []
 arb_cycling_step = 0
@@ -631,7 +667,9 @@ cycling_cycles = 0
 cycling_cycle = 0
 last_current = 0
 last_potential = 0
-
+total_pause_time = 0;
+var pause_time;
+var resume_time;
 
 cyc_folder_name = ''
 cyc_file_name = ''
@@ -650,7 +688,9 @@ http_port = 8001
 
 function cycling_start_go(value)
 {
+  test_running = true;
   console.log("this is cycling_start_go");
+  total_pause_time = 0; 
   moveground(2.5)
   arb_cycling_settings = []
 	arb_cycling_step = 0
@@ -675,12 +715,17 @@ function cycling_start_go(value)
 }
 
 
+
+//cycling stepper - if next step is ordered. call next_step().
+// big issue - could be some niggles with the limits if next_step is called - should probably give some time to settle.
+// so, if user requests skip_step - next_step called - timer for 2 a second is called - lets cell settle so no unecessary skipping occurs
+
 // this needs to be made fancier i think
 //TODO: add in capacity limit stuff?
 function cycling_stepper()
 {
 	//console.log("cycling_stepper");
-	time = new Date().getTime()	
+	time = new Date().getTime()
 	this_set = arb_cycling_settings[arb_cycling_step]
 	next_time = this_set['time_cutoff'] * 1000
 	//console.log("next time is ")
@@ -697,30 +742,35 @@ function cycling_stepper()
 	
 	this_time = time-arb_cycling_step_start_time
 	//console.log(next_time - this_time)
+
 	if (next_time != 0 & next_time < this_time) 
 	{
 	  console.log('time exceeded')
 	 	next_step()
 	}
-	if (this_set['cyc_mode'] == 'galvanostat') 
-	{
-	  if (direction == "charge" & last_potential > cutoff_potential)
+  if (((skip_flag) & (time - skip_time > 1000)) || (!skip_flag)) // lets cell settle after skip step 
+  {
+    skip_flag = false;
+	  if (this_set['cyc_mode'] == 'galvanostat') 
 	  {
-	    console.log('cutoff potential reached')
-		  next_step()
+	    if (direction == "charge" & last_potential > cutoff_potential)
+	    {
+	      console.log('cutoff potential reached')
+		    next_step()
+	    }
+	    else if (direction == "discharge" & last_potential < cutoff_potential)
+	    {
+	      console.log('cutoff potential reached')
+		    next_step()
+	    }
 	  }
-	  else if (direction == "discharge" & last_potential < cutoff_potential)
+	  else if (this_set['cyc_mode'] == 'potentiostat')
 	  {
-	    console.log('cutoff potential reached')
-		  next_step()
-	  }
-	}
-	else if (this_set['cyc_mode'] == 'potentiostat')
-	{
-	  if (Math.abs(last_current) < Math.abs(cutoff_current))
-	  {
-	    console.log('cutoff current reached');
-	    next_step()
+	    if (Math.abs(last_current) < Math.abs(cutoff_current))
+	    {
+	      console.log('cutoff current reached');
+	      next_step()
+	    }
 	  }
 	}
 }
@@ -1027,30 +1077,61 @@ name_setter = function(req,res) {
 };
 
 //kill the interaction - used for both KILL and PAUSE
+function pauser(req,res)
+{
+	test_running = true;
+	kill = true;
+	console.log('method control has been paused, and CSV writing has been paused');
+	res.send('method control has been pause, and CSV writing has been pause');
+	CSV_ON = false;
+	pause_time = new Date().getTime()
+}
+
 function killer(req,res) 
 {
-	set_ocv();
+	test_running = false;
 	kill = true;
 	console.log('method control has been stopped, and CSV writing has been killed');
 	res.send('method control has been stopped, and CSV writing has been killed');
 	CSV_ON = false;
+	pause_time = new Date().getTime()
+	//should also save the position. incase program crashes.
 };
 
 //resume control and forwarding to csv
-function reviver(req,res) {
-	kill = false;
-	CSV_ON = true;
+function reviver(req,res,callback) 
+{
 	console.log('reviver called');
 	res.send('reviver called');
 	if (cv) { cv_time = new Date().getTime()	 }
   if (arb_cycling) { arb_cycling_step_start_time = new Date().getTime()	 }
   console.log('time set to start of step')
+  l_writer(last_comm) //sets the command the same as before
+  console.log('this is what we are reviving to ' + last_comm);
+  resume_time = new Date().getTime()
+  total_pause_time = total_pause_time + (resume_time - pause_time);
+  console.log('total_pause_time');
+  console.log(total_pause_time);
+  callback()
 };
 
-//skip a step of the cycler
-step_skip = function(req,res)
+function flag_resume()
 {
-console.log('step skip has been called')
+  console.log('flag_resume called');
+  kill = false;
+  CSV_ON = true;
+}
+//skip a step of the cycler
+var skip_time;
+var skip_flag
+
+function step_skip(req,res)
+{
+  console.log('step skip has been called')
+  next_step()
+  step_skip_time = new Date().getTime()
+  skip_flag = true;
+  res.send('step has been skipped')
 }
 
 //This is the thing that runs everything! 
@@ -1070,7 +1151,7 @@ t1 = setInterval(function()
 	if (command_list.length > 0)
 	{
 		sout = command_list.shift();
-		if (sout != "s0000") console.log(sout); //debugging print
+		if (sout != "s0000") console.log('sout is '+sout); //debugging print
 		serialPort.write(sout);	
 	}
 
@@ -1087,7 +1168,9 @@ module.exports = {
   stopper:stopper,
   name_setter:name_setter,
   killer: killer,
+  pauser: pauser,
   reviver:reviver,
+  flag_resume:flag_resume,
   step_skip:step_skip
 };
 

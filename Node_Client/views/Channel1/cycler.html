@@ -87,34 +87,99 @@
           </tr>
         </table>
       
-      <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea'></textarea></div>
-      <p id="cyc_confirm"> Waiting for Properties to be Confirmed
-      
-      <button onclick="convertArrayToJSON()" >Start The Experiment</button>
-      
-      
-      
-      <div id="goPlotting_button" style="visibility:hidden">
-        <button type = "button" onclick="goPlotting()" style="background-color:lightgreen">View Live Plot</button></td></tr>
+      <div id="not_underway_display" style="display:block">
+        <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea'></textarea>
+        <p id="cyc_confirm"> Waiting for Properties to be Confirmed
+        <button onclick="goStartTest()" >Start The Experiment</button>
       </div>
+      
+      <div id="underway_display" style="display:none">
+        <p>There is an experiment underway! </p>
+      </div>
+      
+      
+      <table>
+        <tr>
+          <td id="goPlotting_button" style="visibility:hidden">
+            <button type = "button" onclick="goPlotting()" style="background-color:lightgreen">View Live Plot</button>
+          </td>
+          <td id="pause_button" style="visibility:hidden">
+            <button type = "pause_button" onclick="goPause()" style="background-color:orange">Pause Test</button>
+          </td>
+          
+          <td id="kill_button" style="visibility:hidden">
+            <button type = "kill_button" onclick="goKill()" style="background-color:red">Stop Test</button>
+          </td>
+          
+          <td id="resume_button" style="visibility:hidden">
+            <button type = "resume_button" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
+          </td>
+          
+          <td id="step_skip_button" style="visibility:hidden">
+            <button type = "step_skip_button" onclick="goStepSkip()" style="background-color:blue">Skip Step</button>
+          </td>
+        </tr>
+      </table>
     
       
-    </div>
-  </div>
+    
   </section>
+<!-- this section could just be inserted here and there - I think that is the benefit of Jade. Oh well -->
   
   <section id="tabs-2" class="hide">
-      
-    <div class="row marketing">
-      <h1>Live Plotting</h1>
-      <p>Click links to display different live plots</p>
-    </div>
-
-    <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff">
     
-    <p><tt id="results"></tt></p>
+    <div class="row marketing">
+    
+      <h1>Live Plotting</h1>
+      <div id="underway_display_plot" style="display:block"> 
+        <p>Click links to display different live plots</p>
+      
+
+        <table><tr>
+            <td><button type="button" onclick="chooseP(1,ploop)">Current vs. Voltage</button></td>
+            <td><button type="button" onclick="chooseP(2,ploop)">Current vs. Time</button></td>
+            <td><button type="button" onclick="chooseP(3,ploop)">Voltage vs. Time</button></td> </tr>
+        </table><br>
+
+        
+        <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff">
+        
+        <p><tt id="results"></tt></p>
+        
+        <table>
+          <tr>
+            <td id="pause_button_plot" style="visibility:visible">
+              <button type = "pause_button_plot" onclick="goPause()" style="background-color:orange">Pause Test</button>
+            </td>
+            
+            <td id="step_skip_button" style="visibility:visible">
+              <button type = "step_skip_button" onclick="goStepSkip()" style="background-color:blue">Skip Step</button>
+            </td>
+            
+            <td id="kill_button_plot" style="visibility:visible">
+              <button type = "kill_button_plot" onclick="goKill()" style="background-color:red">Stop Test</button>
+            </td>
+            
+            <td id="resume_button_plot" style="visibility:hidden">
+              <button type = "resume_button_plot" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+      
+      <div id="not_underway_display_plot" style="display:none">
+        There is no experiment running right now
+      </div>
+      
+      <div id="returnButton" style="visibility:hidden">
+        <a href="/Channel1"> Return </a>
+      </div>
 
   </section>
+  
+      </div>
+  </div>
+  
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
 	<script src="/javascripts/flot/jquery.flot.js"></script>
 	<script src="/javascripts/flot/jquery.flot.time.js"></script>
@@ -150,19 +215,65 @@
         var cyc_http_port = document.getElementById("http_port").value;
         var cyc_serial_port = document.getElementById("serial_port").value;
         TableData.unshift({'cyc_folder':cyc_folder, 'cyc_file_name':cyc_file, 'cyc_ardustat_id':cyc_ardustat_id, 'cyc_cycles':cyc_cycles, 'cyc_http_port':cyc_http_port, 'cyc_serial_port':cyc_serial_port})
-        console.log(TableData);
+        //console.log(TableData);
         TableData.unshift({'electro_function':'cycle'});
         return TableData;
     }
     
-    //call this to send cycle info.
-    //when this is called - start a chain of call backs.
+    //
+    function testUnderway()
+    {
+      console.log('testUnderway called');
+      document.getElementById('not_underway_display').style.display = 'none';
+      document.getElementById('underway_display').style.display = 'block';
+      document.getElementById('not_underway_display_plot').style.display = 'none';
+      document.getElementById('underway_display_plot').style.display = 'block';
+    }
+    
+    function testOver()
+    {
+      console.log('testOver called');
+      document.getElementById('not_underway_display').style.display = 'block';
+      document.getElementById('underway_display').style.display = 'none';
+      document.getElementById('not_underway_display_plot').style.display = 'block';
+      document.getElementById('underway_display_plot').style.display = 'none';
+    }
+    
+    function enableInputs()
+    {
+      console.log('enable inputs called');
+      var inputs = document.getElementsByTagName("INPUT");
+      for (var i = 0; i < inputs.length; i++) 
+      {
+        inputs[i].disabled = false;
+        //console.log(inputs[i]);
+      }
+    }
+    //fires functions associated with starting test
+    function goStartTest()
+    {
+      convertArrayToJSON(TableData);
+      disableInputs();
+      showButtons();
+      testUnderway();
+    }
+    
+    function disableInputs()
+    {
+      console.log('diable inputs called');
+      var inputs = document.getElementsByTagName("INPUT");
+      for (var i = 0; i < inputs.length; i++) 
+      {
+        inputs[i].disabled = true;
+        //console.log(inputs[i]);
+      }
+    }
+    
     
     function convertArrayToJSON(TableData)
     {
         //make the next button available TODO: make this a callback - look for errors etc. then call it back
-        document.getElementById("goPlotting_button").style.visibility="visible";
-        
+        //fshowButtons()
         console.log('convertArraytoJSON got called');
         called()
         //goPlotting();
@@ -211,6 +322,107 @@
     return dumped_text;
 }
 
+
+//button stuff - this should definitely be abstracted
+  function showButtons()
+  {
+    document.getElementById("goPlotting_button").style.visibility="visible"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.visibility="visible";
+    document.getElementById("pause_button").style.visibility="visible";
+    document.getElementById("step_skip_button").style.visibility="visible";
+  }
+  
+  function hideButtons()
+  {
+    document.getElementById("goPlotting_button").style.visibility="hidden"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.visibility="hidden";
+    document.getElementById("pause_button").style.visibility="hidden";
+    document.getElementById("step_skip_button").style.visibility="hidden";
+  }
+  
+  function showReturnButton()
+  {
+    document.getElementById("returnButton").style.visibility="visible";
+  }
+  
+  
+  //pause the test, show resume button
+  //this is hacky and i should write in a better way - like 
+  function goPause() 
+  {
+    document.getElementById("goPlotting_button").style.visibility="hidden"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.visibility="visible";
+    document.getElementById("pause_button").style.visibility="hidden";
+    document.getElementById("resume_button").style.visibility="visible";
+    
+    document.getElementById("kill_button_plot").style.visibility="visible";
+    document.getElementById("pause_button_plot").style.visibility="hidden";
+    document.getElementById("resume_button_plot").style.visibility="visible";
+    console.log('goPause called')
+    $.ajax({
+      type:'GET',
+      url:'/pauser',
+      dataType: 'json',
+      async: true,
+      success: function(){
+        console.log('ajax says killer called');
+      }
+    });
+  }
+  
+  //resume the test
+  //hide resume button, show pause button
+  function goResume()
+  {
+    document.getElementById("pause_button").style.visibility="visible";
+    document.getElementById("resume_button").style.visibility="hidden";
+    
+    document.getElementById("pause_button_plot").style.visibility="visible";
+    document.getElementById("resume_button_plot").style.visibility="hidden";
+    console.log('goResume called')
+    $.ajax({
+      type:'GET',
+      url:'/reviver',
+      dataType: 'json',
+      async: true,
+      success: function(){
+        console.log('ajax says killer called');
+      }
+    });
+  }
+  
+  //kill the test, take back to setup (page with CV, Cycle etc.)
+  function goKill()
+  {
+  enableInputs()
+  hideButtons()
+  showReturnButton()
+  testOver() // could probably consolidate these things - but oh well.
+    console.log('goKill called')
+    $.ajax({
+      type:'GET',
+      url:'/killing',
+      dataType: 'json',
+      async: true,
+      success: function(){
+        console.log('ajax says killer called');
+      }
+    });
+  }
+  
+  function goStepSkip()
+  {
+    console.log('goStepSkip called');
+    $.ajax({
+      type:'GET',
+      url:'/step_skip',
+      dataType: 'json',
+      async: true,
+      success: function(){
+        console.log('ajax says step_skip called');
+      }
+    });
+  }
   
   //TODO:should probably put this in a seperate script but lets get it working then go from there.
   //pretty much working - just not switching in the url - thats not the biggest deal though.
@@ -255,9 +467,10 @@
     
   ploop();
   setInterval(function() {
-    console.log('ploop was called again');
+    //console.log('ploop was called again');
+    console.log('.');
     ploop();
-    }, 5000);
+    }, 1000);
   }
   
   //live plotting stuff
@@ -289,8 +502,8 @@
       success: function(result){
           image = result
           //debug
-          console.log('result from ploop');
-          console.log(result);
+          //console.log('result from ploop');
+          //console.log(result);
           imageUrl = "http://localhost:4001/"+image
           //document.write(imageUrl);
           changeImage("fooplotter",imageUrl)
@@ -341,73 +554,5 @@
       $(target_tab_selector).addClass('active');
        });
   });
-  </script>
-  <script>
-/*
-$.fn.serializeObject = function()
-{
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
-        }
-    });
-    o['type_of_experiment'] = 'cyclic voltammetry';
-    return o;
-};
-
-function sendValues() {
-
-  var form = $('#cycler_setup_input');
-  datatosend = form.serializeObject();
-  console.log(datatosend);
-  $.ajax({
-    type:'POST',
-    url:'/senddata',
-    dataType: 'json',
-    async: true,
-    data: datatosend,
-    success: function(){
-      console.log('successful sending of things :)');
-    }
-  });
-    
-  
-}
-  
-    
-
-		$("#cycler_submit_button").click(function(){
-		  console.log('something got clicked');
-		  var jim = document.forms['cv_setup_input'].elements
-		  var array = document.forms['cv_setup_input'].elements.value
-		  console.log(array);
-					
-		});  
-        
-        
-     */
-    /*
-    // do on click thing - then loop through to find each element - then post it.
-    
-        
-        $.ajax({
-          type: 'POST',
-        	dataType: "json",
-        	async: true,
-        	url: '/senddata',
-        	data: {cv_setup:$("#cv_setup_input").val()},
-        	success: function("here is the stuff "+stuff){
-            console.log(stuff);
-          }
-      });
-    });
-    */
   </script>
 </body>

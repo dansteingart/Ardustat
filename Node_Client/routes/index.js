@@ -23,20 +23,17 @@ router.get('/startCSV/*',function(req,res) {
 router.get('/stopCSV/',function(req,res) {
   stopper(req,res);
 });
-router.get('/kill/',function(req,res) {
-  killer(req,res);
-});
-router.get('/unkill/',function(req,res) {
-  reviver(req,res);
-});
 router.get('/setName/*',function(req,res) {
   name_setter(req,res);
 });
 router.get('/killing/',function(req,res) {
   functions.killer(req,res);
 });
+router.get('/pauser/',function(req,res) {
+  functions.pauser(req,res);
+});
 router.get('/reviver/',function(req,res) {
-  functions.reviver(req,res);
+  functions.reviver(req,res,functions.flag_resume);
 });
 router.get('/step_skip/',function(req,res) {
   functions.step_skip(req,res);

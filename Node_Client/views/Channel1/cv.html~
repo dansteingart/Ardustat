@@ -131,15 +131,15 @@
     
     <table>
       <tr>
-        <td id="pause_button" style="visibility:visible">
+        <td id="pause_button_plot" style="visibility:visible">
           <button type = "pause_button_plot" onclick="goPause()" style="background-color:orange">Pause Test</button>
         </td>
         
-        <td id="kill_button" style="visibility:visible">
+        <td id="kill_button_plot" style="visibility:visible">
           <button type = "kill_button_plot" onclick="goKill()" style="background-color:red">Stop Test</button>
         </td>
         
-        <td id="resume_button" style="visibility:hidden">
+        <td id="resume_button_plot" style="visibility:hidden">
           <button type = "resume_button_plot" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
         </td>
       </tr>
@@ -299,7 +299,7 @@ var DataToSend;
     setInterval(function() {
       console.log('ploop was called again');
       ploop();
-    }, 5000);
+    }, 2000);
   }
   
   function changePlot(xaxis,yaxis,callback)
