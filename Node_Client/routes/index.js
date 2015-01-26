@@ -10,6 +10,7 @@ stopper = functions.stopper,
 name_setter = functions.name_setter,
 reviver = functions.reviver,
 
+
 // urls for forwarder - serialport interactions. 
 router.get('/write/*',function(req,res) {
   writer(req,res);
@@ -39,6 +40,7 @@ router.get('/step_skip/',function(req,res) {
   functions.step_skip(req,res);
 });
 
+
 /* GET home page. */  // changed home page
 
 router.get('/', function(req, res){
@@ -56,6 +58,18 @@ router.get('/debug', function(req, res){
   indexer = fs.readFileSync('views/debug.html').toString()
   res.send(indexer);
 });
+
+// Goal - To display directory of files 
+router.get('/Analysis', function(req, res){
+	indexer = fs.readFileSync('views/Analysis/index.html').toString()
+	functions.analysis_display(req,res,indexer)
+});
+
+router.post('/show_files', functions.file_display, function(req, res, next) {
+  console.log("this is the router, why doesn't this print anything?: " + req.body);
+  functions.file_display
+});
+
 
 router.post('/senddata', functions.setstuff, function(req, res, next) {
   console.log("this is the router, why doesn't this print anything?: " + req.body);

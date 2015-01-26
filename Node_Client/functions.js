@@ -1,6 +1,10 @@
-app_page = require('./app.js')
+app = require('./app.js')
 config_page = require('./config.js')
-app = app_page.app;
+app = app.app;
+io = app_page.ifo;
+http = app_page.http;
+
+console.log('this is app '+app);
 
 //TODO: check how python does things, fix calibration
 // make the javascript stuff way nicer - i think that this is key. 
@@ -20,7 +24,7 @@ var json2csv = require('json2csv');
 
 //ones I probably don't need
 var squenty = require('sequenty');
-//Serial port stuff
+//Serial port stuff and socket stuff
 //------------------------------------------------------------------------------------------------------
 var serialport = require('serialport');
 var SerialPort = serialport.SerialPort;
@@ -73,6 +77,7 @@ var arb_cycling = false;
 function arb_cycling() {
   console.log('arb cycler called');
 }
+
 
 
 // serial communications 
@@ -1134,6 +1139,39 @@ function step_skip(req,res)
   res.send('step has been skipped')
 }
 
+//trying to show files that have been uploaded.
+//try and show folders - then can click on folders to see files in them 
+function analysis_display(req,res,indexer)
+{
+  console.log('analysis_display has been called');
+  
+  
+	out = fs.readdirSync('Data/')
+	console.log('the data is ' + out) ;
+  lts = '<div id="folders" >'
+  count_limit = 20;
+
+  count = 0 
+  for (var i in out)
+  {	foo = out[i]
+	  if (foo != "temper") lts += "<button id='"+foo+"'>"+foo+ "</button><br>";
+	  count +=1
+	  if (count > count_limit) break; 
+  }
+  lts += '</div>'
+  indexer = indexer.replace("##_newthings_##",lts);
+  res.send(indexer);
+}
+
+function file_display(req,res)
+{
+  console.log('file_display called');
+  console.log(req.body.folder) 
+  folder = req.body.folder
+  out = fs.readdirSync('Data/'+folder)
+  console.log('the files are ' + out);
+  res.send(out)
+}
 //This is the thing that runs everything! 
 //==========================================================
 command_list = []
@@ -1171,7 +1209,9 @@ module.exports = {
   pauser: pauser,
   reviver:reviver,
   flag_resume:flag_resume,
-  step_skip:step_skip
+  step_skip:step_skip,
+  file_display:file_display,
+  analysis_display:analysis_display
 };
 
 

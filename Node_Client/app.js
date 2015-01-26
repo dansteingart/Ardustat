@@ -60,6 +60,8 @@ app.use(function(req, res, next) {
     next(err);
 });
 
+
+
 // error handlers
 // development error handler
 // will print stacktrace
@@ -83,6 +85,14 @@ app.use(function(err, req, res, next) {
     });
 });
 
-module.exports = ({
-  app:app,
+io.on('connection', function(socket){
+  console.log('a user connected');
 });
+
+
+
+module.exports = {
+  app:app,
+  io:io,
+  http:http
+};
