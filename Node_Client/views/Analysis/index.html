@@ -44,20 +44,23 @@
         <div id='files'>
         </div>
       </div>
+      <!-- some socket stuff --> 
+      
+                      <ul id="messages"></ul>
+                      <form action="">
+                        <input id="m" autocomplete="off" /><button>Send</button>
+                      </form>
       
     </div>
   </div>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
-  <!-- socket stuff -->
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-  var socket = io();
-  </script>
 	<script src="/javascripts/flot/jquery.flot.js"></script>
 	<script src="/javascripts/flot/jquery.flot.time.js"></script>
 	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src ="/scripts/test.js"></script>
+  <script src="/scripts/socket_1.js"></script>
   <script>
     files = '';
     $( "#folders" ).children().on( "click", function( event ) 

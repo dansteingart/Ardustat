@@ -1,11 +1,4 @@
-app = require('./app.js')
 config_page = require('./config.js')
-app = app.app;
-io = app_page.ifo;
-http = app_page.http;
-
-console.log('this is app '+app);
-
 //TODO: check how python does things, fix calibration
 // make the javascript stuff way nicer - i think that this is key. 
 //requirements from npm
@@ -28,6 +21,32 @@ var squenty = require('sequenty');
 //------------------------------------------------------------------------------------------------------
 var serialport = require('serialport');
 var SerialPort = serialport.SerialPort;
+
+
+var listen = function(app) 
+{
+  var http = require('http').createServer(app).listen(3001);
+  global.io = require('socket.io')(http);
+  io_connect();
+  global.io.on('connection', function(socket){
+    socket.on('chat message', function(msg){
+      console.log('message: ' + msg);
+    });
+});
+}
+
+function io_connect()
+{
+  global.io.on('connection', function(socket) {
+    console.log('holy shit this works');
+  });
+}
+
+function io_emit(msg)
+{
+  global.io.emit('console message', msg);
+}
+
 
 serialport.list(function(err, ports){
   ports.forEach(function(port) {
@@ -1171,6 +1190,7 @@ function file_display(req,res)
   out = fs.readdirSync('Data/'+folder)
   console.log('the files are ' + out);
   res.send(out)
+  io_emit('hey dan you can nap now');
 }
 //This is the thing that runs everything! 
 //==========================================================
@@ -1211,7 +1231,8 @@ module.exports = {
   flag_resume:flag_resume,
   step_skip:step_skip,
   file_display:file_display,
-  analysis_display:analysis_display
+  analysis_display:analysis_display,
+  listen:listen
 };
 
 

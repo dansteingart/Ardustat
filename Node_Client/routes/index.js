@@ -1,5 +1,4 @@
 var express = require('express');
-app_page = require('../app.js');
 var router = express.Router();
 var fs = require('fs');
 var functions = require('../functions.js');
@@ -9,7 +8,7 @@ starter = functions.starter,
 stopper = functions.stopper,
 name_setter = functions.name_setter,
 reviver = functions.reviver,
-
+//console.log(' the app is ' + app_page);
 
 // urls for forwarder - serialport interactions. 
 router.get('/write/*',function(req,res) {
