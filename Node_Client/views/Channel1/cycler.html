@@ -60,16 +60,16 @@
       <div id="basic_setup">
         <table id="basic_setup_table" class='table'>
           <input type='hidden' name='electro_function' value='cyclic_voltammetry'>
-          <tr> <td> Http Port: </td><td><input type='text' id='http_port' value='8001'></td></tr> 
-          <tr> <td>Serial Port: </td><td><input type='text' id='serial_port' value='/dev/ttyACM0'></td></tr> 
-          <tr> <td>Ardustat Id: </td><td><input type='text' id='ardustat_id' value='25'></td></tr>
-          <tr> <td>Folder Name: </td><td><input type='text' id='folder_name' value='folder'></td></tr>
-          <tr> <td>Experiment Name: </td><td><input type='text' id='file_name' value='file_name_cycle'></td></tr>
-          <tr> <td>Number of Cycles </td><td><input type='text' id='number_of_cycles' value='2'></td></tr>
+          <tr> <td> Http Port: </td><td><input type='text' id='http_port' value='8001' class="form-control"></td></tr> 
+          <tr> <td>Serial Port: </td><td><input type='text' id='serial_port' value='/dev/ttyACM0' class="form-control"></td></tr> 
+          <tr> <td>Ardustat Id: </td><td><input type='text' id='ardustat_id' value='25' class="form-control"></td></tr>
+          <tr> <td>Folder Name: </td><td><input type='text' id='folder_name' value='folder' class="form-control"></td></tr>
+          <tr> <td>Experiment Name: </td><td><input type='text' id='file_name' value='file_name_cycle' class="form-control"></td></tr>
+          <tr> <td>Number of Cycles </td><td><input type='text' id='number_of_cycles' value='2' class="form-control"></td></tr>
         </table>
       </div>
 
-        <table id="cycler_table" class='table'>
+        <table id="cycler_table" class="table">
           <tr>
             <th>Cycle Step</th> <th>Mode</th> <th> Value </th> <th>Time Cutoff</th> <th>Voltage Cutoff</th> <th>Current Cuttoff</th>
           </tr>
@@ -90,7 +90,7 @@
       <div id="not_underway_display" style="display:block">
         <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea'></textarea>
         <p id="cyc_confirm"> Waiting for Properties to be Confirmed
-        <button onclick="goStartTest()" >Start The Experiment</button>
+        <button onclick="goStartTest()" class="btn btn-primary">Start The Experiment</button>
       </div>
       
       <div id="underway_display" style="display:none">
@@ -101,22 +101,22 @@
       <table>
         <tr>
           <td id="goPlotting_button" style="visibility:hidden">
-            <button type = "button" onclick="goPlotting()" style="background-color:lightgreen">View Live Plot</button>
+            <button type = "button" onclick="goPlotting()" class="btn btn-default" >View Live Plot</button>
           </td>
           <td id="pause_button" style="visibility:hidden">
-            <button type = "pause_button" onclick="goPause()" style="background-color:orange">Pause Test</button>
+            <button type = "pause_button" onclick="goPause()" class="btn btn-default" >Pause Test</button>
           </td>
           
           <td id="kill_button" style="visibility:hidden">
-            <button type = "kill_button" onclick="goKill()" style="background-color:red">Stop Test</button>
+            <button type = "kill_button" onclick="goKill()"  class="btn btn-default" >Stop Test</button>
           </td>
           
           <td id="resume_button" style="visibility:hidden">
-            <button type = "resume_button" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
+            <button type = "resume_button" onclick="goResume()" class="btn btn-default" >Resume Test</button>
           </td>
           
           <td id="step_skip_button" style="visibility:hidden">
-            <button type = "step_skip_button" onclick="goStepSkip()" style="background-color:blue">Skip Step</button>
+            <button type = "step_skip_button" onclick="goStepSkip()" class="btn btn-default" >Skip Step</button>
           </td>
         </tr>
       </table>
@@ -136,9 +136,9 @@
       
 
         <table><tr>
-            <td><button type="button" onclick="chooseP(1,ploop)">Current vs. Voltage</button></td>
-            <td><button type="button" onclick="chooseP(2,ploop)">Current vs. Time</button></td>
-            <td><button type="button" onclick="chooseP(3,ploop)">Voltage vs. Time</button></td> </tr>
+            <td><button type="button" class="btn btn-default" id="chooseP1" onclick="chooseP(1,ploop)">Current vs. Voltage</button></td>
+            <td><button type="button" class="btn btn-default" id="chooseP2" onclick="chooseP(2,ploop)">Current vs. Time</button></td>
+            <td><button type="button" class="btn btn-default" id="chooseP3" onclick="chooseP(3,ploop)">Voltage vs. Time</button></td> </tr>
         </table><br>
 
         
@@ -186,7 +186,21 @@
 	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/socket_1.js"></script>
   <script>
+  $('#returnButton').click(function() {
+    console.log('returnButton clicked')
+    goBackToStart();
+  });
+
+  function goBackToStart()
+  {
+  console.log('goBackToStart called');
+  showButtons()
+  $("#resume_button").style.visibility="hidden";
+  enableInputs()
+  }
+  
   
   var TableData;
   
@@ -338,6 +352,7 @@
     document.getElementById("kill_button").style.visibility="hidden";
     document.getElementById("pause_button").style.visibility="hidden";
     document.getElementById("step_skip_button").style.visibility="hidden";
+    document.getElementById("resume_button").style.visibility="hidden";
   }
   
   function showReturnButton()

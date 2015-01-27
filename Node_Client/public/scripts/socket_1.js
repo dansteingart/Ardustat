@@ -10,3 +10,7 @@ socket.on('chat message', function(msg){
 socket.on('console message', function(msg){
   console.log(msg)
 });
+socket.on('stop message', function(msg){
+  console.log('stop message called')
+  showReturnButton()
+});
