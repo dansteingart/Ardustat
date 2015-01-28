@@ -933,7 +933,7 @@ function moveground(value)
 	//console.log(value + " " + volts_per_tick);
 	//console.log(value_to_ardustat);
 	toArd("d",value_to_ardustat)
-	set_ocv()
+	toArd("-","0000");
 }
 
 //sets arudstat to open circuit potential

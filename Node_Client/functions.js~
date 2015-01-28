@@ -44,7 +44,7 @@ function io_connect()
 
 function io_emit(msg)
 {
-  global.io.emit('chat message', msg);
+  global.io.emit('console message', msg);
 }
 
 

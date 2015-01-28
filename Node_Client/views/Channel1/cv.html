@@ -56,54 +56,47 @@
                 </div>
             </div>
           <form id='cv_setup_input' action='/senddata' method='post'>
-          <input type='hidden' name='electro_function' value='cyclic_voltammetry'>
-          Http Port: <input type='text' name='http_port' value='8001'><br>
-          Serial Port: <input type='text' name='serial_port' value='/dev/ttyACM0'><br>
-          Ardustat Id: <input type='text' name='ardustat_id' value='25'><br>
-          Folder Name: <input type='text' name='folder_name' value='folder'><br>
-          Experiment Name: <input type='text' name='file_name' value='file_name_again'><br>
-          Rest Time: <input type='text' name='rest_time' value='10'><br>
-          Number of Cycles <input type='text' name='number_of_cycles' value='2'><br>
-          Minimum Potential <input type='text' name='min_potential' value='-.5'><br>
-          Maximum Potential <input type='text' name='max_potential' value='1'><br>
-          Rate: <input type='text' name='rate' value='1'> mV/s<br>
+          <input type='hidden' name='electro_function' value='cyclic_voltammetry'><br>
+          Http Port: <input type='text' name='http_port' value='8001' class="form-inline"><br>
+          Serial Port: <input type='text' name='serial_port' value='/dev/ttyACM0' class="form-inline"><br>
+          Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"><br>
+          Folder Name: <input type='text' name='folder_name' value='folder' class="form-inline"><br>
+          Experiment Name: <input type='text' name='file_name' value='file_name_again' class="form-inline"><br>
+          Rest Time: <input type='text' name='rest_time' value='10' class="form-inline"><br>
+          Number of Cycles <input type='text' name='number_of_cycles' value='2' class="form-inline"><br>
+          Minimum Potential <input type='text' name='min_potential' value='-.5' class="form-inline"><br>
+          Maximum Potential <input type='text' name='max_potential' value='1' class="form-inline"><br>
+          Rate: <input type='text' name='rate' value='1' class="form-inline"> mV/s<br>
           DAC2 Val: <input type='text' name='DAC2_value' value='2.5'><br>
-          Max and Min Potentials relative to OCV? <input type='checkbox' name='relative_to_ocv' value='True'> True <br>
+          Max and Min Potentials relative to OCV? <input type='checkbox' name='relative_to_ocv' value='True' class="form-inline"> True <br>
           Start test
-           at OCV? <input type = 'checkbox' name='start_at_ocv' value='True'> If other - Please Specify 
-          <input type='text' name='other_start_volt'><br>
-          Start Dircetion <select name='cv_dir'> 
+           at OCV? <input type = 'checkbox' name='start_at_ocv' value='True' class="form-inline"> If other - Please Specify 
+          <input type='text' name='other_start_volt' class="form-inline"><br>
+          Start Direction <select name='cv_dir' class="form-inline"> 
             <option value='charging'> Charge </option>
-            <option value='discharging'> Dishcarge</option>
+            <option value='discharging'> Discharge</option>
             </select>
           
 
-          
-        </form>
-        <p id="cv_confirm"> Waiting for Properties to be Confirmed
+          <br>
+          <br>
+      <div id="not_underway_display" style="display:inline-block">
+        <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea' style="display:none" ></textarea>
+        <p id="cyc_confirm" style="display:none"> Waiting for Properties to be Confirmed </p>
+        <button id="start_experiment" class="btn btn-primary">Start The Experiment</button>
+      </div>
+      
+      <div id="underway_display" style="display:none">
+      </div>
         
-        <button onclick = "sendValues()" >send_data</button>
+        <div id="in_test_buttons" >
+          <button type = "button" onclick="goPlotting()" class="btn btn-success" id="goPlotting_button" style="display:none">View Live Plot</button>
+          <button type = "pause_button" onclick="goPause()" class="btn btn-warning" id="pause_button" style="display:none">Pause Test</button>
+          <button type = "kill_button" onclick="goKill()"  class="btn btn-danger" id="kill_button" style="display:none">Stop Test</button>
+          <button type = "resume_button" onclick="goResume()" class="btn btn-primary" id="resume_button" style="display:none">Resume Test</button>
+        </div>
         
-        <table>
-          <tr>
-            <td id="goPlotting_button" style="visibility:hidden">
-              <button type = "button" onclick="goPlotting()" style="background-color:lightgreen">View Live Plot</button>
-            </td>
-            <td id="pause_button" style="visibility:hidden">
-              <button type = "pause_button" onclick="goPause()" style="background-color:orange">Pause Test</button>
-            </td>
-            
-            <td id="kill_button" style="visibility:hidden">
-              <button type = "kill_button" onclick="goKill()" style="background-color:red">Stop Test</button>
-            </td>
-            
-            <td id="resume_button" style="visibility:hidden">
-              <button type = "resume_button" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
-            </td>
-          </tr>
-        </table>
-        
-        
+   
        
         
         
@@ -112,49 +105,73 @@
   </section>
   
   <section id="tabs-2" class="hide">
-      
+    
     <div class="row marketing">
+    
       <h1>Live Plotting</h1>
-      <p>Click links to display different live plots</p>
-    </div>
+      
+      <div id="underway_display_plot" style="display:inline-block"> 
+        <p>Click links to display different live plots</p>
+      
 
-    <table><tr>
-        <td><button type="button" onclick="chooseP(1,ploop)">Current vs. Voltage</button></td>
-        <td><button type="button" onclick="chooseP(2,ploop)">Current vs. Time</button></td>
-        <td><button type="button" onclick="chooseP(3,ploop)">Voltage vs. Time</button></td> </tr>
-    </table><br>
+        <table><tr>
+            <td><button type="button" class="btn btn-default" id="chooseP1" onclick="chooseP(1,ploop)">Current vs. Voltage</button></td>
+            <td><button type="button" class="btn btn-default" id="chooseP2" onclick="chooseP(2,ploop)">Current vs. Time</button></td>
+            <td><button type="button" class="btn btn-default" id="chooseP3" onclick="chooseP(3,ploop)">Voltage vs. Time</button></td> </tr>
+        </table><br>
 
-    
-    <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff">
-    
-    <p><tt id="results"></tt></p>
-    
-    <table>
-      <tr>
-        <td id="pause_button_plot" style="visibility:visible">
-          <button type = "pause_button_plot" onclick="goPause()" style="background-color:orange">Pause Test</button>
-        </td>
         
-        <td id="kill_button_plot" style="visibility:visible">
-          <button type = "kill_button_plot" onclick="goKill()" style="background-color:red">Stop Test</button>
-        </td>
+        <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff">
         
-        <td id="resume_button_plot" style="visibility:hidden">
-          <button type = "resume_button_plot" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
-        </td>
-      </tr>
-    </table>
+        <p><tt id="results"></tt></p>
+        
+        <button type = "pause_button_plot" onclick="goPause()" class="btn btn-warning" id="pause_button_plot" style="display:inline-block">Pause Test</button>
+        <button type = "kill_button_plot" onclick="goKill()" class="btn btn-danger" id="kill_button_plot" style="display:inline-block">Stop Test</button>
+        <button type = "resume_button_plot" onclick="goResume()" class="btn btn-primary" id="resume_button_plot" style="display:none">Resume Test</button>
+
+      </div>
+      
+      <div id="not_underway_display_plot" style="display:none">
+        There is no experiment running right now
+      </div>
+      
+      <div id="returnButton" style="display:none">
+        <a href="/Channel1"> Return </a>
+      </div>
 
   </section>
-  <script src="/javascripts/flot/jquery.js"></script>
+  </div>
+</div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
 	<script src="/javascripts/flot/jquery.flot.js"></script>
 	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/socket_1.js"></script>
   <script>
 
 //debug
   
 //starting the stuff ----------------------------------------------------
+  $('#start_experiment').click(function() {
+    goStartTest()
+  });
+  
+  $('#kill_button').click(function() {
+    console.log("kill button pushed");
+    location.href='/Channel1'
+  });
+  
+
+  function goStartTest()
+  {
+    sendValues();
+    disableInputs();
+    showButtons();
+    testUnderway();
+  }
+
   $.fn.serializeObject = function()
   {
       var o = {};
@@ -192,34 +209,99 @@ var DataToSend;
         console.log('successful sending of things :)');
       }
     });
-    showButtons()
+  }
+  
+  $('#returnButton').click(function() {
+    console.log('returnButton clicked')
+    goBackToStart();
+  });
+
+  function goBackToStart()
+  {
+  console.log('goBackToStart called');
+  showButtons()
+  $("#resume_button").style.display="none";
+  enableInputs()
   }
 
-
+  function testUnderway()
+  {
+    console.log('testUnderway called');
+    document.getElementById('not_underway_display').style.display = 'none';
+    document.getElementById('underway_display').style.display = 'inline-block';
+    document.getElementById('not_underway_display_plot').style.display = 'none';
+    document.getElementById('underway_display_plot').style.display = 'inline-block';
+  }
+  
+  function testOver()
+  {
+    console.log('testOver called');
+    document.getElementById('not_underway_display').style.display = 'inline-block';
+    document.getElementById('underway_display').style.display = 'none';
+    document.getElementById('not_underway_display_plot').style.display = 'inline-block';
+    document.getElementById('underway_display_plot').style.display = 'none';
+  }
+  
+  function enableInputs()
+  {
+    console.log('enable inputs called');
+    var inputs = document.getElementsByTagName("INPUT");
+    for (var i = 0; i < inputs.length; i++) 
+    {
+      inputs[i].disabled = false;
+      //console.log(inputs[i]);
+    }
+  }
+  
+  function disableInputs()
+  {
+    console.log('diable inputs called');
+    var inputs = document.getElementsByTagName("INPUT");
+    for (var i = 0; i < inputs.length; i++) 
+    {
+      inputs[i].disabled = true;
+      //console.log(inputs[i]);
+    }
+  }
 // additional control 
   function showButtons()
   {
-    document.getElementById("goPlotting_button").style.visibility="visible"; //definitely cleaner way to write this
-    document.getElementById("kill_button").style.visibility="visible";
-    document.getElementById("pause_button").style.visibility="visible";
+    document.getElementById("goPlotting_button").style.display="inline-block"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.display="inline-block";
+    document.getElementById("pause_button").style.display="inline-block";
   }
+  
+  function hideButtons()
+  {
+    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.display="none";
+    document.getElementById("pause_button").style.display="none";
+    document.getElementById("resume_button").style.display="none";
+  }
+  function showReturnButton()
+  {
+    document.getElementById("returnButton").style.display="inline-block";
+  }
+  
+  
   
   //pause the test, show resume button
   //this is hacky and i should write in a better way - like 
   function goPause() 
   {
-    document.getElementById("goPlotting_button").style.visibility="hidden"; //definitely cleaner way to write this
-    document.getElementById("kill_button").style.visibility="visible";
-    document.getElementById("pause_button").style.visibility="hidden";
-    document.getElementById("resume_button").style.visibility="visible";
+    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("resume_button").style.display="inline-block";
+    document.getElementById("kill_button").style.display="inline-block";
+    document.getElementById("pause_button").style.display="none";
     
-    document.getElementById("kill_button_plot").style.visibility="visible";
-    document.getElementById("pause_button_plot").style.visibility="hidden";
-    document.getElementById("resume_button_plot").style.visibility="visible";
+    
+    document.getElementById("kill_button_plot").style.display="inline-block";
+    document.getElementById("pause_button_plot").style.display="none";
+    document.getElementById("resume_button_plot").style.display="inline-block";
     console.log('goPause called')
     $.ajax({
       type:'GET',
-      url:'/killing',
+      url:'/pauser', //was killing or something - will have to check to make sure this works. 
       dataType: 'json',
       async: true,
       success: function(){
@@ -231,6 +313,12 @@ var DataToSend;
   //resume the test
   function goResume()
   {
+    document.getElementById("pause_button").style.display="inline-block";
+    document.getElementById("resume_button").style.display="none";
+    document.getElementById("goPlotting_button").style.display="inline-block";
+    
+    document.getElementById("pause_button_plot").style.display="inline-block";
+    document.getElementById("resume_button_plot").style.display="none";
     console.log('goResume called')
     $.ajax({
       type:'GET',
@@ -246,6 +334,10 @@ var DataToSend;
   //kill the test, take back to setup (page with CV, Cycle etc.)
   function goKill()
   {
+  enableInputs()
+  hideButtons()
+  showReturnButton()
+  testOver() // could probably consolidate these things - but oh well.
     console.log('goKill called')
     $.ajax({
       type:'GET',

@@ -37,8 +37,8 @@
           </script>
         </div>
 
-          <div class="col-lg-12">
-            <h1 class="header"> Hey Dan </h1>
+          <div class="col-lg-12" style="display:none">
+            <h1 class="header"> Hey Andrew </h1>
           </div>
       </div>
    
@@ -58,14 +58,14 @@
               </div>
           </div>
       <div id="basic_setup">
-        <table id="basic_setup_table" class='table'>
+        <table id="basic_setup_table" class="table">
           <input type='hidden' name='electro_function' value='cyclic_voltammetry'>
-          <tr> <td> Http Port: </td><td><input type='text' id='http_port' value='8001'></td></tr> 
-          <tr> <td>Serial Port: </td><td><input type='text' id='serial_port' value='/dev/ttyACM0'></td></tr> 
-          <tr> <td>Ardustat Id: </td><td><input type='text' id='ardustat_id' value='25'></td></tr>
-          <tr> <td>Folder Name: </td><td><input type='text' id='folder_name' value='folder'></td></tr>
-          <tr> <td>Experiment Name: </td><td><input type='text' id='file_name' value='file_name_cycle'></td></tr>
-          <tr> <td>Number of Cycles </td><td><input type='text' id='number_of_cycles' value='2'></td></tr>
+          <tr> <td> <h5> Http Port: </h5> </td><td><input type='text' id='http_port' value='8001' class="form-control"></td></tr> 
+          <tr> <td> <h5>Serial Port:</h5> </td><td><input type='text' id='serial_port' value='/dev/ttyACM0' class="form-control"></td></tr> 
+          <tr> <td><h5>Ardustat Id: </h5></td><td><input type='text' id='ardustat_id' value='25' class="form-control"></td></tr>
+          <tr> <td><h5>Folder Name: </h5></td><td><input type='text' id='folder_name' value='folder' class="form-control"></td></tr>
+          <tr> <td><h5>Experiment Name: </h5></td><td><input type='text' id='file_name' value='file_name_cycle' class="form-control"></td></tr>
+          <tr> <td><h5>Number of Cycles </h5></td><td><input type='text' id='number_of_cycles' value='2' class="form-control"></td></tr>
         </table>
       </div>
 
@@ -87,39 +87,23 @@
           </tr>
         </table>
       
-      <div id="not_underway_display" style="display:block">
-        <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea'></textarea>
-        <p id="cyc_confirm"> Waiting for Properties to be Confirmed
+      <div id="not_underway_display" style="display:inline-block">
+        <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea' style="display:none" ></textarea>
+        <p id="cyc_confirm" style="display:none"> Waiting for Properties to be Confirmed </p>
         <button onclick="goStartTest()" class="btn btn-primary">Start The Experiment</button>
       </div>
       
       <div id="underway_display" style="display:none">
-        <p>There is an experiment underway! </p>
       </div>
       
       
-      <table>
-        <tr>
-          <td id="goPlotting_button" style="visibility:hidden">
-            <button type = "button" onclick="goPlotting()" class="btn btn-default" >View Live Plot</button>
-          </td>
-          <td id="pause_button" style="visibility:hidden">
-            <button type = "pause_button" onclick="goPause()" class="btn btn-default" >Pause Test</button>
-          </td>
-          
-          <td id="kill_button" style="visibility:hidden">
-            <button type = "kill_button" onclick="goKill()"  class="btn btn-default" >Stop Test</button>
-          </td>
-          
-          <td id="resume_button" style="visibility:hidden">
-            <button type = "resume_button" onclick="goResume()" class="btn btn-default" >Resume Test</button>
-          </td>
-          
-          <td id="step_skip_button" style="visibility:hidden">
-            <button type = "step_skip_button" onclick="goStepSkip()" class="btn btn-default" >Skip Step</button>
-          </td>
-        </tr>
-      </table>
+      <div id="in_test_buttons" >
+        <button type = "button" onclick="goPlotting()" class="btn btn-success" id="goPlotting_button" style="display:none">View Live Plot</button>
+        <button type = "pause_button" onclick="goPause()" class="btn btn-warning" id="pause_button" style="display:none">Pause Test</button>
+        <button type = "kill_button" onclick="goKill()"  class="btn btn-danger" id="kill_button" style="display:none">Stop Test</button>
+        <button type = "resume_button" onclick="goResume()" class="btn btn-primary" id="resume_button" style="display:none">Resume Test</button>
+        <button type = "step_skip_button" onclick="goStepSkip()" class="btn btn-default" id="step_skip_button" style="display:none" >Skip Step</button>
+      </div>
     
       
     
@@ -131,7 +115,8 @@
     <div class="row marketing">
     
       <h1>Live Plotting</h1>
-      <div id="underway_display_plot" style="display:block"> 
+      
+      <div id="underway_display_plot" style="display:inline-block"> 
         <p>Click links to display different live plots</p>
       
 
@@ -146,32 +131,18 @@
         
         <p><tt id="results"></tt></p>
         
-        <table>
-          <tr>
-            <td id="pause_button_plot" style="visibility:visible">
-              <button type = "pause_button_plot" onclick="goPause()" style="background-color:orange">Pause Test</button>
-            </td>
-            
-            <td id="step_skip_button" style="visibility:visible">
-              <button type = "step_skip_button" onclick="goStepSkip()" style="background-color:blue">Skip Step</button>
-            </td>
-            
-            <td id="kill_button_plot" style="visibility:visible">
-              <button type = "kill_button_plot" onclick="goKill()" style="background-color:red">Stop Test</button>
-            </td>
-            
-            <td id="resume_button_plot" style="visibility:hidden">
-              <button type = "resume_button_plot" onclick="goResume()" style="background-color:lightgreen">Resume Test</button>
-            </td>
-          </tr>
-        </table>
+        <button type = "pause_button_plot" onclick="goPause()" class="btn btn-warning" id="pause_button_plot" style="display:inline-block">Pause Test</button>
+        <button type = "kill_button_plot" onclick="goKill()" class="btn btn-danger" id="kill_button_plot" style="display:inline-block">Stop Test</button>
+        <button type = "step_skip_button" onclick="goStepSkip()" class="btn btn-default" id="step_skip_button" style="display:inline-block">Skip Step</button>
+        <button type = "resume_button_plot" onclick="goResume()" class="btn btn-primary" id="resume_button_plot" style="display:none">Resume Test</button>
+
       </div>
       
       <div id="not_underway_display_plot" style="display:none">
         There is no experiment running right now
       </div>
       
-      <div id="returnButton" style="visibility:hidden">
+      <div id="returnButton" style="display:none">
         <a href="/Channel1"> Return </a>
       </div>
 
@@ -197,7 +168,7 @@
   {
   console.log('goBackToStart called');
   showButtons()
-  $("#resume_button").style.visibility="hidden";
+  $("#resume_button").style.display="none";
   enableInputs()
   }
   
@@ -239,17 +210,17 @@
     {
       console.log('testUnderway called');
       document.getElementById('not_underway_display').style.display = 'none';
-      document.getElementById('underway_display').style.display = 'block';
+      document.getElementById('underway_display').style.display = 'inline-block';
       document.getElementById('not_underway_display_plot').style.display = 'none';
-      document.getElementById('underway_display_plot').style.display = 'block';
+      document.getElementById('underway_display_plot').style.display = 'inline-block';
     }
     
     function testOver()
     {
       console.log('testOver called');
-      document.getElementById('not_underway_display').style.display = 'block';
+      document.getElementById('not_underway_display').style.display = 'inline-block';
       document.getElementById('underway_display').style.display = 'none';
-      document.getElementById('not_underway_display_plot').style.display = 'block';
+      document.getElementById('not_underway_display_plot').style.display = 'inline-block';
       document.getElementById('underway_display_plot').style.display = 'none';
     }
     
@@ -340,24 +311,24 @@
 //button stuff - this should definitely be abstracted
   function showButtons()
   {
-    document.getElementById("goPlotting_button").style.visibility="visible"; //definitely cleaner way to write this
-    document.getElementById("kill_button").style.visibility="visible";
-    document.getElementById("pause_button").style.visibility="visible";
-    document.getElementById("step_skip_button").style.visibility="visible";
+    document.getElementById("goPlotting_button").style.display="inline-block"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.display="inline-block";
+    document.getElementById("pause_button").style.display="inline-block";
+    document.getElementById("step_skip_button").style.display="inline-block";
   }
   
   function hideButtons()
   {
-    document.getElementById("goPlotting_button").style.visibility="hidden"; //definitely cleaner way to write this
-    document.getElementById("kill_button").style.visibility="hidden";
-    document.getElementById("pause_button").style.visibility="hidden";
-    document.getElementById("step_skip_button").style.visibility="hidden";
-    document.getElementById("resume_button").style.visibility="hidden";
+    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.display="none";
+    document.getElementById("pause_button").style.display="none";
+    document.getElementById("step_skip_button").style.display="none";
+    document.getElementById("resume_button").style.display="none";
   }
   
   function showReturnButton()
   {
-    document.getElementById("returnButton").style.visibility="visible";
+    document.getElementById("returnButton").style.display="inline-block";
   }
   
   
@@ -365,14 +336,15 @@
   //this is hacky and i should write in a better way - like 
   function goPause() 
   {
-    document.getElementById("goPlotting_button").style.visibility="hidden"; //definitely cleaner way to write this
-    document.getElementById("kill_button").style.visibility="visible";
-    document.getElementById("pause_button").style.visibility="hidden";
-    document.getElementById("resume_button").style.visibility="visible";
+    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("resume_button").style.display="inline-block";
+    document.getElementById("kill_button").style.display="inline-block";
+    document.getElementById("pause_button").style.display="none";
     
-    document.getElementById("kill_button_plot").style.visibility="visible";
-    document.getElementById("pause_button_plot").style.visibility="hidden";
-    document.getElementById("resume_button_plot").style.visibility="visible";
+    
+    document.getElementById("kill_button_plot").style.display="inline-block";
+    document.getElementById("pause_button_plot").style.display="none";
+    document.getElementById("resume_button_plot").style.display="inline-block";
     console.log('goPause called')
     $.ajax({
       type:'GET',
@@ -389,11 +361,12 @@
   //hide resume button, show pause button
   function goResume()
   {
-    document.getElementById("pause_button").style.visibility="visible";
-    document.getElementById("resume_button").style.visibility="hidden";
+    document.getElementById("pause_button").style.display="inline-block";
+    document.getElementById("resume_button").style.display="none";
+    document.getElementById("goPlotting_button").style.display="inline-block";
     
-    document.getElementById("pause_button_plot").style.visibility="visible";
-    document.getElementById("resume_button_plot").style.visibility="hidden";
+    document.getElementById("pause_button_plot").style.display="inline-block";
+    document.getElementById("resume_button_plot").style.display="none";
     console.log('goResume called')
     $.ajax({
       type:'GET',
@@ -480,17 +453,17 @@
     $(target_tab_selector).addClass('active');
     
     
-  ploop();
+  cycle_get_image();
   setInterval(function() {
     //console.log('ploop was called again');
     console.log('.');
-    ploop();
+    cycle_get_image();
     }, 1000);
   }
   
   //live plotting stuff
   //called by goPlotting()
-  function ploop()
+  function cycle_get_image()
   {
       //TODO: add in a cycmin and cycmax thing
       //document.write("ploop was called");
