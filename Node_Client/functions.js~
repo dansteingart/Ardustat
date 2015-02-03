@@ -1,4 +1,5 @@
 config_page = require('./config.js')
+//TODO: calibration, pulse charging
 //TODO: check how python does things, fix calibration
 // make the javascript stuff way nicer - i think that this is key. 
 //requirements from npm
@@ -30,7 +31,7 @@ var listen = function(app)
   io_connect();
   global.io.on('connection', function(socket){
     socket.on('chat message', function(msg){
-      console.log('message: ' + msg);
+      console.log('chat message: ' + msg);
     });
 });
 }
@@ -42,9 +43,39 @@ function io_connect()
   });
 }
 
-function io_emit(msg)
+/*(
+  console.log('give_status called');
+  page = req.body.page
+  console.log('give status thinks the page is ' + page);
+  var response = ''
+  if (kill = true){
+    response = 'killed'
+  }
+  else if (cv = true){
+    response = {'type': 'cv',
+                'folder' : cv_foldername,
+                'file' : cv_filename}
+  }
+  else if (cycler = true){ //check this is right 
+    response = {'type': 'cycle',
+                'folder' : cyc_folder_name,
+                'file' : cyc_file_name}
+  }
+  else {
+    response = 'something wrong'
+  }
+  res.send(response)
+*/
+function give_status(req,res)
 {
-  global.io.emit('console message', msg);
+  console.log('give status called');
+  res.send('the status is given here');
+}
+  
+
+function io_emit(type, msg)
+{
+  global.io.emit(type, msg);
 }
 
 
@@ -449,22 +480,41 @@ function l_stopper()
 
 //could write a flag that decides if things are already running, if they are - tell the browser to fuck off
 
-
+var ardustat_id = ''; //TODO urgent - change this so that not automatically set to 25... User selected.
+//Maybe only open serial port when user says to?  -- Figure out best way to do this...
 //takes in data and sends to right place
 function setstuff(req,res)
 {
-  if (!test_running)
+ //TODO urgent - if there is a test running - should tell user and user should have option to stop the test.  
+  console.log('the req is' + req.body);
+  if (test_running)
   {
-    console.log('for some reason setstuff has been called');
+    console.log('test running');
+  }
+  else
+  {
+    console.log('setstuff called');
     try {
-    
       
+      
+      if (req.body.ardustat_id_setter != undefined){
+        console.log('ardustat_id sent');
+        ardustat_id = req.body.ardustat_id_setter;
+        out = fs.readdirSync(__dirname);
+        if (out.indexOf('unit_'+ardustat_id.toString()+'.json') > -1){
+          console.log('res_table is here');
+          res.send('res_table is here');
+        }
+        else {
+          console.log("res_table isn't here");
+          res.send("res_table isn't here");
+      }
       //var parsed = JSON.parse(req.body);
       //console.log(parsed);
     //from the debug page
-      if (req.body.arducomm != undefined){
+      else if (req.body.arducomm != undefined){
         //console.log("this is the function setstuff, this is the req.body " +  req.body.arducomm);
-        //res.send(req.body.arducomm);
+        res.send('hello from server');
       }
       
     //checks if abstracted command (cv, cycle etc)
@@ -478,11 +528,13 @@ function setstuff(req,res)
         //see what the commmand is - then send the values
         command = req.body.electro_function;
         value = req.body
+        
 
         if (command == "calibrate")
 	      {
 		      console.log("calibration should start");
 		      calibrator(req.body.value);
+		      res.send('calibration called');
 	      }
         //now check what kind of function user wants - and call that function
         if (command == 'cyclic_voltammetry')
@@ -491,6 +543,7 @@ function setstuff(req,res)
           //for debugging
           console.log(value);
           cv_start_go(value);
+          res.send('cyclic voltammetry called');
         }
       }
       
@@ -503,22 +556,21 @@ function setstuff(req,res)
         //console.log(parsed);
         arb_cycling = true;
         cycling_start_go(parsed);
+        res.send('hello')
       }
       else
       {
       console.log("something else was sent");
       console.log(req.body);
+      res.send('hello')
       }
     }
     catch (e) {
       console.log(e);
     }
   }
-  else 
-  {
-  console.log('test already running');
-  }
-  res.send('hello') //trying to shut this thing up
+  //res.send('hello') //trying to shut this thing up
+  return false;
 }
 
 //CV stuff
@@ -667,7 +719,7 @@ function cv_stepper()
 		if (cv_cycle > cv_cycle_limit) 
 		{
 			cv = false
-			setTimeout(function(){set_ocv()},1000)
+			test_finished()
 		}
 		else
 		{
@@ -800,9 +852,10 @@ function cycling_stepper()
 }
 
 
-
+// TODO: tidy things up - this can be done a little later though.
 function next_step()
 {
+  console.log('next_step called');
   var quit = false
 	console.log("NEXT!")
 	arb_cycling_step++
@@ -812,11 +865,9 @@ function next_step()
 	  if (cycling_cycle < cycling_cycles) cycling_cycle++
 	  else
 	  {
-	    console.log('cycling has completed');
+	    test_finished();
 	    arb_cycling = false //stops going back into loop
-	    set_ocv() //sets to open circuit potential
-	    quit = true //quits cycler
-	    l_stopper(); //stops logging to csv
+	    quit = true
 	  }
 	}
 	if (quit != true) cycling_mode() //if quit is true - then things will stop ( I hope )
@@ -933,7 +984,7 @@ function moveground(value)
 	//console.log(value + " " + volts_per_tick);
 	//console.log(value_to_ardustat);
 	toArd("d",value_to_ardustat)
-	set_ocv()
+	toArd("-","0000");
 }
 
 //sets arudstat to open circuit potential
@@ -1111,15 +1162,24 @@ function pauser(req,res)
 	pause_time = new Date().getTime()
 }
 
+function test_finished()
+{
+  console.log('test finished called');
+  setTimeout(function(){set_ocv()},1000)
+	console.log('method control has been stopped and CSV writing has been killed')
+  test_running = false;
+	kill = true;
+	CSV_ON = false;
+	io_emit('stop message', 'the test has stopped');
+	//should also save the position. incase program crashes.
+}
+
+
 function killer(req,res) 
 {
-	test_running = false;
-	kill = true;
-	console.log('method control has been stopped, and CSV writing has been killed');
-	res.send('method control has been stopped, and CSV writing has been killed');
-	CSV_ON = false;
-	pause_time = new Date().getTime()
-	//should also save the position. incase program crashes.
+  console.log('killer called');
+  test_finished()
+	res.send('method control has been stopped, and CSV writing has been killed')
 };
 
 //resume control and forwarding to csv
@@ -1163,8 +1223,6 @@ function step_skip(req,res)
 function analysis_display(req,res,indexer)
 {
   console.log('analysis_display has been called');
-  
-  
 	out = fs.readdirSync('Data/')
 	console.log('the data is ' + out) ;
   lts = '<div id="folders" >'
@@ -1190,7 +1248,7 @@ function file_display(req,res)
   out = fs.readdirSync('Data/'+folder)
   console.log('the files are ' + out);
   res.send(out)
-  io_emit('hey dan you can nap now');
+  io_emit('console message','hey dan you can nap now');
 }
 //This is the thing that runs everything! 
 //==========================================================
@@ -1232,7 +1290,8 @@ module.exports = {
   step_skip:step_skip,
   file_display:file_display,
   analysis_display:analysis_display,
-  listen:listen
+  listen:listen,
+  give_status:give_status
 };
 
 

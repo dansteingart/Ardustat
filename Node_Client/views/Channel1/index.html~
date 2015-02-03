@@ -1,3 +1,4 @@
+<!doctype html>
 <head>
     <meta charset="utf-8">
     <meta name="description" content="">
@@ -41,9 +42,48 @@
         <ul class="nav nav-pills">
           <li><a href="/Channel1/CV">Cyclic Voltammetry</a></li>
           <li><a href="/Channel1/Cycler">Cell Cycling</a></li>
+          <li><a href="/Channel1/Calibration">Calibration</a></li>
         </ul>
       </div>
       
     </div>
   </div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="/javascripts/flot/jquery.flot.js"></script>
+	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/socket_1.js"></script>
+  <script>
+  /* TODO:
+  When user opens this page - selects what ardustat id wants to use: Save this in a cookie. (When have 3 channels gonna have to have this already set up)
+  If there is no calibration table - tell user to go to calibration portion.
+  Have calibration portion avaibable next to the cycling and cv portion.
+  */
+  $( document ).ready(function() {
+    $.ajax({
+    type:'POST',
+    url:'/getstatus',
+    async: true,
+    data: 'channel1',
+    success: function(status){
+      console.log('status of server requested');
+      if (status == 'cv'){
+        //send to cv page
+      }
+      if (status == 'cycler'){
+        //send to cycler page
+      }
+      else {
+          console.log('nothing happening - start from beginning');
+      }     
+    }
+  });
+});
+  
+  //Alternatively - could have the node program scan for what ardustat's are on what tty - and send this info over to the user, so they know what channel is which.
+  
+  </script>
 </body>
+

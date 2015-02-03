@@ -35,14 +35,14 @@
             document.getElementById('navbar-analysis').setAttribute('class', 'active')
           </script>
       </div>
-  
+   I know this is ugly - I will make it prettier.
       <div class="col-lg-12">
         <h1>Analysis</h1>
         <div>
 		      <h4>Folders</h4>
 		      ##_newthings_##
         </div>
-        I know this is ugly - I will make it prettier.
+       
         <h4>Files</h4>
         <div id='files'>
         </div>
@@ -58,6 +58,8 @@
   <script src ="/scripts/test.js"></script>
   <script src="/scripts/socket_1.js"></script>
   <script>
+
+  
     files = '';
     $( "#folders" ).children().on( "click", function( event ) 
     {

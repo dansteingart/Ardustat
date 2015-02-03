@@ -1,13 +1,14 @@
 var socket = io();
-$('form').submit(function(){
-  socket.emit('chat message', $('#m').val());
-  $('#m').val('');
-  return false;
-});
+//testing things - this is how to submit something
+// test
 socket.on('console message', function(msg){
   console.log(msg)
 });
+// on stop message from server - stop things.
 socket.on('stop message', function(msg){
   console.log('stop message called')
-  showReturnButton()
+  showReturnButton();
+  testOver();
 });
+// changed to an ajax request. 
+

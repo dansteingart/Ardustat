@@ -69,10 +69,13 @@ router.post('/show_files', functions.file_display, function(req, res, next) {
   functions.file_display
 });
 
+router.post('/getstatus', functions.give_status, function(req, res, next) {
+  console.log("this is the router, why doesn't this print anything?: " + req.body);
+});
 
 router.post('/senddata', functions.setstuff, function(req, res, next) {
   console.log("this is the router, why doesn't this print anything?: " + req.body);
-  res.send("Working on it...");
+  //res.send("Working on it...");
 });
 
 //Channel 1 routes
@@ -88,6 +91,11 @@ router.get('/Channel1/CV', function(req, res) {
 
 router.get('/Channel1/Cycler', function(req, res) {
   indexer = fs.readFileSync('views/Channel1/cycler.html').toString()
+  res.send(indexer);
+});
+
+router.get('/Channel1/Calibration', function(req, res) {
+  indexer = fs.readFileSync('views/Channel1/calibration.html').toString()
   res.send(indexer);
 });
 //killing, pausing, skipping

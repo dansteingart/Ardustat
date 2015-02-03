@@ -52,7 +52,7 @@
 
             <div class="row marketing">
                 <div class="col-lg-12">
-                    <h1>Cyclic Voltammetry Setup</h1>
+                    <h2>Cyclic Voltammetry Setup</h2>
                 </div>
             </div>
           <form id='cv_setup_input' action='/senddata' method='post'>
@@ -76,6 +76,7 @@
             <option value='charging'> Charge </option>
             <option value='discharging'> Discharge</option>
             </select>
+          </form>
           
 
           <br>
@@ -152,8 +153,35 @@
   <script>
 
 //debug
-  
+  //TODO: make sure that when test is stopping - showing right things etc.
+  //TODO: organize so scripts are in script files. Can have flags with CV or Cycler etc..
+  //This way it will be quicker to reproduce.
+  //TODO: plan out how we are going to make three ardustats
+  //TODO:
 //starting the stuff ----------------------------------------------------
+
+//on load - send ajax request to get status. Once status is received, display things. 
+// TODO: work out why you would ever use a get instead of post..
+
+  $(document).ready(function() {
+    console.log('the page is ready');
+    $.ajax({
+      type:'GET',
+      url:'/getstatus',
+      async: true
+    })
+    .done(function( data ) {
+        console.log('something worked');
+    })
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+    });
+  });
+  
+
   $('#start_experiment').click(function() {
     goStartTest()
   });
@@ -202,13 +230,19 @@ var DataToSend;
     $.ajax({
       type:'POST',
       url:'/senddata',
-      dataType: 'json',
       async: true,
       data: DataToSend,
-      success: function(){
-        console.log('successful sending of things :)');
-      }
+      })
+      .done(function( data ) {
+        console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
     });
+    return false;
   }
   
   $('#returnButton').click(function() {
@@ -246,6 +280,7 @@ var DataToSend;
   {
     console.log('enable inputs called');
     var inputs = document.getElementsByTagName("INPUT");
+    var inputs = inputs + document.getElementsByTagName("select");
     for (var i = 0; i < inputs.length; i++) 
     {
       inputs[i].disabled = false;
@@ -257,6 +292,7 @@ var DataToSend;
   {
     console.log('diable inputs called');
     var inputs = document.getElementsByTagName("INPUT");
+    var inputs = inputs + document.getElementsByTagName("select");
     for (var i = 0; i < inputs.length; i++) 
     {
       inputs[i].disabled = true;
@@ -303,11 +339,17 @@ var DataToSend;
       type:'GET',
       url:'/pauser', //was killing or something - will have to check to make sure this works. 
       dataType: 'json',
-      async: true,
-      success: function(){
-        console.log('ajax says killer called');
-      }
-    });
+      async: true
+      })
+      .done(function( data ) {
+          console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
   }
   
   //resume the test
@@ -324,11 +366,17 @@ var DataToSend;
       type:'GET',
       url:'/reviver',
       dataType: 'json',
-      async: true,
-      success: function(){
-        console.log('ajax says killer called');
-      }
-    });
+      async: true
+      })
+      .done(function( data ) {
+          console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
   }
   
   //kill the test, take back to setup (page with CV, Cycle etc.)
@@ -343,11 +391,18 @@ var DataToSend;
       type:'GET',
       url:'/killing',
       dataType: 'json',
-      async: true,
-      success: function(){
-        console.log('ajax says killer called');
-      }
-    });
+      async: true
+      })
+      .done(function( data ) {
+          console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+    return false;
   }
 //------------------------------------------------------------------------------------
   
@@ -389,7 +444,7 @@ var DataToSend;
     $(target_tab_selector).addClass('active');
     ploop();
     setInterval(function() {
-      console.log('ploop was called again');
+      //console.log('ploop was called again');
       ploop();
     }, 2000);
   }
@@ -436,18 +491,21 @@ var DataToSend;
       + cycle_min+"/"
       + cycle_max+"/"
       + CV_Xaxis+"/"
-      + CV_Yaxis+"/",
-      success: function(result){
-          image = result
-          //debug
-          console.log('result from ploop');
-          console.log(result);
+      + CV_Yaxis+"/"
+      })
+      .done(function( data ) {
+          console.log('.');
+          image = data
           imageUrl = "http://localhost:4001/"+image
           //document.write(imageUrl);
           changeImage("fooplotter",imageUrl)
-      },
-      async:   false,
       })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
   }
   
   function changeImage(id,source)

@@ -1,0 +1,78 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name ="viewport" content="width=device-width">
+    <title>Cyclic Voltammetry</title>
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="container">
+      <div class="row marketing">
+        <div>
+          <div class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Ardustat</a>
+              </div>
+              <nav class="collapse navbar-collapse" role="navigation">
+                <ul class="nav navbar-nav navbar-right">
+                    <li id='navbar-home'><a href="/">Home</a></li>
+                    <li id='navbar-channel1'><a href="/Channel1">Channel 1</a></li>
+                    <li id='navbar-channel2'><a href="/Channel2">Channel 2</a></li>
+                    <li id='navbar-analysis'><a href="/Analysis">Analysis</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+          <script type="text/javascript" >
+            document.getElementById('navbar-channel1').setAttribute('class', 'active')
+          </script>
+        </div>
+          <div class="col-lg-12">
+            <h1 class="header"> Hey Dan </h1>
+          </div>
+      </div>
+      <div class="row marketing">
+          <div class="col-lg-12">
+              <h2>Calibration</h2>
+          </div>
+      </div>
+      <p id="arudstat_id_display" style="display:block" > Ardustat Id is </p>
+      <div id="arudstat_input_div">
+        <form id="ardustat_input" action="/senddata" method="post">
+          <input type='hidden' name='electro_function' value='calibration'><br>
+          Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) <br>
+          <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+      <p id="no_resistance_table" style="display:none">No resistance table found. Calibrate to continue</p>
+      <p id="yes_resistance_table" style="display:none">Resistance table found. Click 'Calibrate' to re-calibrate, or select a different experiment</p>
+      
+      <p id="calibration_instructions" style="display:none"> To Calibrate, Put a known resistor (~ 10kOhm) between the positive and negative terminals of the Ardustat. Enter the resistor value in the box and hit Calibrate! <br>
+      Resistance Value <input type="text" name="resistor_value" value="10,000"
+      <button id="calibrate" class="btn btn-primary" style="display:none">Calibrate!</button>
+      
+        
+
+  </div>
+</div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="/javascripts/flot/jquery.flot.js"></script>
+	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/socket_1.js"></script>
+  <script src="/scripts/calibration.js"></script>
+  <script>
+  console.log("this is the calibration page, scripts are working");
+  </script>
+</body>
