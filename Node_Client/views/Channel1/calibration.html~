@@ -46,18 +46,28 @@
           </div>
       </div>
       <p id="arudstat_id_display" style="display:block" > Ardustat Id is </p>
-      <div id="arudstat_input_div">
-        <form id="ardustat_input" action="/senddata" method="post">
-          <input type='hidden' name='electro_function' value='calibration'><br>
-          Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) <br>
-          <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+      
+      <div id="ardustat_input_div">
+        <form id="ardustat_input">
+            <input type='hidden' name='electro_function' value='calibration'> </input>
+            Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) </input>
+            <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
         </form>
       </div>
+      
       <p id="no_resistance_table" style="display:none">No resistance table found. Calibrate to continue</p>
       <p id="yes_resistance_table" style="display:none">Resistance table found. Click 'Calibrate' to re-calibrate, or select a different experiment</p>
       
-      <p id="calibration_instructions" style="display:none"> To Calibrate, Put a known resistor (~ 10kOhm) between the positive and negative terminals of the Ardustat. Enter the resistor value in the box and hit Calibrate!
-      <button id="calibrate" class="btn btn-primary" style="display:none">Calibrate!</button>
+      <div id="calibration_instructions" style="display:none" >
+        <p> To Calibrate, Put a known resistor (~ 10kOhm) between the positive and negative terminals of the Ardustat. Enter the resistor value in the box and hit Calibrate! </p>
+        Resistance Value <input type="text" id="resistor_value" value="10000"> </input> (Ohms)   
+        <button id="calibrate" class="btn btn-primary">Calibrate!</button>
+      </div>
+      
+      <div id="progress_stuff">
+        <p id="calibration_progress" style="display:none"> Calibration in progress. This takes about five minutes. </p>
+        <p id="calibration_finished" style="display:none"> Calibration Finished! Time to do some testing! </p>
+      </div>
       
         
 
@@ -69,8 +79,9 @@
 	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-  <script src="/scripts/socket_1.js"></script>
   <script src="/scripts/calibration.js"></script>
+  <script src="/scripts/socket_1.js"></script>
+  
   <script>
   console.log("this is the calibration page, scripts are working");
   </script>

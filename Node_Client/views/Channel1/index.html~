@@ -36,14 +36,28 @@
             document.getElementById('navbar-channel1').setAttribute('class', 'active')
           </script>
       </div>
+      
+      <div id="ardustat_input_div">
+        <p> Enter the number of your ardustat below. </p>
+        <input type='hidden' name='electro_function' value='calibration'> </input>
+        Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) </input>
+        <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+      </div>
   
-      <div class="col-lg-12">
-        <h1>Channel 1</h1>
-        <ul class="nav nav-pills">
-          <li><a href="/Channel1/CV">Cyclic Voltammetry</a></li>
-          <li><a href="/Channel1/Cycler">Cell Cycling</a></li>
-          <li><a href="/Channel1/Calibration">Calibration</a></li>
-        </ul>
+      <div id="yes_res_table" style="display:none">
+        <p> There is a resistance table. Proceed to do some testing </p>
+        <div class="col-lg-12">
+          <h1>Channel 1</h1>
+          <ul class="nav nav-pills">
+            <li><a href="/Channel1/CV">Cyclic Voltammetry</a></li>
+            <li><a href="/Channel1/Cycler">Cell Cycling</a></li>
+            <li><a href="/Channel1/Calibration">Calibration</a></li>
+          </ul>
+        </div>
+      </div>
+ 
+      <div id="no_res_table" style="display:none">
+        <p> This Ardustat has not been calibrated. Please <a href="/Channel1/Calibration">calibrate</a> to continue </p>
       </div>
       
     </div>
@@ -55,6 +69,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
   <script src="/scripts/socket_1.js"></script>
+  <script src="/scripts/channel1.js"></script>
   <script>
   /* TODO:
   When user opens this page - selects what ardustat id wants to use: Save this in a cookie. (When have 3 channels gonna have to have this already set up)
@@ -63,7 +78,7 @@
   */
   $( document ).ready(function() {
     $.ajax({
-    type:'POST',
+    type:'GET',
     url:'/getstatus',
     async: true,
     data: 'channel1',

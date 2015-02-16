@@ -98,8 +98,8 @@ serialPort.on("open", function() {
   console.log('serial port opened yay');
 	try
   {
-	  res_table = JSON.parse(fs.readFileSync("unit_"+id.toString()+".json").toString())
-	  console.log("loaded table "+id.toString())
+	  res_table = JSON.parse(fs.readFileSync("unit_"+ardustat_id.toString()+".json").toString())
+	  console.log("loaded table "+ardustat_id.toString())
 	  //console.log('here is the res_table')
 	  //console.log(res_table)
 	
@@ -108,7 +108,7 @@ serialPort.on("open", function() {
   catch (err)
   {
 	  console.log(err)
-	  console.log("no table "+id.toString())
+	  console.log("no table "+ardustat_id.toString())
 	  res_table = "null"
   }
 });
@@ -258,15 +258,15 @@ function data_parse(data)
 	  {
 		  try
 		  {
-			  res_table = JSON.parse(fs.readFileSync("unit_"+id.toString()+".json").toString())
-			  console.log("loaded table "+id.toString())
+			  res_table = JSON.parse(fs.readFileSync("unit_"+ardustat_id.toString()+".json").toString())
+			  console.log("loaded table "+ardustat_id.toString())
 			
 			
 		  }
 		  catch (err)
 		  {
 			  console.log(err)
-			  console.log("no table "+id.toString())
+			  console.log("no table "+ardustat_id.toString())
 			  res_table = "null"
 		  }
 	  }
@@ -480,7 +480,7 @@ function l_stopper()
 
 //could write a flag that decides if things are already running, if they are - tell the browser to fuck off
 
-var ardustat_id = ''; //TODO urgent - change this so that not automatically set to 25... User selected.
+//var ardustat_id = ''; //TODO urgent - change this so that not automatically set to 25... User selected.
 //Maybe only open serial port when user says to?  -- Figure out best way to do this...
 //takes in data and sends to right place
 function setstuff(req,res)
@@ -531,10 +531,11 @@ function setstuff(req,res)
         value = req.body
         
 
-        if (command == "calibrate")
+        if (command == "calibration")
 	      {
 		      console.log("calibration should start");
-		      calibrator(req.body.value);
+		      console.log("value of resistor is "+req.body.resistor_value);
+		      calibrator(req.body.resistor_value);
 		      res.send('calibration called');
 	      }
         //now check what kind of function user wants - and call that function
@@ -964,9 +965,10 @@ function calibrate_step()
 					}
 				  
 				}
-				console.log(final_table)
-				fs.writeFileSync("unit_"+id.toString()+".json",JSON.stringify(final_table))
+				console.log('final_table is ' +final_table)
+				fs.writeFileSync("unit_"+ardustat_id.toString()+".json",JSON.stringify(final_table))
 				res_table = undefined;
+				io_emit('calibration', 'finished');
 			}
 		} 
 		setTimeout(function(){toArd("r",counter)},50);

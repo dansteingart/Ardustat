@@ -1,10 +1,5 @@
 var socket = io();
 //testing things - this is how to submit something
-$('form').submit(function(){
-  socket.emit('chat message', $('#m').val());
-  $('#m').val('');
-  return false;
-});
 // test
 socket.on('console message', function(msg){
   console.log(msg)
