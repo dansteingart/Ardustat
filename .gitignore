@@ -2,7 +2,7 @@
 *.dat
 *.pyc
 *.pickle
-*.json
 *.ardudata
 *.csv
 *.txt
+Node_Client/resistance_tables/*
