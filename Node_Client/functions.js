@@ -23,6 +23,19 @@ var squenty = require('sequenty');
 var serialport = require('serialport');
 var SerialPort = serialport.SerialPort;
 
+//make sure that there is a resistance_table folder (I wonder if there is a clever way to only do this once)
+mkdirp('resistance_tables', function(err, data) { 
+  if (err) {
+    console.log(err) 
+  } 
+});
+//make sure that there is a Data table
+mkdirp('Data',function(err,data){
+  if(err) {
+    console.log(err)
+  }
+});
+console.log('directory is '+__dirname)
 
 var listen = function(app) 
 {
@@ -85,7 +98,7 @@ serialport.list(function(err, ports){
   });
 });
 
-var serialPort = new SerialPort('/dev/ttyACM0',{
+var serialPort = new SerialPort('/dev/tty.usbmodemfa131',{
   baudrate:57600,
   parser:serialport.parsers.readline('\n')
 });
@@ -98,7 +111,7 @@ serialPort.on("open", function() {
   console.log('serial port opened yay');
 	try
   {
-	  res_table = JSON.parse(fs.readFileSync("unit_"+ardustat_id.toString()+".json").toString())
+	  res_table = JSON.parse(fs.readFileSync("resistance_tables/unit_"+ardustat_id.toString()+".json").toString())
 	  console.log("loaded table "+ardustat_id.toString())
 	  //console.log('here is the res_table')
 	  //console.log(res_table)
@@ -258,7 +271,7 @@ function data_parse(data)
 	  {
 		  try
 		  {
-			  res_table = JSON.parse(fs.readFileSync("unit_"+ardustat_id.toString()+".json").toString())
+			  res_table = JSON.parse(fs.readFileSync("resistance_tables/unit_"+ardustat_id.toString()+".json").toString())
 			  console.log("loaded table "+ardustat_id.toString())
 			
 			
@@ -490,6 +503,7 @@ function setstuff(req,res)
   if (test_running)
   {
     console.log('test running');
+    res.send('test is already running')
   }
   else
   {
@@ -500,7 +514,8 @@ function setstuff(req,res)
       if (req.body.ardustat_id_setter != undefined){
         console.log('ardustat_id sent');
         ardustat_id = req.body.ardustat_id_setter;
-        out = fs.readdirSync(__dirname);
+        out = fs.readdirSync(__dirname+'/resistance_tables/'); //cool i think things are working
+        console.log('out is  ' + out)
         if (out.indexOf('unit_'+ardustat_id.toString()+'.json') > -1){
           console.log('res_table is here');
           res.send('res_table is here');
@@ -509,6 +524,30 @@ function setstuff(req,res)
           console.log("res_table isn't here");
           res.send("res_table isn't here");
         }
+      }
+
+      else if(req.body.filename_check != undefined){
+        console.log('checking for file')
+        check_folder_name = req.body.folder_name;
+        check_file_name = req.body.file_name;
+        console.log('file ' + check_file_name)
+        try{
+          out = fs.readdirSync(__dirname+'/Data/'+check_folder_name); //cool i think things are working
+          console.log('out is  ' + out)
+          if (out.indexOf(check_file_name+'.csv') > -1){
+            console.log('file is here');
+            res.send('filename already used');
+          }
+          else {
+            console.log("file isn't here");
+            res.send("file isn't here");
+          }
+        }
+        catch(e){
+          console.log(e)
+          res.send('file not here')
+        }
+
       }
       //var parsed = JSON.parse(req.body);
       //console.log(parsed);
@@ -555,7 +594,7 @@ function setstuff(req,res)
         cv = false
         //console.log("req.body.cycle_array");
         var parsed = JSON.parse(req.body.cycle_array);
-        //console.log(parsed);
+        console.log(parsed);
         arb_cycling = true;
         cycling_start_go(parsed);
         res.send('hello')
@@ -767,7 +806,7 @@ http_port = 8001
 function cycling_start_go(value)
 {
   test_running = true;
-  console.log("this is cycling_start_go");
+  console.log("this is cycling_start_go and this is the value " + value );
   total_pause_time = 0; 
   moveground(2.5)
   arb_cycling_settings = []
@@ -966,9 +1005,12 @@ function calibrate_step()
 				  
 				}
 				console.log('final_table is ' +final_table)
-				fs.writeFileSync("unit_"+ardustat_id.toString()+".json",JSON.stringify(final_table))
+        //TODO: create resistance table folder if there isn't one.
+
+				fs.writeFileSync("resistance_tables/unit_"+ardustat_id.toString()+".json",JSON.stringify(final_table))
 				res_table = undefined;
 				io_emit('calibration', 'finished');
+        //TODO: call a python program that converts the json file into a pickle file for later use... should be easy enough to do.
 			}
 		} 
 		setTimeout(function(){toArd("r",counter)},50);

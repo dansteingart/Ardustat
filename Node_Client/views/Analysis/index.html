@@ -46,6 +46,10 @@
         <h4>Files</h4>
         <div id='files'>
         </div>
+
+        <h4>Results</h4>
+        <img id="graph" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff>
+
       </div>  
     </div>
   </div>
@@ -59,19 +63,20 @@
   <script src="/scripts/socket_1.js"></script>
   <script>
 
-  
+  //hmmm annoying 'cause I can't really do too much without jquery and internet.. But, can try and do the writing for things...
+  var analysis_folder_name
     files = '';
     $( "#folders" ).children().on( "click", function( event ) 
     {
-      folder_name = this.id;
-      console.log(folder_name);
+      analysis_folder_name = this.id;
+      console.log(analysis_folder_name);
       //make an AJAX request to get file_list 
       //display file_list
       $.ajax({
         type:'POST',
         url:'/show_files',
         async: true,
-        data: {'folder':folder_name},
+        data: {'folder':analysis_folder_name},
         success: function(results)
         {
           console.log('successful sending of things :)')
@@ -83,6 +88,47 @@
     });
     
     //change these to button like objects - onclick will take you analysis of things. 
+    var analysis_file_name
+    $( "#files" ).children().on( "click", function( event ) 
+    {
+      console.log('a file got clicked')
+      var analysis_file_name = this.id;
+      console.log(analysis_file_name);
+    });
+
+    function analysis_get_image()
+    {
+        //TODO: add in a cycmin and cycmax thing
+        //document.write("ploop was called");
+        //var mintemp = document.getElementById("cycmin").value;
+        //var maxtemp = document.getElementById("cycmax").value;
+        $.ajax({
+        url: "http://localhost:4004/filetest_showme/" //TODO: make this more general, or in readme make sure that user sets pithy on 4001, 4003, 4004 
+        + analysis_folder_name+"/"
+        + analysis_file_name+"/"
+        + "0/"
+        + "-1/"
+        + "t"+"/"
+        + "v"+"/",
+        success: function(result){
+            image = result
+            //debug
+            //console.log('result from ploop');
+            //console.log(result);
+            imageUrl = "http://localhost:4001/"+image
+            //document.write(imageUrl);
+            changeImage("graph",imageUrl)
+        },
+        async:   true,
+        })
+    }
+  
+  function changeImage(id,source)
+  {
+  document.getElementById(id).src=source;
+  }
+
+
     function showFiles(files)
     {
       var lts = '';
@@ -90,7 +136,9 @@
       {
       foo = files[i].toString()
       console.log('file is '+files[i]);
-      lts += "<span class='leftin'><a href='/"+foo+"'>" +foo+ "</a></span><span class='rightin'></span><br>";
+      lts = '<div id="files" >'
+      lts += "<span class='leftin'><button id='"+foo+"'>" +foo+ "</a></span><span class='rightin'></button></span>";
+      lts +="</div>"
       }
     $( "#files" ).html(lts)
     }
