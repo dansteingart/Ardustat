@@ -16,7 +16,7 @@
 9 verbose stack     at maybeClose (child_process.js:1008:16)
 9 verbose stack     at Process.ChildProcess._handle.onexit (child_process.js:1080:5)
 10 verbose pkgid ardu-node@0.0.0
-11 verbose cwd /Users/danny/Ardustat_Private
+11 verbose cwd /Users/danny/Ardustat
 12 error Darwin 13.4.0
 13 error argv "node" "/usr/local/bin/npm" "start"
 14 error node v0.12.0

@@ -1,9 +1,3 @@
- //TODO - convert so that can have 3 arudstat's running at the same time
-//Sub - seperate out, 
-//work out how to make variables non-global, or to have 3 sets of global variables (for 3 different channels)
-//ok need send this whole folder to 3_play before I fuck everything up...
-
-
 //requirements
 //------------------------------------------------------------------------------------------------------
 //config_page = require('./config.js')
@@ -22,14 +16,8 @@ var json2csv = require('json2csv');
 var serialport = require('serialport');
 var SerialPort = serialport.SerialPort;
 
-//GLOBAL VARIABLES - Is there a smarter way to do this? Probably - but issue is that it would require rewriting the whole program...
-//Not sure if doing something like this will ruin everything or not....
-//Not sure what putting 'var' does to a variable either  
-//---------------------------------------------------------------------------------------------------
 
 // each variable an associate array - with potential to store up to 3 channels worth.
-
-
 var calibrate = {};//false
 calibrate.ch1 = false; calibrate.ch2 = false; calibrate.ch3 = false;
 var resting = {};//false
@@ -48,7 +36,7 @@ lastTime.ch1 = 0; lastTime.ch2 = 0; lastTime.ch3 = 0;
 //writing GLOBALS
 var CSV_ON = {};
 CSV_ON.ch1 = false; CSV_ON.ch2 = false; CSV_ON.ch3 = false;
-var labels = []; // think this is gonna be same no matter what
+var labels = []; //
 var CSV_NAME = {}//'Data/untitled.csv';
 var CSV_FOLDER = {}//'';
 var kill = {}//};
@@ -95,14 +83,6 @@ cv_reading = {};//'';
 cv_finish_value = {}
 
 
-//Global Variables for Logging
-/*
-logger = "stopped"
-datafile = ""
-everyxlog = 1
-*/
-
-
 
 //Global Variablew for Arb Cyclingq
 
@@ -130,13 +110,12 @@ var resume_time = {};//;
 cyc_folder_name = {};//''
 cyc_file_name = {};//''
 ardustat_id = {};
-ardustat_id.ch1 = 25; ardustat_id.ch2 = 25; ardustat_id.ch3 = 25;//25 //TODO: check that this isn't defined somewhere else, add in functionality for serial port
-http_port = {};//8001
+ardustat_id.ch1 = 25; ardustat_id.ch2 = 25; ardustat_id.ch3 = 25;//25
 setupdata = {}; // 
 setupdata.ch1 = {}; setupdata.ch2 = {}; setupdata.ch3 = {};
 
 //Global Functions for Data Parsing
-id = {};//25; //TODO change so that you can set the id of the arudstat
+id = {};//25; 
 vpt = {};//undefined; //volts per tick
 mode = {};//0;
 var res_table = {};//;
@@ -149,10 +128,10 @@ var res_table = {};//;
 counter = {};//0
 calloop = {};//0
 callimit = {};//2
-callimit.ch1 = 2; callimit.ch2 = 2; callimit.ch3 = 2; //changed to 1 for debugging purposes
+callimit.ch1 = 9; callimit.ch2 = 9; callimit.ch3 = 9; //
 calibration_array = {};//[]
 calibration_array.ch1 = []; calibration_array.ch2 = []; calibration_array.ch3 = [];
-rfixed = {};//10000 //TODO - make this a user input thing
+rfixed = {};//10000
 
 //skip a step of the cycler
 var skip_time = {};//
@@ -160,8 +139,7 @@ skip_time.ch1 = 0; skip_time.ch2 = 0; skip_time.ch3 = 0;
 var skip_flag = {};//
 skip_flag.ch1 = false; skip_flag.ch2 =  false; skip_flag.ch3 = false;
 
-//function to reset all of the global parameters for the channel after shit has stopped
-//should probably be clever and set this at the start as well but yolo.
+//function to reset all of the global parameters 
 function reset_globals(channel){ 
   calibrate[channel] = false;
   resting[channel] = false; 
@@ -179,7 +157,7 @@ function reset_globals(channel){
   cv_dir[channel] = 1
   cv_DAC2[channel] = 2.5
   cv_cycle[channel] = 0;
-  cv_step[channel] = 0; //pretty sure not necessary 
+  cv_step[channel] = 0; // 
   cv_cycle[channel] = 0;
   last_ardu_reading[channel] = ''
   //CYCLER
@@ -199,14 +177,13 @@ function reset_globals(channel){
   skip_time[channel] = 0
   skip_flag[channel] = false;
   
-  //calibration - don't think there are any issues with this puppy...
+  //CALIBRATION
   console.log('all of the globals have been reset')
 
 }
+
 //serial port, make folders, socket (preliminary things)
 //------------------------------------------------------------------------------------------------------
-
-//socket.io is going ot have to send things out on 3 seperate channeles as well, or just emits with the channel number and then the data comes after...
 mkdirp('resistance_tables', function(err, data) { 
   if (err) {
     console.log(err) 
@@ -271,19 +248,7 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-//think should be changed to 
-/*
-function io_emit(channel, msg)
-{
-  global.io.emit(channel, msg)
-}
-*/
-
-// open all the serial ports (up to 3) -- how to make sure that the serial ports get the right channel ids?
-
-
-// going to have to re-do the way i do ports...
-devs = ['/dev/tty.usbmodemfd1211','/dev/tty.usbmodemfd1221']
+devs = ['/dev/tty.usbmodemfd121']
 var ports = [];
 //startserial = function() {
 for (var i = 0; i < devs.length; i++) {
@@ -310,17 +275,15 @@ function setupHandlers(channel,port) {
       //console.log("here: on channel " + channel + ': ' +data);
       if (data.search('GO') > -1)
       {
-        parsed_data = data_parse(channel,data); //this is a synchronous thing and should probably be removed -- I think it might take a neglible amount of time anyway - still I don't like my program being blocked.
+        parsed_data = data_parse(channel,data); //TODO: make asynchronous
         last_ardu_reading[channel] = parsed_data;
         
-        if (calibrate[channel]) //this is probably going to freak out cause it's not initialized...
+        if (calibrate[channel]) 
         {
-          //console.log('sent to calibration array');
-          //console.log(parsed_data);
-          calibration_array[channel].push(parsed_data) //TODO: initialize this as an array before this. (this is where the headache wil come in). (but we should be all good)
+          calibration_array[channel].push(parsed_data)
         }
         now_time[channel] = new Date().getTime();
-        ts[channel] = now_time[channel];  //some debugging rubbish
+        ts[channel] = now_time[channel];  //some debugging
         //console.log('now_time '+now_time.toString());
         //console.log('pause time '+total_pause_time.toString());
         buf[channel] += data;
@@ -351,19 +314,16 @@ function data_parse(channel,data)
 	{
 	parts = data
 	}
-	//console.log(parts);
-	//console.log(parts[10]); // shoule be twopointfive_adc 
   out = {}
   //GO,102,351,0,255,0,0,s0000,99,102,524,ST
 	//the raw data
-	//console.log(data)
 	out['dac_set'] = parseFloat(parts[1])
 	out['cell_adc'] = parseFloat(parts[2])
 	out['dac_adc'] = parseFloat(parts[3])
 	out['res_set'] = parseFloat(parts[4])
 	//console.log('out res_set below')
 	//console.log(out['res_set']);
-	out['mode'] = parseInt(parts[6]) //TODO check that this is write
+	out['mode'] = parseInt(parts[6])
 	out['gnd_adc'] = parseFloat(parts[8])
 	out['ref_adc'] = parseFloat(parts[9])
 	out['twopointfive_adc'] = parseFloat(parts[10])
@@ -376,24 +336,7 @@ function data_parse(channel,data)
 	volts_per_tick = 	2.5/out['twopointfive_adc'] // volts_per_tick is gonna stay the same no matter what channel
 	//console.log(volts_per_tick);
 	if (vpt == undefined) vpt = volts_per_tick;
-	/*
-	if (id != out['id'])
-	{
-		id = out['id'];
-		res_table = undefined
-	}
-	*/
-    
-	//force ocv when dac_set and dac_adc don't match up
-  /*
-  if (out['mode'] != 1 & out['dac_set'] - out['dac_adc'] > 900)
-    {
-        console.log('something is not adding up, forcing ocv')
-        set_ocv(channel);
-    }
-    */
 
-	
 	out['cell_potential'] = (out['cell_adc'] - out['gnd_adc']) * volts_per_tick
 	out['dac_potential'] = (out['dac_adc'] - out['gnd_adc'])*volts_per_tick
 	out['ref_potential'] = out['ref_adc']*volts_per_tick
@@ -407,7 +350,7 @@ function data_parse(channel,data)
 		  try
 		  {
 			  res_table[channel]  = JSON.parse(fs.readFileSync("resistance_tables/unit_"+ardustat_id[channel].toString()+".json").toString())
-			  console.log("loaded table "+ardustat_id[channel].toString()) // quick test to see if both syntaxs are gonnna work... only this syntax wil work.
+			  console.log("loaded table "+ardustat_id[channel].toString())
 			  //console.log(res_table[channel]);
 		  }
 		  catch (err)
@@ -426,7 +369,7 @@ function data_parse(channel,data)
 		  current[channel] = (out['dac_potential']-out['cell_potential'])/out['resistance'] *1000 //current always in milli amps
 		  if (mode == 1) out['current'] = 0
 		  else out['current'] = current[channel] 
-		  last_current[channel]  = out['current'] //same thing that dan did for the potential
+		  last_current[channel]  = out['current'] 
 	  }
 	}
 	return out
@@ -437,17 +380,6 @@ function data_parse(channel,data)
 //TODO: if document already exists - don't overwrite?
 function write2CSV(channel,chunk) {
   //console.log('write2CSV called');
-  //console.log(chunk)
-	//start of document
-    //console.log("this is the chunk that gets sent to write2csv ", chunk);
-    //TODO: remove this debugging stuff
-  /*
-  fs.appendFile('log.txt',chunk, function (err){
-      if (err) throw err;
-  });
-*/
-  //for debug
-  //if (total_pause_time[channel] > 0) fs.appendFileSync('log.txt', 'jimmy \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
   console.log('in write2csv channel is ', channel)
 	if(count[channel]==0) {
 		//write column headers to csv file (optional) -- using 'writeFile' here to overwrite old data on file
@@ -457,16 +389,12 @@ function write2CSV(channel,chunk) {
 				if (err) throw err;
 			});
 		});
-  //console.log('csv started')
-  //console.log(CSV_NAME[channel])
 	count[channel]=1;
 	}
 
 	else{
 	
 		    var orig = chunk;
-        //console.log('orig below')
-        //console.log(chunk)
 		    //if there is still a GO->ST pair left in chunk
 		    while(orig.indexOf("GO")!=-1 && orig.indexOf("ST")!=-1) {
 			    var start = orig.indexOf("GO");
@@ -481,22 +409,6 @@ function write2CSV(channel,chunk) {
 			    orig = orig.substr(end+2,orig.length);
 			    //create array of data values
 			    var chunks = chunk.split(",");
-          //console.log('chunks below')
-          //console.log(chunks)
-          //if (parseInt(chunks[0]) < 10000) 
-          //{
-          
-            //console.log("woah chunky timestamp is small");
-            //fs.appendFile('log.txt', "chunky timestamp is smaller than 10000", function (err) 
-            //{
-              //if (err) throw err;
-            //});
-          //}
-          //else 
-          //{
-            //console.log(chunks[0])
-            //console.log(total_pause_time[channel])
-
             chunks[0] = parseInt(chunks[0]) - total_pause_time[channel]
             //don't write entries more than once
             //console.log(lastTime[channel])
@@ -510,11 +422,6 @@ function write2CSV(channel,chunk) {
 	            //write data values to appropriate columns in csv 
 	            json2csv({data: foo, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
 		            if (err) console.log(err);
-		               
-                          //console.log("this is the part from write2CSV that gets written: ",csv);
-                          //fs.appendFile('log.txt',csv, function (err){
-                             // if (err) throw err;
-                          //});
 		            fs.appendFileSync(CSV_NAME[channel], csv)
                 //console.log('csv has been appended')
 	            });
@@ -523,14 +430,6 @@ function write2CSV(channel,chunk) {
             }
             else
             {
-                //console.log("chunks timestamp is less than last time");
-                //console.log("chunks[0] is ",chunks[0]," lastTime is ",lastTime);
-                //fs.appendFile('log.txt','chunks is ' + chunks[0] + " ", function (err){
-                   // if (err) throw err;
-               // });
-               // fs.appendFile('log.txt',' last time is ' + lastTime[channel] + " ", function (err){
-               //     if (err) throw err;
-               // });
                 chunk = '';
                 chunks = '';
             }
@@ -539,8 +438,7 @@ function write2CSV(channel,chunk) {
   }
 }
 //======================================================================================================
-//functions to communicate how urls used to 
-
+//functions to communicate 
 function toArd(channel,command,value)
 {
 	last_comm[channel] = ardupadder(command,value)
@@ -549,24 +447,7 @@ function toArd(channel,command,value)
 	//console.log(last_comm[channel])
 }
 function l_writer(channel,stringer) {	
-  //console.log('l writer has actually been called - for fucks sakes - why doesnt this append to the command list?')
-  //console.log(stringer)
   command_list[channel].push(stringer);
-  /*
-	if(kill[channel]==false) {
-	  command_list[channel].push(stringer);
-	}
-	else if( ( kill[channel]==true ) && ( stringer == '-0000') ){
-	  console.log('this is where the problems are');
-	  console.log(channel)
-	  command_list[channel].push(stringer);
-	}
-	//TODO make this more robust
-	else { 
-	  console.log("killed :(");
-  };
-  */
-  //console.log(command_list[channel])
 };
 
 function l_reader(channel) { //returns string
@@ -586,12 +467,6 @@ function l_reader(channel) { //returns string
 	    reading = reading.substr(end+2,orig.length);
 	    //create array of data values
 	    var chunks = chunk.split(",");
-	    //var temp = reading;
-	    //TODO: figure out why this doesn't wanna print - real werid but whatever. Take out all the console checks.
-	    //console.info(" why wont this print? ", temp); //this is perhaps the weirdest shit ever.
-	    //console.log(reading.length);
-	    //console.log("chunks is now " +chunks);
-	    //console.info(chunks.length);
 	    return chunks;
   }
     else {console.log("something here is fucked with l_reader");
@@ -623,22 +498,21 @@ function l_starter(channel,folder_file,value) {
   console.log('CSV folder is ', CSV_FOLDER[channel]);
   CSV_FOLDER[channel] = CSV_FOLDER[channel].substring(0,CSV_FOLDER[channel].length-1);
   console.log("CSV_folder " , CSV_FOLDER[channel]);
-  mkdirp(CSV_FOLDER[channel], function(err) { //TODO: make this recursive - just need to set call-back to make sure that
-  //TODO: make sure this is in a callback sequence so that nothing super fucked up happens.
+  mkdirp(CSV_FOLDER[channel], function(err) { //TODO: make this recursive
     console.log('error making the folder is ', err);
   //this might not happen synchronously but it shouldn't matter too much
 });
   
   
 	CSV_ON[channel] = true;
-	kill[channel] = false; // added kill = false to starter.
+	kill[channel] = false; //
 	//res.send('CSV WRITING HAS BEGUN! Current output file: ' + CSV_NAME);
 	console.log('writing data to: ' , CSV_NAME[channel]);
 	
   setupdata[channel] = value
 	//log setup data
-	setupdata[channel].ardustat_id = ardustat_id[channel] //making sure that this is correct is all
-	setupdata_json = JSON.stringify(setupdata[channel]) //TODO: this is blocking but should be super quick anyway.. //TODO: still need to overwrite files
+	setupdata[channel].ardustat_id = ardustat_id[channel]
+	setupdata_json = JSON.stringify(setupdata[channel]) //TODO: this is blocking but should be super quick anyway
 
 	console.log('setupdata below');
 	console.log(setupdata_json)
@@ -660,16 +534,8 @@ function l_stopper(channel)
 
 }
 //killer, reviver, and skipper are at end where the abstracted functions are.
-
 //============================================================================================================================
 
-//could write a flag that decides if things are already running, if they are - tell the browser to fuck off
-
-//Maybe only open serial port when user says to?  -- Figure out best way to do this...
-//takes in data and sends to right place
-
-//TODO - make this more robust - take in value of the ardustat trying to play with and only sets for that ardustat.
-//have to have 3 forwarders running simultaneously - best way to do it i think are dictionaries and to have every function accept an id or channel parameter.
 function setstuff(req,res)
 {
  //TODO urgent - if there is a test running - should tell user and user should have option to stop the test.
@@ -681,10 +547,8 @@ function setstuff(req,res)
   console.log('the channel is ' , req.body.channel);
   if (test_running[channel])
   {
-    console.log('test running');
-    //cool - steal things from what I wrote below.
-    
-    res.send()
+    console.log('test running');    
+    res.send('') //TODO - play with this
   }
   else
   {
@@ -695,7 +559,7 @@ function setstuff(req,res)
       if (req.body.ardustat_id_setter != undefined){
         console.log('ardustat_id sent');
         ardustat_id[channel] = req.body.ardustat_id_setter;
-        out = fs.readdirSync(__dirname+'/resistance_tables/'); //cool i think things are working
+        out = fs.readdirSync(__dirname+'/resistance_tables/'); //TODO: make asynchronous
         console.log('out is  ' + out)
         if (out.indexOf('unit_'+ardustat_id[channel].toString()+'.json') > -1){
           console.log('res_table is here');
@@ -711,11 +575,11 @@ function setstuff(req,res)
 
       else if(req.body.filename_check != undefined){
         console.log('checking for file')
-        check_folder_name = req.body.folder_name; //quick check to see if this will work
+        check_folder_name = req.body.folder_name; 
         check_file_name = req.body.file_name;
         console.log('file ' + check_file_name)
         try{
-          out = fs.readdirSync(__dirname+'/Data/'+check_folder_name); //cool i think things are working
+          out = fs.readdirSync(__dirname+'/Data/'+check_folder_name); 
           console.log('out is  ' + out)
           if (out.indexOf(check_file_name+'.csv') > -1){
             console.log('file is here');
@@ -797,26 +661,19 @@ function setstuff(req,res)
       console.log(e);
     }
   }
-  //res.send('hello') //trying to shut this thing up
   return false;
 }
 
 //CV stuff
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //Global Variables for CV
-
-
-
 function readingLog(channel) {
   return cv_reading[channel];
 };
-  
-
-// figure out ways to print all of this stuff so i know whats going on... dont really trust console.log though
 
 function cv_start_go(channel,value)
 {
-    //read in values and put them in the global variables. yay.
+    //read in values and put them in the global variables
     test_running[channel] = true;
     
     console.log('cv_start_go called, yay');
@@ -830,16 +687,16 @@ function cv_start_go(channel,value)
 		cv_rate[channel] =  (1/parseFloat(value['rate']))*1000*5	//convert mV/s to a wait time
 		cv_max[channel] = parseFloat(value['max_potential'])
 		cv_min[channel] = parseFloat(value['min_potential'])
-		cv_cycle_limit[channel] = parseFloat(value['number_of_cycles']*2) //dan must of doubled 
+		cv_cycle_limit[channel] = parseFloat(value['number_of_cycles']*2)
 		cv_cycle[channel] = 0;
 		console.log('cv_cycle ',cv_cycle[channel]);
-		cv[channel] = false //if this is true - cv_stepper will run - don't want this to happen right now because going into  rest step first...
+		cv[channel] = false //if this is true - cv_stepper will run
     cv_finisher_flag[channel] = false
 		cv_time[channel]  = new Date().getTime()	
 		//cv_step = cv_start
 		cv_DAC2[channel] = parseFloat(value['DAC2_value']);
     cv_raw_reading[channel] = ''
-    cv_rest_time[channel] = value['rest_time']; //TODO: check that this is the right key.
+    cv_rest_time[channel] = value['rest_time'];
     cv_relative_to_ocv[channel] = value['relative_to_ocv']; //TODO make this so you can do it for either voltage. 
     //flags for the starter
     if (value['start_at_ocv']) 
@@ -854,15 +711,7 @@ function cv_start_go(channel,value)
     
     console.log(channel,cv_foldername[channel]+'/'+cv_filename[channel])
 		l_starter(channel,cv_foldername[channel]+'/'+cv_filename[channel],value);
-
-    //TODO: abstract reading
-    //TODO: make this more robust
 		cv_reading[channel] = last_ardu_reading[channel]
-		//console.log('cv_reading[channel] below');
-		//console.log(cv_reading[channel]);
-		 //TODO: instead of do this in a node like way instead of a pythonic way
-		//console.log("this is logging the cv_reading " + cv_reading);
-		 //this will set volts_per_tick
 		
 		//move the ground and set ocv
 		moveground(channel,cv_DAC2[channel]);
@@ -891,18 +740,18 @@ function cv_rester(channel){
 		  cv_ocv_value[channel] = cv_reading[channel]['working_potential']
 		  
 		  
-		  //set final things //TODO wishlist - make this fancier - user can set more things. 
+		  //TODO wishlist - make this fancier - user can set more things. 
 		  if (cv_start_at_ocv[channel] == true) cv_step[channel] = cv_ocv_value[channel];
 		  if (cv_relative_to_ocv[channel]) {
 		    cv_max[channel] = cv_max[channel] + cv_ocv_value[channel];
 		    cv_min[channel] = cv_min[channel] + cv_ocv_value[channel];
 		  }
 		  
-		  //set the potential to the start and go for your life I guess.
+		  //set the potential to the start
 		  console.log(cv_ocv_value[channel]);
 		  console.log(cv_step[channel]);
 		  potentiostat(channel,cv_step[channel])
-      cv_finish_value[channel] = cv_step[channel] //the finish value is the same as the start value... could make this fancier.. but can't really be bothered right now...
+      cv_finish_value[channel] = cv_step[channel] //the finish value is the same as the start value.
 
 		  
 		  //set cv to on
@@ -915,7 +764,7 @@ function cv_stepper(channel)
 {
 	//console.log('stepped into cv');
 	//console.log(cv_step);
-	var time = new Date().getTime()	//only a local variable so things should be all good. 
+	var time = new Date().getTime()
 	if (time - cv_time[channel] > cv_rate[channel])
 	{
 		console.log("next step")
@@ -939,7 +788,6 @@ function cv_stepper(channel)
 		if (cv_cycle[channel] >= cv_cycle_limit[channel]) 
 		{
 			cv[channel] = false
-      //make a new function - cv_finisher, and new flag - send it back to ocv.
       cv_finisher_flag[channel] = true;
       cv_finisher(channel)
 			//test_finished(channel)
@@ -952,16 +800,8 @@ function cv_stepper(channel)
 		}
 	}
 }
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Cycling Section
-//==============================================================================================================
 
-//URGENT: When cycling input comes in, how have I indexed it? By adding a channel to the mix am I going to mess it up?
-//cycling input looks as follows:
-//[{"electro_function":"cycle"},{"cycles":4},{"cyc_mode":"galvanostatic","cyc_value":"1","time_cutoff":"10","voltage_cutoff":"0","current_cutoff":"0"},{"cyc_mode":"galvanostatic","cyc_value":"-1","time_cutoff":"15","voltage_cutoff":"0","current_cutoff":"0"},{"cyc_mode":"galvanostatic","cyc_value":"2","time_cutoff":"5","voltage_cutoff":"0","current_cutoff":"0"},{"cyc_mode":"galvanostatic","cyc_value":"-2","time_cutoff":"10","voltage_cutoff":"0","current_cutoff":"0"}] 
-
-//call this function to return to ocv or pre-specified value at the end of the cv.
-function cv_finisher_flag(channel){
+function cv_finisher(channel){
   console.log('cv finisher flag')
   if (cv_step[channel] < cv_finish_value[channel]){
     cv_dir[channel] = 1
@@ -982,24 +822,42 @@ function cv_finisher_flag(channel){
     console.log("next step")
     cv_time[channel] = time
     cv_step[channel] = cv_step[channel] + cv_dir[channel]*.005
-    if (cv_step[channel] > cv_finish_value[channel]) {
-      console.log('finsih value reached')
-      cv_finisher_flag = false;
-      test_finished(channel)
+    if (cv_dir[channel] == 1)
+    {
+      if (cv_step[channel] > cv_finish_value[channel]) {
+        console.log('finsih value reached')
+        console.log(cv_finish_value[channel])
+        console.log(cv_step)
+        cv_finisher_flag = false;
+        test_finished(channel)
+      }
+    }
+    else if (cv_dir[channel] == -1)
+    {
+      if (cv_step[channel] < cv_finish_value[channel]) {
+        console.log('finsih value reached')
+        console.log(cv_finish_value[channel])
+        console.log(cv_step)
+        cv_finisher_flag = false;
+        test_finished(channel)
+      }
     }
   }
 }
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Cycling Section
+//==============================================================================================================
+
+//URGENT:
+//cycling input looks like:
+//[{"electro_function":"cycle"},{"cycles":4},{"cyc_mode":"galvanostatic","cyc_value":"1","time_cutoff":"10","voltage_cutoff":"0","current_cutoff":"0"},{"cyc_mode":"galvanostatic","cyc_value":"-1","time_cutoff":"15","voltage_cutoff":"0","current_cutoff":"0"},{"cyc_mode":"galvanostatic","cyc_value":"2","time_cutoff":"5","voltage_cutoff":"0","current_cutoff":"0"},{"cyc_mode":"galvanostatic","cyc_value":"-2","time_cutoff":"10","voltage_cutoff":"0","current_cutoff":"0"}] 
+
+//call this function to return to ocv or pre-specified value at the end of the cv.
+
 
 
 function cycling_start_go(channel,value)
 {
-  //console.log(value)
-  //console.log(value[0])
-  //console.log(value[1])
-  //console.log(value[2])
-
-
-
 
   test_running[channel] = true;
   //console.log("this is cycling_start_go on channel " + channel);
@@ -1016,9 +874,6 @@ function cycling_start_go(channel,value)
   }
   //console.log(arb_cycling_settings)
   console.log(arb_cycling_settings[channel])
-  //console.log(arb_cycling_settings[channel][0])
-  //console.log(arb_cycling_settings[channel][0].cyc_mode)
-  //debugging()
   console.log('cyc folder should be ' + value[1].cyc_folder)
   cyc_folder_name[channel] = value[1].cyc_folder
   cyc_file_name[channel] = value[1].cyc_file_name
@@ -1029,7 +884,6 @@ function cycling_start_go(channel,value)
   console.log(cyc_folder_name[channel]+'/'+cyc_file_name[channel])
   l_starter(channel,cyc_folder_name[channel]+'/'+cyc_file_name[channel],value);
   
-	//console.log('cycle settings on channel ' + channel + 'are ' + arb_cycling_settings[channel])
 
 	arb_cycling[channel] = true
 	cycling_mode(channel)
@@ -1039,10 +893,6 @@ function cycling_start_go(channel,value)
 	
 }
 
-//i am getting closer!
-
-//KEY Learning Point: When you append an object to a string, it gets its toString method called, which for a plain object just gives the infamous "[object Object]". To log an object, you should just pass it straight into the console.log function as an argument, like so:
-
 function debugging(){
   console.log('debug ' , arb_cycling_settings)
   console.log('debug ' , arb_cycling_settings['ch1'])
@@ -1050,18 +900,14 @@ function debugging(){
 }
 
 //cycling stepper - if next step is ordered. call next_step().
-// big issue - could be some niggles with the limits if next_step is called - should probably give some time to settle.
-// so, if user requests skip_step - next_step called - timer for 2 a second is called - lets cell settle so no unecessary skipping occurs
-
-// this needs to be made fancier i think
-//TODO: add in capacity limit stuff?
+//TODO: add in capacity limit stuff
 
 
 function cycling_stepper(channel)
 {
 	//console.log("cycling_stepper");
 	time = new Date().getTime()
-	var this_set = arb_cycling_settings[channel][arb_cycling_step[channel]] //this set is delclared locally I believe...
+	var this_set = arb_cycling_settings[channel][arb_cycling_step[channel]] //this set is delclared locally
 	if (this_set['time_cutoff'] == '') this_set['time_cutoff'] = 0
 	var next_time = this_set['time_cutoff'] * 1000 //same with next_time 
 	//console.log("next time is ")
@@ -1077,14 +923,6 @@ function cycling_stepper(channel)
 	way = 1 //declared locally
 	if (direction[channel] == "discharge") way = -1
 	this_time = time-arb_cycling_step_start_time[channel]
-	//console.log(next_time - this_time)
-  //console.log('just checking what skip flag is ', skip_flag[channel] ) 
-  //console.log(time)
- // console.log(skip_time[channel])
-  //console.log(this_set['cyc_mode'])
-  //console.log(direction[channel])
-  //console.log(last_potential[channel])
-  //console.log(cutoff_potential[channel])
   
 	if (next_time != 0 & next_time < this_time) 
 	{
@@ -1093,7 +931,6 @@ function cycling_stepper(channel)
 	}
   if (((skip_flag[channel]) & (time - skip_time[channel] > 500)) || (!skip_flag[channel])) // lets cell settle after skip step 
   {
-    //console.log('did you go into main loop thing?')
     skip_flag[channel] = false;
 	  if (this_set['cyc_mode'] == 'galvanostatic') 
 	  {
@@ -1132,7 +969,6 @@ function cycling_stepper(channel)
 }
 
 
-// TODO: tidy things up - this can be done a little later though.
 function next_step(channel)
 {
   console.log('next_step called on channel ' + channel);
@@ -1164,8 +1000,7 @@ function next_step(channel)
     console.log('next step in cycle')
   }
   console.log(quit)
-	if (quit != true) cycling_mode(channel) //if quit is true - then things will stop ( I hope )
-	//TODO:add in the ability to pause and skip steps while cycling. 
+	if (quit != true) cycling_mode(channel) //if quit is true - then things will stop
 }
 
 function cycling_mode(channel)
@@ -1175,7 +1010,7 @@ function cycling_mode(channel)
 	arb_cycling_step_start_time[channel] = new Date().getTime()
   //console.log('arb cycling settings ' , arb_cycling_settings[channel] )
 	this_set = arb_cycling_settings[channel][arb_cycling_step[channel]]
-  console.log(this_set) // checking if this_set is always local - I hope so... Seems like it. But could become issue I guess.
+  //console.log(this_set)
 	if (this_set['cyc_mode']=='Potentiostatic')
 	{
 		potentiostat(channel,parseFloat(this_set['cyc_value']))
@@ -1212,13 +1047,10 @@ function calibrator(channel, value)
 	console.log("this is the calibrator on channel " + channel);
 }
 
-
-//because looping around - think I need to make out_table and final_table channel dependent... 
 out_table = {}
 final_table = {}
 
 
-//kinda like declaring global variables right next to functions that use them...
 function calibrate_step(channel)
 {
 		counter[channel]++;
@@ -1267,13 +1099,11 @@ function calibrate_step(channel)
 				  
 				}
 				console.log('final_table is ' ,final_table[channel] , ' on channel ' + channel)
-        //TODO: create resistance table folder if there isn't one.
         console.log(ardustat_id[channel])
 				fs.writeFileSync("resistance_tables/unit_"+ardustat_id[channel].toString()+".json",JSON.stringify(final_table[channel])) //should be cool that this is synchrnous
-        //TODO urgent - child process that automagically calls the python script.
+        //TODO - child process that automagically calls the python script.
 				res_table[channel] = undefined;
-				io_emit(channel, 'calibration finished'); //TODO channel change
-        //TODO: call a python program that converts the json file into a pickle file for later use... should be easy enough to do.
+				io_emit(channel, 'calibration finished');
 			}
 		} 
 		setTimeout(function(){toArd(channel,"r",counter[channel])},50);
@@ -1281,16 +1111,10 @@ function calibrate_step(channel)
 //_____________________________________________________________________________________
 
 //SETTING FUNCTIONS that abstracted electro stuff calls.
-
-
-// could either hack like have done in python - or could try and do properly like node
 function moveground(channel,value)
 {
 
 	value_to_ardustat = value / volts_per_tick; //value_to_ardustat local, value is given, volts_per_tick always the same
-	//console.log("moveground");
-	//console.log(value + " " + volts_per_tick);
-	//console.log(value_to_ardustat);
 	toArd(channel,"d",value_to_ardustat)
 	toArd(channel,"-","0000");
 }
@@ -1307,15 +1131,12 @@ function potentiostat(channel,value)
 	toArd(channel,"p",value_to_ardustat)
 }
 
-//Set Galvanostat
-//This stuff won't handle negative currents... 
-//TODO: check if potentiostat handles negative curents.
-function galvanostat(channel,value)//TODO:go through and fix this.
+function galvanostat(channel,value)
 { 
   value = value/1000
 	foovalue = Math.abs(value)
 	//First Match R
-	r_guess = 1/foovalue //used to be 0.1 changed cause thats what i did in python. 
+	r_guess = 1/foovalue //used to be 0.1
 	console.log('r_guess',r_guess)
 	target = 1000000
 	r_best = 0
@@ -1340,7 +1161,7 @@ function galvanostat(channel,value)//TODO:go through and fix this.
 	console.log('value ' , value);
 	console.log('volts per tick ' , volts_per_tick)
 	value_to_ardustat = delta_potential / volts_per_tick;
-	//some hacks cause i'm tired as
+	//some hacks cause i'm tired
 	if (value_to_ardustat > 1023) {value_to_ardustat = 1023}
 	if (value < 0) { value_to_ardustat = value_to_ardustat +2000 }
 	
@@ -1372,7 +1193,7 @@ var test = "test";
 
 
 // makes the string good for sending to the ardustat
-function ardupadder(command,number) // not sure if channel needed...
+function ardupadder(command,number)
 {
 	number = parseInt(number)
 	if (number < 0) number=Math.abs(number)+2000
@@ -1387,16 +1208,11 @@ function ardupadder(command,number) // not sure if channel needed...
 }
 //these are functions that can be called directly from the browser - setup to go through the router as well - almost irrelevant for now
 //=================================================================================================================================================================================
-//Write to serial port
-
-//Because these are called directly from browser - I think channel needs to be included in, and then extracted from the URL string
-//Might play with this a little later... Unecessary and complicated to play with right now...
 writer = function(req,res){	
 	if(kill==false) {	
 		toSend = req.originalUrl.replace("/write/","")
 		toSend = decodeURIComponent(toSend);
         //command = toSend;
-//hack to make sure that CSV is turned on - only problem is that it might not know which file to write to - might be better than nothing - anyway i dont think that this is the problem.
         if ((toSend.indexOf("p") > -1) || (toSend.indexOf("g") > -1)) CSV_ON = true;
         command_list[channel].push(toSend);
         //queue.push(toSend);
@@ -1410,8 +1226,7 @@ writer = function(req,res){
 reader = function(req, res){
 	if(kill==false) {
 	    //console.log("this is from app.js");
-	    console.log('buffer is ' +buf); //console.log doesn't actually work - I think that the function res.send gets called first which exits out of it. 
-	    res.send(buf);
+	    console.log('buffer is ' +buf); 
 	}
 	else { res.send("killed :("); }
 };
@@ -1430,9 +1245,8 @@ starter = function(req,res) {
 }
     CSV_FOLDER = CSV_FOLDER.substring(0,CSV_FOLDER.length-1);
     console.log("CSV_folder "+CSV_FOLDER);
-    mkdirp(CSV_FOLDER, function(err) { //TODO: make this recursive?? shoudl already be... but didnt work - oh well. 
+    mkdirp(CSV_FOLDER, function(err) { 
 });
-//TODO: add Data folder to git ignore. 
 	CSV_ON = true;
 	res.send('CSV WRITING HAS BEGUN! Current output file: ' + CSV_NAME);
 	console.log('writing data to: ' + CSV_NAME);
@@ -1456,15 +1270,15 @@ stopper = function(req,res) {
 name_setter = function(req,res) {
 	var OLD_NAME = CSV_NAME;
 	var temp = req.originalUrl.replace("/setName/","")
-	CSV_NAME = 'Data/' + decodeURIComponent(temp)+'.csv'; //change here so that if there is a .csv then you don't attach this
+	CSV_NAME = 'Data/' + decodeURIComponent(temp)+'.csv';
 	res.send('Original output file: \"' + OLD_NAME + '\" --> New output file: \"' + CSV_NAME + "\"");
 	console.log('Original output file: \"' + OLD_NAME + '\" --> New output file: \"' + CSV_NAME + "\"");
 };
 
-//Need to have channel for these...
+
 function pauser(req,res)
 {
-  var temp = req.originalUrl.replace("/pauser/","") //For sure this isn't the fastest way to do it, but yolo swag monster...
+  var temp = req.originalUrl.replace("/pauser/","") 
   channel = decodeURIComponent(temp);
   console.log('pauser has been called on channel ' + channel)
 
@@ -1476,7 +1290,7 @@ function pauser(req,res)
 	pause_time[channel] = new Date().getTime()
 }
 
-function test_finished(channel) // yay this can be called somewhat normally...
+function test_finished(channel) 
 {
   console.log('test finished called on channel ' + channel);
   set_ocv(channel)
@@ -1487,13 +1301,12 @@ function test_finished(channel) // yay this can be called somewhat normally...
   setTimeout(function(){reset_globals(channel)},1000)
 
 	io_emit(channel, 'stop message'); // io_emit(channel, 'stop message')
-	//should also save the position. incase program crashes.
 }
 
 
 function killer(req,res) 
 {
-  var temp = req.originalUrl.replace("/killing/","") //For sure this isn't the fastest way to do it, but yolo swag monster...
+  var temp = req.originalUrl.replace("/killing/","") 
   channel = decodeURIComponent(temp);
   channel = channel.toString()
 
@@ -1506,7 +1319,7 @@ function killer(req,res)
 //resume control and forwarding to csv
 function reviver(req,res,callback) 
 {
-  var temp = req.originalUrl.replace("/reviver/","") //For sure this isn't the fastest way to do it, but yolo swag monster...
+  var temp = req.originalUrl.replace("/reviver/","") 
   channel = decodeURIComponent(temp);
 
 	console.log('reviver called on channel ' + channel );
@@ -1532,7 +1345,7 @@ function flag_resume(channel)
 
 function step_skip(req,res)
 {
-  var temp = req.originalUrl.replace("/step_skip/","") //For sure this isn't the fastest way to do it, but yolo swag monster...
+  var temp = req.originalUrl.replace("/step_skip/","")
   channel = decodeURIComponent(temp);
 
   console.log('step skip has been called on channel ' + channel)
@@ -1542,8 +1355,6 @@ function step_skip(req,res)
   res.send('step has been skipped')
 }
 
-//trying to show files that have been uploaded.
-//try and show folders - then can click on folders to see files in them 
 function analysis_display(req,res,indexer)
 {
   console.log('analysis_display has been called');
@@ -1576,10 +1387,7 @@ function file_display(req,res)
   io_emit('analysis','hey dan you can nap now');
 }
 //This is the thing that runs everything! 
-// Need to make this work with seperate channels.
-//==========================================================
 
-//can write this really ugly - no one really cares. 
 command_list = {}
 command_list.ch1 = []
 command_list.ch2 = []
@@ -1611,7 +1419,7 @@ t2 = setInterval(function()
   if ((arb_cycling.ch2) && (kill.ch2 == false)) cycling_stepper('ch2')
   if ((arb_cycling.ch3) && (kill.ch3 == false)) cycling_stepper('ch3')
 
-}, 1000);
+}, 100);
 
 t1 = setInterval(function()
 {

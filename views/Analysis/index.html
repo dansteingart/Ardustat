@@ -87,20 +87,16 @@
       });  
     });
     
-    //change these to button like objects - onclick will take you analysis of things. 
 
 
   function analysis_get_image(address)
     {
         //TODO: add in a cycmin and cycmax thing
-        //document.write("ploop was called");
-        //var mintemp = document.getElementById("cycmin").value;
-        //var maxtemp = document.getElementById("cycmax").value;
 
         analysis_file_name = address
         console.log('analysis_get_image called for ' + address)
         $.ajax({
-        url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general, or in readme make sure that user sets pithy on 4001, 4003, 4004 
+        url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
         + analysis_folder_name+"/"
         + analysis_file_name+"/"
         + "0/"
@@ -109,9 +105,6 @@
         + "v"+"/",
         success: function(result){
             image = result
-            //debug
-            //console.log('result from ploop');
-            //console.log(result);
             imageUrl = "http://localhost:4001/"+image
             //document.write(imageUrl);
             changeImage("graph",imageUrl)
