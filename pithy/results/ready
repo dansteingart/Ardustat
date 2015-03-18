@@ -1,0 +1,1 @@
+{"out":"","outerr":"Traceback (most recent call last):\n  File \"/Users/danny/pithy/code/ready.py\", line 1, in <module>\n    from pithy import *\n  File \"/Users/danny/pithy/code/pithy.py\", line 10, in <module>\n    from PIL import Image\nImportError: No module named PIL\n","images":[],"exec_time":334}

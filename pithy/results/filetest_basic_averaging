@@ -1,0 +1,1 @@
+{"out":"","outerr":"Traceback (most recent call last):\n  File \"/Users/danny/Ardustat_Private/pithy/code/filetest_basic_averaging.py\", line 60, in <module>\n    first_time = int(lines[2].split(',')[0])\nValueError: invalid literal for int() with base 10: '\"1426128522431\"'\n","images":[],"exec_time":4015}

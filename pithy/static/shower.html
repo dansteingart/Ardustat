@@ -1,0 +1,199 @@
+<LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
+	
+<script src="/static/jquery.js" type="text/javascript" charset="utf-8"></script> 
+<script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
+
+<script src="/socket.io/socket.io.js"></script>
+
+
+<style>
+textarea
+{
+    margin: auto auto;
+	width:100%;
+	font-size: 14px;
+}
+
+
+
+#script_area {
+     position: relative;
+     width: 500px;
+     height: 400px;
+	font-family: "Courier New",monospace;
+	font-size: 15px;
+	
+ }
+
+
+.selectig
+{
+	outline: none;
+}
+
+.code
+{
+	width:100%;
+}
+
+.output
+{
+    margin: auto auto;
+	width:100%;
+	height:50%;
+	font-size: 15px;
+}
+
+body
+{
+	width: 90%;
+	margins: auto auto;
+}
+
+.texterboxer
+{
+	border: 1px solid silver;
+	background: silver;
+	width:200px
+}
+
+.left
+{
+	float:left;
+	width:48%;
+}
+.right
+{
+	float:right;
+	width:50%;
+	height:85%;
+	
+}
+
+.images
+{
+		width:100%;
+		margin: auto;
+		overflow: auto;
+		overflow-y: auto;
+		overflow-x:hidden;		
+		height:100%;
+
+
+}
+
+.credit
+{
+	color: silver;
+	size: 10px;
+	text-align: right;
+	position:absolute; 
+	bottom:10;
+	right:100;
+}
+
+.menu_bar
+{
+	text-align:right;
+}
+
+.csvcontainer
+{
+	height: 10%;
+}
+</style>
+
+<body>
+<div id="images"></div>
+
+<div class="credit" id="credit">by <a href="http://steingart.ccny.cuny.edu/dan">Dan Steingart</a>, 2011  </div>
+</body>
+<script>
+var pathname = window.location.pathname;
+
+var page = pathname.substr(pathname.search("shower/")+"shower/".length)
+//height_factor = .7
+
+
+
+
+//cribbed from http://stackoverflow.com/a/1349426/565514
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+
+
+
+
+document.title =  page +" - Showing You Stuff!"
+
+this_port = "/"+pathname.split("/")[1]+"/"
+
+var gotdata = ""
+var maxwidth = 800
+function build_output(data)
+{
+	//console.log("start build")
+	
+	imgout = "<center>"
+	widther = $("#images").width() - 1
+	if (widther > maxwidth) widther = maxwidth
+	
+	outputdata = ""
+	//Build python stdout
+	//data = JSON.parse(data)
+	boots = data['out']
+	//while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
+	
+	foots = boots.split("\n")
+	for (i in foots)
+	{
+		if (foots[i].search("##_holder_##")==0) outputdata += "<img width='"+widther+"px'src='"+foots[i].replace("##_holder_##: ","/")+"'><br>"
+		else outputdata += foots[i]+"<br>"
+	}
+
+	//Build python stderr
+	boots = data['outerr']
+	if (boots == null) boots = ""
+	while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
+	//$("#images").html($("#images").html()+"<br><span style='color:red'>"+boots+"</span>")  
+	outputdata += "<br><span style='color:red'>"+boots+"</span>"
+
+	$("#images").html(outputdata)
+	//console.log("end build")
+	
+}
+
+
+function loader(bool,page)
+{
+
+	$.ajax({
+	  url: "readresults/",
+	  async:bool,
+	  type:"POST",
+	  data:{page_name:page},
+	  success: function(data)
+	  {
+		build_output(data)		
+	  }
+	});
+	
+}
+
+
+
+
+
+loader(false,page);
+
+
+</script>

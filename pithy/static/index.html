@@ -1,0 +1,572 @@
+<html>
+<head>
+<LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
+	
+<script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
+<script src="/channel/bcsocket.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/ace/mode-python.js" type="text/javascript" charset="utf-8"></script>
+<script src="/share/share.js"></script>
+<script src="/share/ace.js"></script>
+<script src="/static/jquery-1.9.1.js"></script>
+<script src="/static/jquery-ui.js"></script>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+
+
+
+<script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
+
+</head>
+<body>
+
+<div id="left-side" class="left">
+<div id="script_area"></div>
+<div id="code_enter" style="text-align: right;">
+</div>	
+
+</div>	
+<div id="right-side" class="right">
+	<div class="menu_bar">
+		<span id="status" style="height:10px;"></span>
+		<button id="run"  title="run">r</button>  
+		<button id="kill" title="kill">k</button>  
+		<!--<button id="saveresult">s</button> -->
+		<button id="copyto" title="fork code">c</button> 
+		<span id="history_box"></span> 
+		<span id="markedresults_box"></span> 
+		
+	</div>
+	<div id="images" class="images"></div>
+</div>
+
+<script>
+
+
+var changed = false;
+var status = $("#status");
+var pathname = window.location.pathname;
+var page = pathname.split("/")[1] //pathname;
+var scrollpos = 0;
+height_factor = 1
+area = $("#script_area")
+var editor = ace.edit("script_area");
+area.width($("#left-side").width())
+area.height($(document).height()*height_factor)
+editor.setPrintMarginColumn(0)
+editor.getSession().setMode("ace/mode/python");
+editor.setFadeFoldWidgets(false);
+editor.setShowPrintMargin(false);
+editor.setShowInvisibles(false);
+foo = editor.getSession()
+foo.setUseWrapMode(true)
+
+
+//hacks for now
+$("#save").hide()
+
+//socket starts
+var socket = io.connect('/');
+
+//var foo = null
+
+document.title =  page +" - pithy"
+this_port = "/"+pathname.split("/")[1]+"/"
+
+var gotdata = ""
+var maxwidth = 800
+waiting_for_output = false
+loader(true,page);
+history(page);
+loadresult(page);
+
+/*Shortcuts and Button Functions*/
+//F1 to run script
+shortcut.add("F1",function() {$("#run").click()})
+
+//F2 to cycle themes
+themes = ['textmate','twilight','clouds','dawn','cobalt','clouds_midnight']
+themecycle = 4
+thematic = getCookie('theme')
+if (thematic == undefined) editor.setTheme("ace/theme/"+themes[themecycle]);
+else editor.setTheme("ace/theme/"+thematic);
+
+//What happens when you click run
+$("#run").click(function(){
+	//scrollpos = $("#images").scrollTop()
+	//$("#images").html("waiting for result");
+	//editor.resize()
+	saver(true,pathname); //was page
+	
+});
+
+//Kill The Script	
+$("#kill").click(function(){
+		console.log("kill me please")
+		$.ajax(
+		{
+		  url: "/killer/",
+		  type:"POST",
+		  data:{page_name:page}
+		})
+
+});
+
+//Forker The Script
+$("#copyto").click(function(){
+	forkcode();
+});
+
+//Save The Result
+$("#saveresult").click(function(){
+	markresults();
+});
+
+
+//Choose Theme
+shortcut.add("F2",function(){
+	themecycle ++;
+	if (themecycle > (themes.length -1)) themecycle=0;
+	editor.setTheme("ace/theme/"+themes[themecycle]);
+	setCookie('theme',themes[themecycle]);
+})
+
+//Fold everything
+alltext = false;
+allres = false;
+folded = false;
+function folder()
+{
+	if (!folded)
+	{
+		editor.getSession().foldAll()
+		folded = true
+	}
+	else
+	{
+		editor.getSession().unfold()
+		folded = false
+	}
+	
+}
+
+//Textview
+function textall()
+{
+	$("#right-side").hide()
+	$("#left-side").width('100%')
+	areagrower()
+	alltext = true
+	editor.resize()
+}
+
+//Default View
+function splitview(){
+	$("#left-side").show()
+	$("#right-side").show()
+	$("#left-side").width('50%')	
+	$("#right-side").width('50%')
+	areagrower()	
+	allres = false
+	alltext = false
+	editor.resize()
+}
+
+//Output View
+function resall(){
+		$("#left-side").hide()
+		$("#right-side").width('100%')
+		areagrower()	
+		allres = true
+}
+
+//Folder Toggle
+shortcut.add("F4",function(){ folder() })
+
+//AllText/Splitview Toggle
+shortcut.add("F5",function(){
+	if (!allres & !alltext) textall()
+	else splitview()
+})
+
+//Output/Splitview Toggle
+shortcut.add("F6",function(){
+	if (!allres & !alltext) resall()
+	else splitview()
+})
+
+
+shortcut.add("F7",function(){
+    var myWindow=window.open('','');
+	//print_line = "<a style='color:red;font-family:Helvetica;underline: none' href='' onclick='window.print();'>print me</a><br>"
+    myWindow.document.write(old_stuff);
+    //myWindow.document.close();
+	myWindow.focus();
+	$(myWindow).load(function(){
+		console.log("foo")    
+	});
+	
+})
+
+/////////////Socket Foo/////////
+//Share JS Stuff
+sharejs.open(page.replace("/",""), 'text', function(error, doc) {
+doc.attach_ace(editor);
+ if (editor.getSession().getValue() == "") loader(false,page);
+});
+
+//Socket PushStuff
+socket.on(page.replace("/",""), function (data) {
+				//Let know that we've saved stuff
+				
+				//console.log(data)
+				changed = false;
+				if (data['exec_time'] != undefined)
+				{
+					waiting_for_output = false
+					$("#status").html("saved, exec time = "+data['exec_time']+"ms");
+					history(page);
+					
+				}
+				gotdata = data
+				build_output(gotdata)
+				
+				dfd = $('#images').imagesLoaded(); 
+				dfd.always(function(){$("#images").scrollTop(scrollpos)})
+
+});
+
+
+/////////////Functions///////////
+//cribbed from http://stackoverflow.com/a/1349426/565514
+function makeid(){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+
+flot_structure = "<div id='flotter' class='flotter'></div>"
+
+function build_output(data){
+	//Resize Max Size
+	widther = $("#images").width() - 1
+	if (widther > maxwidth) widther = maxwidth
+
+	//outputdata = ""
+	outputdata = []
+	boots = data['out']
+	//console.log(boots)
+	
+	thislen = data['out'].search("been")
+	
+	imlist = {}
+	
+	foots = boots.split("\n")
+	flotz = false
+	for (i in foots)
+	{
+		
+		
+		if (foots[i].search("##_holder_##")>-1) 
+		{
+			outputdata[outputdata.length] = "<img src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+		}
+		else if (foots[i].search("##_dynamic_##")>-1) 
+		{
+			things = foots[i].split(":")
+			holder = things[1]
+			timed = things[2]
+			imloc = things[3]
+			swap = outputdata.length;
+			for (var o = 0; o < outputdata.length; o++)
+			{
+				if (outputdata[o].search(holder)>-1) 
+				{ 
+					swap = o;
+					imlist[holder] = imloc
+				}
+			}
+			
+			
+			outputdata[swap] = "<img id='"+holder+"' src='"+imloc+"'><br>"
+		}
+		else if (foots[i].search("##__json__##")==0)
+		{ 
+			flotz = true
+			if (outputdata.search(flot_structure) == -1) outputdata = flot_structure + outputdata
+			foo = foots[i].replace("##__json__##","")
+			foo = JSON.parse(foo)
+			s = []
+			for (i in foo)
+			{
+				s[s.length] = foo[i]
+			}
+		}
+		
+		else if (foots[i].search("been working")>-1)
+		{ 
+			$("#status").html(foots[i].replace("<br>",""));
+			
+		}
+		
+		else 
+		{
+			outputdata[outputdata.length] = foots[i]+"<br>"
+			
+		}
+		
+	}
+
+	//Build python stderr
+	boots = data['outerr']
+	if (boots == null) boots = ""
+	while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
+	outputdata[outputdata.length] = "<br><span style='color:red'>"+boots+"</span>"
+	
+	
+	//console.log(thislen)
+	this_stuff = outputdata.join("")
+	if (this_stuff != old_stuff)
+	{
+		
+
+		old_stuff = this_stuff	
+		
+		$(window).load($("#images").html(this_stuff));
+	}
+	if (flotz){if (s.length > 0) $.plot("#flotter", s) } 
+	
+}
+
+old_stuff = ""
+oldlen = 0
+function loader(bool,page){
+
+	$.ajax({
+	  url: "read/",
+	  async:bool,
+	  type:"POST",
+	  data:{page_name:page,value:editor.getSession().getValue()},
+	  success: function(data){
+	 		editor.getSession().setValue(data['script'])
+
+	  }
+	});
+
+}
+			
+function saver(bool,page){
+
+	//editor.save()
+	if (!waiting_for_output)
+	{ 
+	waiting_for_output = true
+	script_name = $("#scriptname").val()
+	$("#status").html("waiting for result");
+	
+	if ($.trim(editor.getSession().getValue()) != "Fill Me Up")
+	{
+		//console.log("Changed!");
+		$.ajax(
+		{
+		  url: this_port+"run/",
+		  type:"POST",
+		  async:bool,
+		  data:{page_name:page,script_name:script_name,value:editor.getSession().getValue()},
+		 
+		})
+	}
+	}
+}
+
+function history(page){
+
+	$.ajax({
+	  url: "/history/",
+	  async:false,
+	  type:"POST",
+	  data:{page_name:page,value:editor.getSession().getValue()},
+	  success: function(data){
+		//data = JSON.parse(data);
+		out = data['out']
+		if (out == undefined) out = []
+		//console.log(out)
+		if (out.length > 1)
+		{
+			selecters = "<select id='histories' class='selectig'>"
+			for (i in out)
+			{
+			    ttt = out[i][0]
+				ut = ttt.substr(ttt.length-13,ttt.length)
+			    ttt = ttt.substr(0,ttt.length-14)
+				ut = parseInt(ut)
+				d = new Date()
+				d.setTime(ut)
+				now = moment(ut).local().format("MMM D YYYY hh:mm:ss a")
+				
+			    if (ttt == page) selecters += '<option value="'+out[i][0]+'">'+now+'</option>'			
+			}
+			selecters += "</select>"
+			$("#history_box").html("history:"+selecters)
+			$("#histories").change(
+				function(){get_data()})
+		}
+	}
+	});
+	
+}
+
+function markedresults(page){
+	//console.log("loading!");
+	$.ajax({
+	  url: "/markedresults/",
+	  async:false,
+	  type:"POST",
+	  data:{page_name:page},
+	  success: function(data)
+	  	{
+			out = data['out'];
+			//data = JSON.parse(data);
+			if (out.length > 0)
+			{
+			console.log(out)
+				
+				selecters = "<select id='markedresults' class='selectig'>"
+				selecters += '<option value="newest">current</option>'			
+				
+				for (i in out)
+				{
+				    selecters += '<option value="'+out[i][0]+'">'+ out[i][1] +'</option>'			
+				}
+				selecters += "</select>"
+				$("#markedresults_box").html("heldtight:"+selecters)
+				//$("#markedresults").change(function(){get_data()})}
+			
+		 }
+		}
+	  });
+
+	
+	}
+
+function get_data(){
+	loader(false,$("#histories").val());
+	//console.log($("#histories").val())
+}
+
+function make_option(word){
+  foo = "<option value='Milk'>Milk</option>";
+  return foo.replace(/Milk/gi,word)
+}
+
+function areagrower(){
+	area.width($("#left-side").width())
+	area.height($(document).height()*height_factor)
+}
+
+function loadresult(){
+	$.ajax({
+	  url: "readresults/",
+	  async:true,
+	  type:"POST",
+	  data:{page_name:page},
+	  success: function(data){
+		  build_output(data);
+	  }
+	});
+	
+	
+}
+
+function forkcode(){
+	var marker = window.prompt("Copy This Code As:","");
+	if (marker != null & marker != "")
+	{
+		$.ajax(
+		{			
+		  url: "/copyto/",
+		  type:"POST",
+		data:{page_name:page,script_name:marker,value:editor.getSession().getValue()},
+		  success: function(data)
+			{
+		 		gotor = data['redirect']
+				console.log(data)
+				window.location.href = gotor;
+				//window.location.host+"/"+gotor)
+			}
+	  
+	
+		})
+	}
+	
+
+	
+}
+
+function markresults(){
+	var marker = window.prompt("Save This Code/Result Set As:","");
+	if (marker != null & marker != "")
+	{
+		$.ajax(
+		{			
+		  url: "/markresult/",
+		  type:"POST",
+		data:{page_name:page,result_name:marker},
+		  success: function(data)
+			{
+			}
+	  
+	
+		})
+		
+	}
+}
+
+//Editor Stuff
+$(window).resize(function(){
+	try
+	{
+		gotdata['out'] = " "+gotdata['out']
+		build_output(gotdata)
+	}
+	catch (err)
+	{
+		//console.log(err)
+	}
+	areagrower()	
+})
+
+//store editor prefs per browser
+function setCookie(c_name,value)
+{
+	exdays = null
+	var exdate=new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value=escape(value) + ((exdays==null) ? "" : "; 	expires="+exdate.toUTCString());
+	document.cookie=c_name + "=" + c_value;
+}
+
+function getCookie(c_name)
+{
+var i,x,y,ARRcookies=document.cookie.split(";");
+for (i=0;i<ARRcookies.length;i++)
+{
+  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+  x=x.replace(/^\s+|\s+$/g,"");
+  if (x==c_name)
+    {
+    return unescape(y);
+    }
+  }
+}
+
+</script>
+</body>
+</html>

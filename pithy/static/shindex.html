@@ -1,0 +1,274 @@
+<LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
+	
+<script src="/static/jquery.js" type="text/javascript" charset="utf-8"></script> 
+<script src="/static/jquery.imagesloaded.js" type="text/javascript" charset="utf-8"></script> 
+<script src="/static/shortcut.js" type="text/javascript" charset="utf-8"></script>
+<script src="/channel/bcsocket.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<head>
+<style>
+textarea
+{
+    margin: auto auto;
+	width:100%;
+	font-size: 14px;
+}
+
+
+
+#script_area {
+     position: relative;
+     width: 500px;
+     height: 400px;
+	font-family: "Courier New",monospace;
+	font-size: 15px;
+	
+ }
+
+
+.selectig
+{
+	outline: none;
+}
+
+.code
+{
+	width:100%;
+}
+
+.output
+{
+    margin: auto auto;
+	width:100%;
+	height:50%;
+	font-size: 15px;
+}
+
+body
+{
+	width: 90%;
+	margin-left: 50px;
+	margin-right:50px;
+}
+
+.texterboxer
+{
+	border: 1px solid silver;
+	background: silver;
+	width:200px
+	
+}
+
+input:focus {outline: none; }
+
+.left
+{
+	float:left;
+	width:48%;
+}
+.right
+{
+	float:right;
+	width:50%;
+	height:85%;
+	
+}
+
+.images
+{
+		width:100%;
+		overflow: auto;
+		overflow-y: auto;
+		overflow-x:hidden;		
+		height:95%;
+
+
+}
+
+.credit
+{
+	color: silver;
+	size: 10px;
+	text-align: right;
+	position:absolute; 
+	bottom:10;
+	right:100;
+}
+
+.menu_bar
+{
+	text-align:right;
+}
+
+.csvcontainer
+{
+	height: 10%;
+}
+</style>
+
+<head>
+<body>
+<div class="menu_bar">a pithy report</div>
+<div id="images" class="images"></div>
+</div>
+
+<div class="credit" id="credit">by <a href="http://steingart.princeton.edu/dan">Dan Steingart</a>, 2013  </div>
+
+<script>
+var changed = false;
+var status = $("#status");
+var pathname = window.location.pathname;
+var page = pathname;
+var scrollpos = 0;
+height_factor = .85
+
+
+//hacks for now
+$("#save").hide()
+
+
+var socket = io.connect('/');
+
+var foo = null
+
+document.title =  page.split("/")[1] +" - Running Fun"
+this_port = "/"+pathname.split("/")[1]+"/"
+var gotdata = ""
+var maxwidth = 800
+waiting_for_output = false
+loader(true,page);
+
+	
+$("#kill").click(function(){
+		console.log("kill me please")
+		$.ajax(
+		{
+		  url: "/killer/",
+		  type:"POST",
+		  data:{page_name:page}
+		})
+
+});
+
+
+
+/////////////Socket Foo/////////
+
+socket.on(page, function (data) {
+				//Let know that we've saved stuff
+				
+				//console.log(data)
+				changed = false;
+				if (data['exec_time'] != undefined)
+				{
+					waiting_for_output = false
+					$("#status").html("saved, exec time = "+data['exec_time']+"ms");
+				}
+				gotdata = data
+				build_output(gotdata)
+				//console.log("should be stuffs here")
+				
+				dfd = $('#images').imagesLoaded(); 
+				dfd.always(
+					function(){
+						$("#images").scrollTop(scrollpos)
+						}
+				)
+
+});
+
+/////////////Functions///////////
+
+//cribbed from http://stackoverflow.com/a/1349426/565514
+function makeid(){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+function build_output(data){
+	imgout = "<center>"
+	widther = $("#images").width() - 1
+	if (widther > maxwidth) widther = maxwidth
+
+	outputdata = ""
+	boots = data['out']	
+	foots = boots.split("\n")
+	if (boots.search("top") == 0) 
+	{
+		$("#status").html("waiting for result")
+		for (var f=0; f <foots.length;f++)
+		{
+			if (foots[f].search("PID")>-1)
+			{ 
+				headers =foots[f].trim().replace(/\s+/g,' ').split(" ")
+				things = foots[f+1].trim().replace(/\s+/g,' ').split(" ")
+			}
+		}
+		
+		outputdata+='<table>'
+		
+		for (i in headers)
+		{
+			outputdata+='<tr><td>'+headers[i]+"</td><td>"+ things[i]+"</td></tr>"
+		} 
+		outputdata+='</table>'
+		
+		
+	}
+	else
+	{
+		for (i in foots)
+		{
+			if (foots[i].search("##_holder_##")==0) outputdata += "<img width='" + widther+"px'src='"+foots[i].replace("##_holder_##:","")+"'><br>"
+			else outputdata += foots[i]+"<br>"
+		}
+
+	}
+	//Build python stderr
+	boots = data['outerr']
+	if (boots == null) boots = ""
+	while (boots.search("\n") > -1) boots = boots.replace("\n","<br>")
+	outputdata += "<br><span style='color:red'>"+boots+"</span>"
+	$("#images").html(outputdata)
+}
+
+function loader(bool,page){
+
+	saver(true,page);
+
+}
+
+function saver(bool,page){
+
+	//editor.save()
+	if (!waiting_for_output)
+	{ 
+	waiting_for_output = true
+	script_name = $("#scriptname").val()
+	$("#status").html("waiting for result");
+	
+	if (true)
+	{
+		//console.log("Changed!");
+		$.ajax(
+		{
+		  url: this_port+"run/",
+		  type:"POST",
+		  async:bool,
+		  data:{page_name:page,script_name:script_name},
+		 
+		})
+	}
+	}
+}
+
+
+
+
+</script>

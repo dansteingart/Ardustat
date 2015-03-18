@@ -1,0 +1,675 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name ="viewport" content="width=device-width">
+    <title>Cyclic Voltammetry</title>
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="container">
+      <div class="row marketing">
+        <div>
+          <div class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Ardustat</a>
+              </div>
+              <nav class="collapse navbar-collapse" role="navigation">
+                <ul class="nav navbar-nav navbar-right">
+                    <li id='navbar-home'><a href="/">Home</a></li>
+                    <li id='navbar-channel1'><a href="/Channel1">Channel 1</a></li>
+                    <li id='navbar-channel2'><a href="/Channel2">Channel 2</a></li>
+                    <li id='navbar-channel3'><a href="/Channel3">Channel 3</a></li>
+                    <li id='navbar-analysis'><a href="/Analysis">Analysis</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+          <script type="text/javascript" >
+            document.getElementById('navbar-channel1').setAttribute('class', 'active')
+          </script>
+        </div>
+
+          <div class="col-lg-12">
+            <h1 class="header"> Hey Dan </h1>
+          </div>
+      </div>
+      <div id="tabs">
+        <ul class = "nav nav-tabs">
+            <li class="active"><a href="#tabs-1">Setup</a></li>
+            <li><a href="#tabs-2">Plotting</a></li>
+        </ul>
+        
+        <section id="tabs-1" class="active">
+        <div id="all_setup">
+
+            <div class="row marketing">
+                <div class="col-lg-12">
+                    <h2>Cyclic Voltammetry Setup</h2>
+                </div>
+            </div>
+          <form id='cv_setup_input' action='/senddata' method='post'>
+          <input type='hidden' name='electro_function' value='cyclic_voltammetry'><br>
+          <div id='not_needed' style='display:none'>
+            Http Port: <input type='text' name='http_port' value='8001' class="form-inline"><br>
+            Serial Port: <input type='text' name='serial_port' value='/dev/ttyACM0' class="form-inline"><br>
+          </div>
+          Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline">Sorry that you have to enter this again - I will fix this soon.<br> 
+          Folder Name: <input type='text' name='folder_name' value='cv' class="form-inline"> (no spaces please - will fix) <br>
+          Experiment Name: <input type='text' name='file_name' value='t1' class="form-inline"> (no spaces please - will fix) <br>
+          Rest Time: <input type='text' name='rest_time' value='10' class="form-inline"><br>
+          Number of Cycles <input type='text' name='number_of_cycles' value='2' class="form-inline"><br>
+          Minimum Potential <input type='text' name='min_potential' value='-.5' class="form-inline"><br>
+          Maximum Potential <input type='text' name='max_potential' value='1' class="form-inline"><br>
+          Rate: <input type='text' name='rate' value='1' class="form-inline"> mV/s<br>
+          DAC2 Val: <input type='text' name='DAC2_value' value='2.5'><br>
+          Max and Min Potentials relative to OCV? <input type='checkbox' name='relative_to_ocv' value='True' class="form-inline"> True <br>
+          Start test
+           at OCV? <input type = 'checkbox' name='start_at_ocv' value='True' class="form-inline"> If other - Please Specify 
+          <input type='text' name='other_start_volt' class="form-inline"><br>
+          Start Direction <select name='cv_dir' class="form-inline"> 
+            <option value='charging'> Charge </option>
+            <option value='discharging'> Discharge</option>
+            </select>
+          Notes <input type='text' name='notes' value=''><br>
+          </form>
+        
+
+          <br>
+          <br>
+      <div id="not_underway_display" style="display:inline-block">
+        <textarea id="tbTableValuesArray" name="tblValuesArray" rows="10" class='textarea' style="display:none" ></textarea>
+        <p id="cyc_confirm" style="display:none"> Waiting for Properties to be Confirmed </p>
+        <button id="validate_form_button" class="btn btn-primary"> Send Values </button>
+        <button id="start_experiment" class="btn btn-primary" style="display:none">Start The Experiment</button>
+      </div>
+      
+      <div id="underway_display" style="display:none">
+      </div>
+      </div>
+
+      <div id="was_running">
+      </div>
+        <div id="in_test_buttons" >
+          <button type = "button" onclick="goPlotting()" class="btn btn-success" id="goPlotting_button" style="display:none">View Live Plot</button>
+          <button type = "pause_button" onclick="goPause()" class="btn btn-warning" id="pause_button" style="display:none">Pause Test</button>
+          <button type = "kill_button" onclick="goKill()"  class="btn btn-danger" id="kill_button" style="display:none">Stop Test</button>
+          <button type = "resume_button" onclick="goResume()" class="btn btn-primary" id="resume_button" style="display:none">Resume Test</button>
+        </div>
+        
+   
+       
+        
+        
+          
+
+  </section>
+  
+  <section id="tabs-2" class="hide">
+    
+    <div class="row marketing">
+    
+      <h1>Live Plotting</h1>
+      
+      <div id="underway_display_plot" style="display:inline-block"> 
+        <p>Click links to display different live plots</p>
+      
+
+        <table><tr>
+            <td><button type="button" class="btn btn-default" id="chooseP1" onclick="chooseP(1,ploop)">Current vs. Voltage</button></td>
+            <td><button type="button" class="btn btn-default" id="chooseP2" onclick="chooseP(2,ploop)">Current vs. Time</button></td>
+            <td><button type="button" class="btn btn-default" id="chooseP3" onclick="chooseP(3,ploop)">Voltage vs. Time</button></td> </tr>
+        </table><br>
+
+        
+        <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg">
+        
+        <p><tt id="results"></tt></p>
+        
+        <button type = "pause_button_plot" onclick="goPause()" class="btn btn-warning" id="pause_button_plot" style="display:inline-block">Pause Test</button>
+        <button type = "kill_button_plot" onclick="goKill()" class="btn btn-danger" id="kill_button_plot" style="display:inline-block">Stop Test</button>
+        <button type = "resume_button_plot" onclick="goResume()" class="btn btn-primary" id="resume_button_plot" style="display:none">Resume Test</button>
+
+      </div>
+      
+      <div id="not_underway_display_plot" style="display:none">
+        There is no experiment running right now
+      </div>
+      
+      <!--
+      <div id="returnButton" style="display:none">
+        <a href="/Channel1"> Return </a>
+      </div>
+      -->
+      <button id="returnButton" style="display:none" class="btn btn-primary"> Return </button>
+
+  </section>
+  </div>
+</div>
+  <script> channel = 'ch1' </script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="/javascripts/flot/jquery.flot.js"></script>
+	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/Channel1/socket_1.js"></script>
+  <script>
+
+//debug
+  //TODO: make sure that when test is stopping - showing right things etc.
+  //TODO: organize so scripts are in script files. Can have flags with CV or Cycler etc..
+  //This way it will be quicker to reproduce.
+  //TODO: plan out how we are going to make three ardustats
+  //TODO:
+//starting the stuff ----------------------------------------------------
+
+//on load - send ajax request to get status. Once status is received, display things. 
+// TODO: work out why you would ever use a get instead of post..
+  //channel = 'ch1'
+  test_was_in_progress = false;
+  var ardustat_id
+
+  $( document ).ready(function() {
+    $.ajax({
+    type:'GET',
+    url:'/getstatus',
+    async: true,
+    data: {channel:channel},     
+    })
+    .done(function( data ) {
+      //can make multi-step process
+
+      //establish whether cv or cycle
+      //then send to correct page
+      console.log('data below')
+      console.log(data)
+      data = JSON.parse(data)
+      console.log(data)
+      if (data[0] == undefined){
+        if (data.electro_function == 'cyclic_voltammetry') {
+          console.log('this is a cv on channel ' + channel)
+          test_running(data)
+        }
+        else if (data.electro_function == 'calibration'){
+          console.log('there is a calibration running on channel ' + channel)
+          alert('something is calibrating on this channel - use a different one or wait a couple minutes')
+        }
+      }
+      else if (data[0].electro_function == 'cycle' ) {
+        console.log('this is a cycle on channel ' + channel)
+        alert('there is a cycle running on this channel - go there')
+      }
+      else { 
+        console.log('there is no test running - as you were')
+      }
+      //on that page - send another request (not horribly efficient but I think its ok?)
+      //if that is running - display the setup, allow to go to plotting stuff
+    })
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+    })
+  });
+
+
+
+  
+function test_running(data){
+  test_was_in_progress = true
+  console.log('test_running called')
+  foo = JSON.stringify(data) 
+  console.log(foo)
+  ardu_folder = foo.folder_name
+  ardu_file = foo.file_name
+  ardustat_id = foo.ardustat_id
+  console.log(ardu_folder)
+  console.log(ardu_file)
+  console.log(ardustat_id)
+  goPlotting()
+  showSetup(data)
+}
+
+function showSetup(data){
+  console.log('showSetup called')
+  console.log(data)
+  document.getElementById('all_setup').style.display = 'none'
+  document.getElementById('was_running').innerHTML = "<p> "+JSON.stringify(data)+"</p>"
+}
+  
+  $('#validate_form_button').click(function() {
+    console.log('validateForm called');
+    validateForm()
+  });
+
+  $('#start_experiment').click(function() {
+    goStartTest()
+  });
+  
+  $("#returnButton").click(function(){
+    console.log("returnButton clicked");
+    if (channel == 'ch1') location.href='/Channel1'
+    else if (channel == 'ch2') location.href = '/Channel2'
+    else if (channel == 'ch3') location.href = '/Channel3'
+    else alert('channel not set correctly - tell Dan please')
+  });
+
+  $('#kill_button').click(function() {
+    console.log("kill button pushed");
+    if (channel == 'ch1') location.href='/Channel1'
+    else if (channel == 'ch2') location.href = '/Channel2'
+    else if (channel == 'ch3') location.href = '/Channel3'
+  });
+  
+  function validateForm()
+  {
+  
+    validated = true;
+    var form = $('#cv_setup_input');
+    DataToSend = form.serializeObject();
+  /*
+    for (var key in DataToSend){
+      if (DataToSend[key].indexOf('/') > -1) alert("inputs cannot contain / character")
+      else if (DataToSend[key].indexOf(' ') > -1) alert("inputs cannot contain spaces")
+      else if (DataToSend[key] == '') alert("all inputs must be filled out")
+    }
+  */
+    document.getElementById("validate_form_button").style.display = "none";
+    document.getElementById("start_experiment").style.display = "inline-block";
+  }
+
+  function goStartTest()
+  {
+    sendValues();
+    disableInputs();
+    showButtons();
+    testUnderway();
+  }
+
+  $.fn.serializeObject = function()
+  {
+      var o = {};
+      var a = this.serializeArray();
+      $.each(a, function() {
+          if (o[this.name] !== undefined) {
+              if (!o[this.name].push) {
+                  o[this.name] = [o[this.name]];
+              }
+              o[this.name].push(this.value || '');
+          } else {
+              o[this.name] = this.value || '';
+          }
+      });
+      o['type_of_experiment'] = 'cyclic voltammetry';
+      o['channel'] = channel
+      return o;
+  };
+
+
+var DataToSend;
+//Sends values to start things make plotting, kill, and pause button visible
+//
+  function sendValues() 
+  {
+    console.log(DataToSend);
+    $.ajax({
+      type:'POST',
+      url:'/senddata',
+      async: true,
+      data: DataToSend,
+      })
+      .done(function( data ) {
+        console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+    });
+    return false;
+  }
+  
+  $('#returnButton').click(function() {
+    console.log('returnButton clicked')
+    goBackToStart();
+  });
+
+  function goBackToStart()
+  {
+  console.log('goBackToStart called');
+  showButtons()
+  $("#resume_button").style.display="none";
+  enableInputs()
+  }
+
+  function testUnderway()
+  {
+    console.log('testUnderway called');
+    document.getElementById('not_underway_display').style.display = 'none';
+    document.getElementById('underway_display').style.display = 'inline-block';
+    document.getElementById('not_underway_display_plot').style.display = 'none';
+    document.getElementById('underway_display_plot').style.display = 'inline-block';
+  }
+  
+  function testOver()
+  {
+    console.log('testOver called');
+    document.getElementById('not_underway_display').style.display = 'inline-block';
+    document.getElementById('underway_display').style.display = 'none';
+    document.getElementById('not_underway_display_plot').style.display = 'inline-block';
+    document.getElementById('underway_display_plot').style.display = 'none';
+  }
+  
+  function enableInputs()
+  {
+    console.log('enable inputs called');
+    var inputs = document.getElementsByTagName("INPUT");
+    var inputs = inputs + document.getElementsByTagName("select");
+    for (var i = 0; i < inputs.length; i++) 
+    {
+      inputs[i].disabled = false;
+      //console.log(inputs[i]);
+    }
+  }
+  
+  function disableInputs()
+  {
+    console.log('diable inputs called');
+    var inputs = document.getElementsByTagName("INPUT");
+    var inputs = inputs + document.getElementsByTagName("select");
+    for (var i = 0; i < inputs.length; i++) 
+    {
+      inputs[i].disabled = true;
+      //console.log(inputs[i]);
+    }
+  }
+// additional control 
+  function showButtons()
+  {
+    document.getElementById("goPlotting_button").style.display="inline-block"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.display="inline-block";
+    document.getElementById("pause_button").style.display="inline-block";
+  }
+  
+  function hideButtons()
+  {
+    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("kill_button").style.display="none";
+    document.getElementById("pause_button").style.display="none";
+    document.getElementById("resume_button").style.display="none";
+  }
+  function showReturnButton()
+  {
+    document.getElementById("returnButton").style.display="inline-block";
+  }
+  
+  
+  
+  //pause the test, show resume button
+  //this is hacky and i should write in a better way - like 
+  function goPause() 
+  {
+    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("resume_button").style.display="inline-block";
+    document.getElementById("kill_button").style.display="inline-block";
+    document.getElementById("pause_button").style.display="none";
+    
+    
+    document.getElementById("kill_button_plot").style.display="inline-block";
+    document.getElementById("pause_button_plot").style.display="none";
+    document.getElementById("resume_button_plot").style.display="inline-block";
+    console.log('goPause called')
+    $.ajax({
+      type:'GET',
+      url:'/pauser/' + channel, //was killing or something - will have to check to make sure this works. 
+      dataType: 'json',
+      async: true
+      })
+      .done(function( data ) {
+          console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+  }
+  
+  //resume the test
+  function goResume()
+  {
+    document.getElementById("pause_button").style.display="inline-block";
+    document.getElementById("resume_button").style.display="none";
+    document.getElementById("goPlotting_button").style.display="inline-block";
+    
+    document.getElementById("pause_button_plot").style.display="inline-block";
+    document.getElementById("resume_button_plot").style.display="none";
+    console.log('goResume called')
+    $.ajax({
+      type:'GET',
+      url:'/reviver/' + channel,
+      dataType: 'json',
+      async: true
+      })
+      .done(function( data ) {
+          console.log('something worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+  }
+  
+  //kill the test, take back to setup (page with CV, Cycle etc.)
+  function goKill()
+  {
+  enableInputs()
+  hideButtons()
+  showReturnButton()
+  testOver() // could probably consolidate these things - but oh well.
+    console.log('goKill called')
+    $.ajax({
+      type:'GET',
+      url:'/killing/' + channel,
+      dataType: 'json',
+      async: true
+      })
+      .done(function( data ) {
+          console.log('goKill worked');
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+    return false;
+  }
+//------------------------------------------------------------------------------------
+  
+//debugging
+	$("#cv_submit_button").click(function(){
+	  console.log('something got clicked');
+	  var jim = document.forms['cv_setup_input'].elements
+	  var array = document.forms['cv_setup_input'].elements.value
+	  console.log(array);
+				
+	});  
+
+//----------------------------------------------
+//plotting stuff
+  function goPlotting(){
+    event.preventDefault();
+    console.log("goPlotting got called");
+    
+    var active_tab_selector = $('.nav-tabs > li.active > a').attr('href');
+    
+    var actived_nav = $('.nav-tabs > li.active');
+    actived_nav.removeClass('active');
+    
+    //manually switch to plotting tab
+    //addClass('active');
+    $("a[href$='tabs-2']").parents('li').addClass('active');
+    
+    //hide current tab
+    $(active_tab_selector).removeClass('active');
+    $(active_tab_selector).addClass('hide');
+    console.log("active_tab");
+    console.log($(active_tab_selector));
+    
+    //display plotting tab
+    var target_tab_selector = $('#tabs-2');
+    console.log("target tab selector");
+    console.log($(target_tab_selector));
+    $(target_tab_selector).removeClass('hide');
+    $(target_tab_selector).addClass('active');
+    ploop();
+  }
+  
+  function changePlot(xaxis,yaxis,callback)
+  {
+    callback();
+  }
+  
+  function chooseP(ptype,callback) 
+  { plot = ptype; 
+    selected = true;
+    if(plot == 1) { CV_Xaxis = 'v'; CV_Yaxis = 'c' }
+    if(plot == 2) { CV_Xaxis = 't'; CV_Yaxis = 'c'  }
+    if(plot == 3) { CV_Xaxis = 't'; CV_Yaxis = 'v'  }
+    callback()
+  }
+  
+  // global varibles for plotting - might run into problems - but yolo swag
+  var CV_Xaxis = ''
+  var CV_Yaxis = ''
+  var ardu_folder;
+  var ardu_file;
+  function ploop()
+  {
+      
+      //console.log('ardustat_id below')
+      //console.log(ardustat_id)
+      
+      //TODO: add in a cycmin and cycmax thing
+      //document.write("ploop was called");
+      //var mintemp = document.getElementById("cycmin").value;
+      //var maxtemp = document.getElementById("cycmax").value;
+      if (CV_Xaxis == '') { CV_Xaxis = 'v'}
+      if (CV_Yaxis == '') { CV_Yaxis = 'c'}
+      var mintemp = 0;
+      var maxtemp = -1;
+
+      if (test_was_in_progress == false){
+        ardu_folder = DataToSend['folder_name'];
+        ardu_file = DataToSend['file_name'];
+        ardustat_id = DataToSend.ardustat_id
+      }
+      if(mintemp != "") { cycle_min = mintemp; }
+      else { cycle_min = 0 }
+      if(maxtemp != "") { cycle_max = maxtemp; }
+      else { cycle_max = -1 }
+      //add functionality so that can look at different plots
+      var foo = "test";
+      $.ajax({
+      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general, or in readme make sure that user sets pithy on 4001, 4003, 4004 
+      + ardu_folder+"/"
+      + ardu_file+"/"
+      + cycle_min+"/"
+      + cycle_max+"/"
+      + CV_Xaxis+"/"
+      + CV_Yaxis+"/"
+      + ardustat_id+"/"
+      })
+      .done(function( data ) {
+          console.log('.');
+          image = data
+          imageUrl = "http://localhost:4001/"+image
+          //document.write(imageUrl);
+          console.log(imageUrl);
+          changeImage("fooplotter",imageUrl)
+          ploop()
+      })
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.log('something went wrong');
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+  }
+  
+  function changeImage(id,source)
+  {
+  document.getElementById(id).src=source;
+  }
+  
+//----------------------------------------------------------------  
+//tab stuff
+$(document).ready(function() {
+    $('.nav-tabs > li > a').click(function(event){
+    event.preventDefault();//stop browser to take action for clicked anchor'
+    console.log("you got clicked");
+
+    //get displaying tab content jQuery selector
+    var active_tab_selector = $('.nav-tabs > li.active > a').attr('href');					
+
+    //find actived navigation and remove 'active' css
+    var actived_nav = $('.nav-tabs > li.active');
+    actived_nav.removeClass('active');
+
+    //add 'active' css into clicked navigation
+    $(this).parents('li').addClass('active');
+    console.log("parents");
+    console.log($(this).parents('li'));
+
+    //hide displaying tab content
+    $(active_tab_selector).removeClass('active');
+    $(active_tab_selector).addClass('hide');
+    //console.log("active tab selector");
+    //console.log($(active_tab_selector));
+
+    //show target tab content
+    var target_tab_selector = $(this).attr('href');
+    //var target_tab_selector = $('.nav-tabs > #tabs-2').attr('href');
+    //console.log("target tab selector");
+    //console.log($(target_tab_selector));
+    $(target_tab_selector).removeClass('hide');
+    $(target_tab_selector).addClass('active');
+     });
+});       
+
+
+        
+        
+    /*
+    // do on click thing - then loop through to find each element - then post it.
+    
+        
+        $.ajax({
+          type: 'POST',
+        	dataType: "json",
+        	async: true,
+        	url: '/senddata',
+        	data: {cv_setup:$("#cv_setup_input").val()},
+        	success: function("here is the stuff "+stuff){
+            console.log(stuff);
+          }
+      });
+    });
+    */
+  </script>
+</body>

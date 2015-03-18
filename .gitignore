@@ -1,8 +1,9 @@
+Data*
+*.txt
+*.csv
 *.png
 *.dat
-*.pyc
-*.pickle
-*.ardudata
-*.csv
-*.txt
-Node_Client/resistance_tables/*
+*~
+resistance_tables*
+*experiment*
+*force*
