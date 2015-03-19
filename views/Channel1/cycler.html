@@ -69,7 +69,8 @@
             <tr> <td><h5>Folder Name: </h5></td><td><input type='text' id='folder_name' value='cyc' class="form-control"></td>  <td> (No spaces please - will fix soon) </td></tr>
             <tr> <td><h5>Experiment Name: </h5></td><td><input type='text' id='file_name' value='t1' class="form-control"></td><td> (No spaces please - will fix soon)</td></tr>
             <tr> <td><h5>Number of Cycles </h5></td><td><input type='text' id='number_of_cycles' value='2' class="form-control"></td></tr>
-            <tr> <td><h5>Notes </h5></td><td><input type='text' id='notes' value='2' class="form-control"></td></tr>
+            <tr> <td><h5>Read Timing: </h5></td><td><input type='text' id='read_timing' value='100' class="form-control"></td>  <td>(ms) Use 100 for short tests and 1000 for longer tests.  </td></tr>
+            <tr> <td><h5>Notes </h5></td><td><input type='text' id='notes' value='' class="form-control"></td></tr>
           </table>
         </div> 
       <input type="button" value="Add Step" onclick="addRow('new_cycler_table')" class="btn btn-default">
@@ -298,7 +299,9 @@ catch(e){alert(e);}}
         var cyc_cycles = document.getElementById("number_of_cycles").value;
         var cyc_http_port = document.getElementById("http_port").value;
         var cyc_serial_port = document.getElementById("serial_port").value;
-        TableData.unshift({'cyc_folder':cyc_folder, 'cyc_file_name':cyc_file, 'cyc_ardustat_id':cyc_ardustat_id, 'cyc_cycles':cyc_cycles, 'cyc_http_port':cyc_http_port, 'cyc_serial_port':cyc_serial_port})
+        var read_timing = document.getElementById("read_timing").value;
+        var notes = document.getElementById("notes").value;
+        TableData.unshift({'cyc_folder':cyc_folder, 'cyc_file_name':cyc_file, 'cyc_ardustat_id':cyc_ardustat_id, 'cyc_cycles':cyc_cycles, 'cyc_http_port':cyc_http_port, 'cyc_serial_port':cyc_serial_port, 'read_timing':read_timing, 'notes':notes})
         //console.log(TableData);
         TableData.unshift({'electro_function':'cycle'});
         return TableData;

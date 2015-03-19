@@ -75,6 +75,7 @@
           Start test
            at OCV? <input type = 'checkbox' name='start_at_ocv' value='True' class="form-inline"> If other - Please Specify 
           <input type='text' name='other_start_volt' class="form-inline"><br>
+          Read Timing <input type='text' name='read_timing' value='100'>(ms) This just affects how much data is taken. Use 100 for short tests. 1000 for longer ones.<br>
           Start Direction <select name='cv_dir' class="form-inline"> 
             <option value='charging'> Charge </option>
             <option value='discharging'> Discharge</option>
@@ -177,8 +178,6 @@
     data: {channel:channel},     
     })
     .done(function( data ) {
-      //can make multi-step process
-
       //establish whether cv or cycle
       //then send to correct page
       console.log('data below')
@@ -202,7 +201,7 @@
       else { 
         console.log('there is no test running - as you were')
       }
-      //on that page - send another request (not horribly efficient but I think its ok?)
+      //on that page - send another request 
       //if that is running - display the setup, allow to go to plotting stuff
     })
     .fail(function( jqXHR, textStatus, errorThrown ) {
@@ -377,7 +376,7 @@ var DataToSend;
       //console.log(inputs[i]);
     }
   }
-// additional control 
+// additional user control 
   function showButtons()
   {
     document.getElementById("goPlotting_button").style.display="inline-block"; 
@@ -400,7 +399,6 @@ var DataToSend;
   
   
   //pause the test, show resume button
-  //this is hacky and i should write in a better way - like 
   function goPause() 
   {
     document.getElementById("goPlotting_button").style.display="none"; 

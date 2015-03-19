@@ -1,8 +1,4 @@
 var socket = io();
-//no need to be complicated. Have a different socket.js script for each. Server globally emits message, with channel number as type - instruction as message. 
-//channel = 'ch1'
-
-
 socket.on('connection', function(msg) {
 	console.log(msg)
 });

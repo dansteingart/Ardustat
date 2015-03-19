@@ -34,6 +34,8 @@ var lastTime = {}; //''
 lastTime.ch1 = 0; lastTime.ch2 = 0; lastTime.ch3 = 0;
 
 //writing GLOBALS
+var read_timing = {}
+read_timing.ch1 = 100; read_timing.ch2 = 100; read_timing.ch3 = 100;
 var CSV_ON = {};
 CSV_ON.ch1 = false; CSV_ON.ch2 = false; CSV_ON.ch3 = false;
 var labels = []; //
@@ -248,7 +250,7 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-devs = ['/dev/tty.usbmodemfd121']
+devs = ['/dev/tty.usbmodemfd121','/dev/tty.usbmodemfa131']
 var ports = [];
 //startserial = function() {
 for (var i = 0; i < devs.length; i++) {
@@ -622,6 +624,10 @@ function setstuff(req,res)
 	      {
 		      console.log("calibration should start");
 		      console.log("value of resistor is "+req.body.resistor_value);
+          console.log("changed the read-timing to 100ms")
+          clearInterval(t[channel])
+          read_timing[channel] = 100
+          start_t[channel]();
 		      calibrator(channel,req.body.resistor_value);
 		      res.send('calibration called on channel ' + channel);
 	      }
@@ -680,6 +686,11 @@ function cv_start_go(channel,value)
 		cv_arr[channel] = [] // ??
 		cv_filename[channel] = value['file_name'];
 		cv_foldername[channel] = value['folder_name'];
+
+    clearInterval(t[channel])
+    read_timing[channel] = value.read_timing
+    start_t[channel]();
+
 		console.log('starting');
 		console.log(cv_foldername[channel]);
 		if (value['cv_dir'] == 'charging') cv_dir[channel] = 1;
@@ -878,7 +889,13 @@ function cycling_start_go(channel,value)
   cyc_folder_name[channel] = value[1].cyc_folder
   cyc_file_name[channel] = value[1].cyc_file_name
   cycling_cycles[channel] = value[1].cyc_cycles
-  //TODO: add in stuff for ardustat_id, serial_port, http_port
+
+  clearInterval(t[channel])
+  read_timing[channel] = value[1].read_timing
+  start_t[channel](); 
+
+  console.log('read_timing has been set to ', read_timing[channel], 'on channel ', channel)
+  
   
   //start logging to csv
   console.log(cyc_folder_name[channel]+'/'+cyc_file_name[channel])
@@ -1299,6 +1316,8 @@ function test_finished(channel)
 	kill[channel] = true;
 	CSV_ON[channel] = false;
   setTimeout(function(){reset_globals(channel)},1000)
+  clearInterval(t[channel]) //stop the function that gets called all the time.
+
 
 	io_emit(channel, 'stop message'); // io_emit(channel, 'stop message')
 }
@@ -1393,6 +1412,7 @@ command_list.ch1 = []
 command_list.ch2 = []
 command_list.ch3 = []
 
+/*
 t2 = setInterval(function()
 {
   command_list.ch1.push('s0000');
@@ -1420,6 +1440,51 @@ t2 = setInterval(function()
   if ((arb_cycling.ch3) && (kill.ch3 == false)) cycling_stepper('ch3')
 
 }, 100);
+*/
+
+//needs to be split into 3 channels so can have 3 seperate 
+//TODO instead of just counting number of ports - check if port is open and then write to it.
+var t = {}
+var start_t = {}
+start_t.ch1 = function() {
+  t.ch1 = setInterval(function(){
+    if (ports.length > 0){
+      console.log('read timing of ch1 ', read_timing.ch1)
+      command_list.ch1.push('s0000');
+      if (calibrate.ch1) calibrate_step('ch1')
+      if (cv_resting.ch1) cv_rester('ch1')
+      if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
+      if ((cv_finisher_flag.ch1) && (kill.ch1 == false)) cv_finisher('ch1')
+      if ((arb_cycling.ch1) && (kill.ch1 == false)) cycling_stepper('ch1')
+    }
+  }, read_timing.ch1);
+}
+ 
+start_t.ch2 = function() {
+  t.ch2 = setInterval(function(){
+    if (ports.length > 1){
+      command_list.ch2.push('s0000');
+      if (calibrate.ch2) calibrate_step('ch2')
+      if (cv_resting.ch2) cv_rester('ch2')
+      if ((cv.ch2) && (kill.ch2 == false)) cv_stepper('ch2')
+      if ((cv_finisher_flag.ch2) && (kill.ch2 == false)) cv_finisher('ch2')
+      if ((arb_cycling.ch2) && (kill.ch2 == false)) cycling_stepper('ch2')
+    }
+  }, read_timing.ch2);
+}
+
+start_t.ch3 = function() {
+  t.ch3 = setInterval(function(){
+    if (ports.length > 2){
+      command_list.ch3.push('s0000');
+      if (calibrate.ch3) calibrate_step('ch3')
+      if (cv_resting.ch3) cv_rester('ch3')
+      if ((cv.ch3) && (kill.ch3 == false)) cv_stepper('ch3')
+      if ((cv_finisher_flag.ch3) && (kill.ch3 == false)) cv_finisher('ch3')
+      if ((arb_cycling.ch3) && (kill.ch3 == false)) cycling_stepper('ch3')
+    }
+  }, read_timing.ch3);
+}
 
 t1 = setInterval(function()
 {
