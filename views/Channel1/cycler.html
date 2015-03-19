@@ -165,7 +165,6 @@
   <script language="javascript">
   console.log('this is Channel '+channel+'/Cycler')
   test_was_in_progress = false
-//gonna do the same thing - where on each page it checks if things are running and does stuff -- this is pretty inefficient but yolo.
   $( document ).ready(function() {
     $.ajax({
     type:'GET',
@@ -199,7 +198,6 @@
       else { 
         console.log('there is no test running - as you were')
       }
-      //on that page - send another request (not horribly efficient but I think its ok?)
       //if that is running - display the setup, allow to go to plotting stuff
     })
     .fail(function( jqXHR, textStatus, errorThrown ) {
@@ -237,8 +235,7 @@ function showSetup(data){
 
 }
 
-//dynamic table. need to work out how to do dynamic naming - think it should be done with 
-
+//dynamic table
 function addRow(tableID){
     var table=document.getElementById(tableID);
     var rowCount=table.rows.length;
@@ -248,23 +245,7 @@ function addRow(tableID){
     console.log('colCount ' + colCount)
     console.log(table.rows[rowCount-1].innerHTML)
     row.innerHTML = '<td><input type="checkbox" name="chk"></td> <td><select name="cyc_mode'+rowCount+'"> <option value="galvanostatic">Galvanostatic</option> <option value="Potentiostatic">Potentiostatic</option> <option name="rest">Rest</option></select></td> <td><input type="text" name="value" value="">Either V or mA</td> <td><input type="text" name="time_cutoff'+rowCount+'" value=""></td> <td><input type="text" name="voltage_cutoff'+rowCount+'" value=""></td> <td><input type="text" name="current_cutoff'+rowCount+'" value=""></td>'
-    /*
-    for(var i=0;i<colCount;i++)
-    {
-      var newcell=row.insertCell(i);
-      newcell.innerHTML=table.rows[1].cells[i].innerHTML;
-      //here I could do my own stuff and I could probably make it work... 
-    switch(newcell.childNodes[1].type)
-    {
-      case"text":newcell.childNodes[1].value="";
-      break;
-      case"checkbox":newcell.childNodes[1].checked=false;
-      break;
-      case"select-one":newcell.childNodes[1].selectedIndex=0;break;
-    }
-    
-    }
-    */
+
   }
 function deleteRow(tableID){try{var table=document.getElementById(tableID);
 var rowCount=table.rows.length;
@@ -297,7 +278,6 @@ catch(e){alert(e);}}
   var TableData;
   var cyc_ardustat_id;
     //this is called to send cycle info
-    //these variables need to be made global?? or at least accessible by thing to call plotter. can maybe get it from TableData
     function storeTblValues()
     {
        TableData = new Array();
@@ -312,7 +292,6 @@ catch(e){alert(e);}}
             }
         });
         TableData.shift();  // first row will be empty - so remove
-        //ugly hack to get the elements of the basic setup by their ids: could probably do this a fancier way but would spend so long trying probably not worth it
         var cyc_folder = document.getElementById("folder_name").value;
         var cyc_file = document.getElementById("file_name").value;
         cyc_ardustat_id = document.getElementById("ardustat_id").value;
@@ -356,8 +335,6 @@ catch(e){alert(e);}}
       }
     }
     //fires functions associated with starting test
-
-
     function validateForm()
     {
         var validated = false;
@@ -369,20 +346,11 @@ catch(e){alert(e);}}
         toV.cyc_http_port = $("#http_port").val();
         toV.cyc_serial_port = $("#serial_port").val();
 
-        // can i get these by index number? I think so...
-        //for all:
         for (var i = 0; i < toV.length; i ++ ){
           if (toV[i].indexOf('/') > -1) alert("inputs cannot contain / character")
           else if (toV[i].indexOf(' ') > -1) alert("inputs cannot contain spaces")
           else if (toV[i] == '') alert("all inputs must be filled out")
         }
-
-        //for file and folder :
-
-        //for number of cycles 
-        //if (typeof(toV.cycles) != 'number') alert("cycles must be an integer")
-
-
 
         console.log(toV.cyc_file)
         console.log(toV)
@@ -390,8 +358,6 @@ catch(e){alert(e);}}
         //if errors: alert errors. else: send the folder and file to server
         //if server responds that things are all good goStartTest()
         //else: alert that file already exsists, and ask if want to continue
-        //write over if things are fucked
-
         //make ajax request with folder and filename
 
         validated = true;
@@ -407,7 +373,7 @@ catch(e){alert(e);}}
             .done(function( data ) {
                 console.log('the response was '+data);
                 if (data == "filename already used") {
-                  //alert('CAREFUL - There is already a file with this name. Continuing will overwrite the file')
+                  alert('CAREFUL - There is already a file with this name. Continuing will overwrite the file')
                   document.getElementById("continue_anyway_button").style.display = "inline-block"
                 }
                 else{
@@ -424,7 +390,7 @@ catch(e){alert(e);}}
             });
           return false;
         }
-        else { alert("you've messed something up - fix it") }
+        else { alert("dan messed something up - please tell him to fix it") }
     }
     function goStartTest()
     {
@@ -444,12 +410,9 @@ catch(e){alert(e);}}
         //console.log(inputs[i]);
       }
     }
-    
-    
+
     function convertArrayToJSON(TableData)
     {
-        //make the next button available TODO: make this a callback - look for errors etc. then call it back
-        //fshowButtons()
         console.log('convertArraytoJSON got called');
         called()
         //goPlotting();
@@ -500,10 +463,9 @@ catch(e){alert(e);}}
 }
 
 
-//button stuff - this should definitely be abstracted
   function showButtons()
   {
-    document.getElementById("goPlotting_button").style.display="inline-block"; //definitely cleaner way to write this
+    document.getElementById("goPlotting_button").style.display="inline-block";
     document.getElementById("kill_button").style.display="inline-block";
     document.getElementById("pause_button").style.display="inline-block";
     document.getElementById("step_skip_button").style.display="inline-block";
@@ -511,7 +473,7 @@ catch(e){alert(e);}}
   
   function hideButtons()
   {
-    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("goPlotting_button").style.display="none";
     document.getElementById("kill_button").style.display="none";
     document.getElementById("pause_button").style.display="none";
     document.getElementById("step_skip_button").style.display="none";
@@ -525,10 +487,9 @@ catch(e){alert(e);}}
   
   
   //pause the test, show resume button
-  //this is hacky and i should write in a better way - like 
   function goPause() 
   {
-    document.getElementById("goPlotting_button").style.display="none"; //definitely cleaner way to write this
+    document.getElementById("goPlotting_button").style.display="none";
     document.getElementById("resume_button").style.display="inline-block";
     document.getElementById("kill_button").style.display="inline-block";
     document.getElementById("pause_button").style.display="none";
@@ -577,7 +538,7 @@ catch(e){alert(e);}}
   enableInputs()
   hideButtons()
   showReturnButton()
-  testOver() // could probably consolidate these things - but oh well.
+  testOver()
     console.log('goKill called')
     $.ajax({
       type:'GET',
@@ -604,11 +565,6 @@ catch(e){alert(e);}}
     });
   }
   
-  //TODO:should probably put this in a seperate script but lets get it working then go from there.
-  //pretty much working - just not switching in the url - thats not the biggest deal though.
-  //see if we can get a plot up next
-  //everything working but the navtab click thing
-
 
   </script>
   <script>
@@ -647,14 +603,6 @@ catch(e){alert(e);}}
     
   cycle_get_image();
   }
-  /*
-  setInterval(function() {
-    //console.log('ploop was called again');
-    console.log('.');
-    cycle_get_image();
-    }, 1000);
-  }
-  */
   
   function chooseP(ptype,callback) 
   { plot = ptype; 
@@ -665,7 +613,7 @@ catch(e){alert(e);}}
     callback()
   }
   
-  // global varibles for plotting - might run into problems - but yolo swag
+  // global varibles for plotting
   var cycle_x = ''
   var cycle_y = ''
   
@@ -676,9 +624,6 @@ catch(e){alert(e);}}
   function cycle_get_image()
   {
       //TODO: add in a cycmin and cycmax thing
-      //document.write("ploop was called");
-      //var mintemp = document.getElementById("cycmin").value;
-      //var maxtemp = document.getElementById("cycmax").value;
       if (cycle_x = '') cycle_x = 't'
       if (cycle_y = '') cycle_y = 'v'
       var mintemp = 0;
@@ -695,7 +640,7 @@ catch(e){alert(e);}}
       else { cycle_min = 0 }
       if(maxtemp != "") { cycle_max = maxtemp; }
       else { cycle_max = -1 }
-      url = "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general, or in readme make sure that user sets pithy on 4001, 4003, 4004 
+      url = "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -706,7 +651,7 @@ catch(e){alert(e);}}
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
-      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general, or in readme make sure that user sets pithy on 4001, 4003, 4004 
+      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -722,7 +667,7 @@ catch(e){alert(e);}}
           imageUrl = "http://localhost:4001/"+image
           //document.write(imageUrl);
           changeImage("fooplotter",imageUrl)
-          cycle_get_image() //aggressive manouver
+          cycle_get_image()
       },
       async:   true,
       })

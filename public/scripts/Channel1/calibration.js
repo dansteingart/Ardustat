@@ -1,17 +1,5 @@
 //calibration functions
 console.log('calibration functions is here');
-
-/*when button clicked 
-- send ajax request to server. server sets the ardustat id, and checks to see if there is a resistance table.
-if there is a resistance table
-- tell user, ask to do calibration anyway
-if there isnt
-- tell user, insist on calibration
-
-// for now - send message - receive response. TODO urgent - work out why not getting response from server, look up ajax docs.
-// then go onto calibration.
-*/
-//channel = 'ch1'
 var ardustat_id;
 $('#ardustat_id_submit').click(function() {
   console.log('ardustat_input clicked');
@@ -64,7 +52,7 @@ $("#calibrate").click(function() {
   var form = $('#ardustat_input');
   DataToSend = form.serializeObject();
   resistor_value = $('#resistor_value').val()
-  console.log('resistor value is ' + resistor_value);  //TODO: error checking - if user enters 10,000 won't know that something hasn't worked. wow this stuff is truly a pain in the ass...
+  console.log('resistor value is ' + resistor_value);  //TODO: error checking - if user enters 10,000 won't know that something hasn't worked.
   DataToSend['resistor_value'] = resistor_value;
   console.log(DataToSend);
   $.ajax({
@@ -122,12 +110,5 @@ $.fn.serializeObject = function()
     return o;
 };
 
-/*
-$('form').submit(function(){
-  socket.emit('chat message', $('#m').val());
-  $('#m').val('');
-  return false;
-});
-*/
 
 

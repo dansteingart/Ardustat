@@ -84,11 +84,6 @@
   <script>
   channel = 'ch3'
   channel_href = 'Channel3'
-  /* TODO:
-  When user opens this page - selects what ardustat id wants to use: Save this in a cookie. (When have 3 channels gonna have to have this already set up)
-  If there is no calibration table - tell user to go to calibration portion.
-  Have calibration portion avaibable next to the cycling and cv portion.
-  */
   $( document ).ready(function() {
     $.ajax({
     type:'GET',
@@ -124,8 +119,6 @@
       else { 
         console.log('there is no test running - as you were')
       }
-      //on that page - send another request (not horribly efficient but I think its ok?)
-      //if that is running - display the setup, allow to go to plotting stuff
     })
     .fail(function( jqXHR, textStatus, errorThrown ) {
       console.log('something went wrong');
@@ -163,8 +156,7 @@ function blinkButton(){
       console.log(errorThrown);
     })
   }
-  //Alternatively - could have the node program scan for what ardustat's are on what tty - and send this info over to the user, so they know what channel is which.
-  
+
   </script>
 </body>
 

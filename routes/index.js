@@ -27,7 +27,7 @@ router.get('/setName/*',function(req,res) {
   name_setter(req,res);
 });
 
-//Add in the channel to URL... (Or make them all posts???) (Think I have to add the channel in after the (req,res?))
+//Add in the channel to URL
 router.get('/killing/*',function(req,res) {
   functions.killer(req,res);
 });
@@ -42,14 +42,12 @@ router.get('/step_skip/*',function(req,res) {
 });
 
 
-/* GET home page. */  // changed home page
-
+/* GET home page. */ 
 router.get('/', function(req, res){
   indexer = fs.readFileSync('views/index.html').toString()
   res.send(indexer);
 });
 
-//this is hacky and there has to be a better way to do it but it works. so for now, it stays.
 router.get('/daniel', function(req, res){
 	indexer = fs.readFileSync('views/daniel.html').toString()
   res.send(indexer);
@@ -60,27 +58,27 @@ router.get('/debug', function(req, res){
   res.send(indexer);
 });
 
-// Goal - To display directory of files 
+
 router.get('/Analysis', function(req, res){
 	indexer = fs.readFileSync('views/Analysis/index.html').toString()
 	functions.analysis_display(req,res,indexer)
 });
 
 router.post('/show_files', functions.file_display, function(req, res, next) {
-  console.log("this is the router, why doesn't this print anything?: " + req.body);
+  console.log("this is the router")
   functions.file_display
 });
 
 router.get('/getstatus', functions.give_status, function(req, res, next) {
-  console.log("this is the router, why doesn't this print anything?: " + req.body);
+  console.log("this is the router")
 });
 
 router.get('/blink_button', functions.blink_button, function(req, res, next) {
-  console.log("this is the router, why doesn't this print anything?: " + req.body);
+  console.log("this is the router")
 });
 
 router.post('/senddata', functions.setstuff, function(req, res, next) {
-  console.log("this is the router, why doesn't this print anything?: " + req.body);
+  console.log("this is the router")
   //res.send("Working on it...");
 });
 
@@ -146,12 +144,5 @@ router.get('/Channel3/Calibration', function(req, res, next){
   indexer = fs.readFileSync('views/Channel1/calibration.html').toString() 
   functions.replacer_3(req,res,indexer)
 });
-
-//killing, pausing, skipping
-//kill
-
-
-
-//Channel 2 routes - tbdl
 
 module.exports = router;

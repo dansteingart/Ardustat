@@ -1,9 +1,4 @@
 //default stuff
-
-//TODO: change dependencies in the package.json 
-//TODO: change the way am getting bower__components. (right now its manual)
-//TODO: change firmware so that it prints out last command that wasn't 's0000'
-
 //requirements from npm
 var express = require('express');
 var path = require('path');
