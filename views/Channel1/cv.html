@@ -168,6 +168,8 @@
 //starting the stuff ----------------------------------------------------
   test_was_in_progress = false;
   var ardustat_id
+  first_plot = false
+  last_plot = false
 
 //onload get status
   $( document ).ready(function() {
@@ -277,6 +279,7 @@ function showSetup(data){
     disableInputs();
     showButtons();
     testUnderway();
+    first_plot = true;
   }
 
   $.fn.serializeObject = function()
@@ -351,6 +354,8 @@ var DataToSend;
     document.getElementById('underway_display').style.display = 'none';
     document.getElementById('not_underway_display_plot').style.display = 'inline-block';
     document.getElementById('underway_display_plot').style.display = 'none';
+    last_plot = true;
+    ploop()
   }
   
   function enableInputs()
@@ -461,7 +466,7 @@ var DataToSend;
   enableInputs()
   hideButtons()
   showReturnButton()
-  testOver() 
+  //testOver() 
     console.log('goKill called')
     $.ajax({
       type:'GET',
@@ -557,6 +562,32 @@ var DataToSend;
       else { cycle_min = 0 }
       if(maxtemp != "") { cycle_max = maxtemp; }
       else { cycle_max = -1 }
+
+      countto = 1
+      //is it the first or last plot?  
+      console.log(first_plot)
+      if (first_plot) {
+        what_plot = 'start'
+        console.log('first plot called')
+      }
+      else if (last_plot){
+        what_plot = 'end'
+        console.log('last plot called')
+      } 
+      else what_plot = ''
+
+      url = "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+      + ardu_folder+"/"
+      + ardu_file+"/"
+      + cycle_min+"/"
+      + cycle_max+"/"
+      + CV_Xaxis+"/"
+      + CV_Yaxis+"/"
+      + ardustat_id+"/"
+      + countto + "/"
+      + what_plot + "/"
+      console.log(url)
+
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
@@ -568,6 +599,8 @@ var DataToSend;
       + CV_Xaxis+"/"
       + CV_Yaxis+"/"
       + ardustat_id+"/"
+      + countto + "/"
+      + what_plot
       })
       .done(function( data ) {
           console.log('.');
@@ -576,7 +609,8 @@ var DataToSend;
           //document.write(imageUrl);
           console.log(imageUrl);
           changeImage("fooplotter",imageUrl)
-          ploop()
+          first_plot = false;
+          if (!last_plot) ploop()
       })
       .fail(function( jqXHR, textStatus, errorThrown ) {
         console.log('something went wrong');
@@ -584,7 +618,8 @@ var DataToSend;
         console.log(textStatus);
         console.log(errorThrown);
       });
-  }
+}
+
   
   function changeImage(id,source)
   {

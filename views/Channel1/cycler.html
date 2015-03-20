@@ -166,6 +166,8 @@
   <script language="javascript">
   console.log('this is Channel '+channel+'/Cycler')
   test_was_in_progress = false
+  first_plot = false
+  last_plot = false
   $( document ).ready(function() {
     $.ajax({
     type:'GET',
@@ -320,11 +322,14 @@ catch(e){alert(e);}}
     function testOver()
     {
       console.log('testOver called');
+      last_plot = true;
+      console.log(last_plot)
       document.getElementById('not_underway_display').style.display = 'inline-block';
       document.getElementById('underway_display').style.display = 'none';
       document.getElementById('not_underway_display_plot').style.display = 'inline-block';
       document.getElementById('underway_display_plot').style.display = 'none';
       document.getElementById('was_running').style.display = 'none';
+      cycle_get_image()
     }
     
     function enableInputs()
@@ -401,6 +406,7 @@ catch(e){alert(e);}}
       disableInputs();
       showButtons();
       testUnderway();
+      first_plot = true; //flag so that correct thing is sent to pithy plotting
     }
     
     function disableInputs()
@@ -643,13 +649,29 @@ catch(e){alert(e);}}
       else { cycle_min = 0 }
       if(maxtemp != "") { cycle_max = maxtemp; }
       else { cycle_max = -1 }
+
+      //countto 
+      countto = 1
+      //is it the first or last plot?  
+      if (first_plot) {
+        what_plot = 'start'
+        console.log('first plot called')
+      }
+      else if (last_plot){
+        what_plot = 'end'
+        console.log('last plot called')
+      } 
+      else what_plot = ''
       url = "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
       + cycle_max+"/"
       + "t"+"/"
-      + "v"+"/";
+      + "v"+"/"
+      + cyc_ardustat_id + "/"
+      + countto + "/"
+      + what_plot +'/';
       console.log(url)
       //add functionality so that can look at different plots
       var foo = "test";
@@ -661,16 +683,22 @@ catch(e){alert(e);}}
       + cycle_max+"/"
       + "t"+"/"
       + "v"+"/"
-      + cyc_ardustat_id + "/",
+      + cyc_ardustat_id + "/"
+      + countto + "/"
+      + what_plot,
       success: function(result){
+          
           image = result
           //debug
           //console.log('result from ploop');
           console.log(result);
           imageUrl = "http://localhost:4001/"+image
           //document.write(imageUrl);
+          first_plot = false
           changeImage("fooplotter",imageUrl)
-          cycle_get_image()
+          if (!last_plot) cycle_get_image()
+          
+          //last_plot = false
       },
       async:   true,
       })

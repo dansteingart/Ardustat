@@ -250,7 +250,7 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-devs = ['/dev/tty.usbmodemfd121','/dev/tty.usbmodemfa131']
+devs = ['/dev/tty.usbmodemfd121']
 var ports = [];
 //startserial = function() {
 for (var i = 0; i < devs.length; i++) {
@@ -707,7 +707,7 @@ function cv_start_go(channel,value)
 		//cv_step = cv_start
 		cv_DAC2[channel] = parseFloat(value['DAC2_value']);
     cv_raw_reading[channel] = ''
-    cv_rest_time[channel] = value['rest_time'];
+    cv_rest_time[channel] = parseFloat(value['rest_time']);
     cv_relative_to_ocv[channel] = value['relative_to_ocv']; //TODO make this so you can do it for either voltage. 
     //flags for the starter
     if (value['start_at_ocv']) 
@@ -715,7 +715,7 @@ function cv_start_go(channel,value)
       cv_start_at_ocv[channel] = true
     }
     else{ 
-      cv_step[channel] = value['other_start_volt'];
+      cv_step[channel] = parseFloat(value['other_start_volt']);
     }
     //start stuff
     cv_send_cycle(channel,cv_cycle[channel])
@@ -752,7 +752,7 @@ function cv_rester(channel){
 		  
 		  
 		  //TODO wishlist - make this fancier - user can set more things. 
-		  if (cv_start_at_ocv[channel] == true) cv_step[channel] = cv_ocv_value[channel];
+		  if (cv_start_at_ocv[channel] == true) cv_step[channel] = parseFloat(cv_ocv_value[channel]);
 		  if (cv_relative_to_ocv[channel]) {
 		    cv_max[channel] = cv_max[channel] + cv_ocv_value[channel];
 		    cv_min[channel] = cv_min[channel] + cv_ocv_value[channel];
@@ -760,7 +760,7 @@ function cv_rester(channel){
 		  
 		  //set the potential to the start
 		  console.log(cv_ocv_value[channel]);
-		  console.log(cv_step[channel]);
+		  //console.log(cv_step[channel].toString());
 		  potentiostat(channel,cv_step[channel])
       cv_finish_value[channel] = cv_step[channel] //the finish value is the same as the start value.
 
@@ -780,7 +780,7 @@ function cv_stepper(channel)
 	{
 		console.log("next step")
 		cv_time[channel] = time
-		cv_step[channel] = cv_step[channel] + cv_dir[channel]*.005
+		cv_step[channel] = parseFloat(cv_step[channel]) + parseFloat(cv_dir[channel]*.005)
 		if (cv_step[channel] > cv_max[channel] & cv_dir[channel] == 1)
 		{
 			cv_dir[channel] = -1
@@ -989,7 +989,7 @@ function cycling_stepper(channel)
 function next_step(channel)
 {
   console.log('next_step called on channel ' + channel);
-  var quit = false; //quit is local
+  var quit = false; //quit is local 
 	arb_cycling_step[channel]++
   console.log('cycle number is ', cycling_cycle[channel])
   console.log('step number is ', arb_cycling_step[channel])
