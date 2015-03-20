@@ -72,8 +72,10 @@
           Rate: <input type='text' name='rate' value='1' class="form-inline"> mV/s<br>
           DAC2 Val: <input type='text' name='DAC2_value' value='2.5'><br>
           Max and Min Potentials relative to OCV? <input type='checkbox' name='relative_to_ocv' value='True' class="form-inline"> True <br>
-          Start test
-           at OCV? <input type = 'checkbox' name='start_at_ocv' value='True' class="form-inline"> If other - Please Specify 
+         Start test at OCV? <select name='start_at_ocv' class="form-inline"> 
+          <option value='true'> True </option>
+          <option value='false'> False </option>
+          </select> If other - Please Specify 
           <input type='text' name='other_start_volt' class="form-inline"><br>
           Read Timing <input type='text' name='read_timing' value='100'>(ms) This just affects how much data is taken. Use 100 for short tests. 1000 for longer ones.<br>
           Start Direction <select name='cv_dir' class="form-inline"> 
@@ -591,7 +593,7 @@ var DataToSend;
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
-      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+      url: "http://25.104.125.224:4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -605,7 +607,7 @@ var DataToSend;
       .done(function( data ) {
           console.log('.');
           image = data
-          imageUrl = "http://localhost:4001/"+image
+          imageUrl = "http://25.104.125.224:4001/"+image
           //document.write(imageUrl);
           console.log(imageUrl);
           changeImage("fooplotter",imageUrl)

@@ -250,7 +250,7 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-devs = ['/dev/tty.usbmodemfd121']
+devs = ['/dev/ttyACM0']
 var ports = [];
 //startserial = function() {
 for (var i = 0; i < devs.length; i++) {
@@ -710,6 +710,7 @@ function cv_start_go(channel,value)
     cv_rest_time[channel] = parseFloat(value['rest_time']);
     cv_relative_to_ocv[channel] = value['relative_to_ocv']; //TODO make this so you can do it for either voltage. 
     //flags for the starter
+    console.log('start test at ocv ',value['start_at_ocv'])
     if (value['start_at_ocv']) 
     { 
       cv_start_at_ocv[channel] = true
@@ -748,7 +749,9 @@ function cv_rester(channel){
       console.log('rest_time is over');
       //take a reading
 		  cv_reading[channel] = last_ardu_reading[channel]
-		  cv_ocv_value[channel] = cv_reading[channel]['working_potential']
+		  cv_ocv_value[channel] = parseFloat(cv_reading[channel]['working_potential'])
+      console.log('cv_rester - taking into account the cv_reading which is below')
+      console.log(cv_reading[channel])
 		  
 		  
 		  //TODO wishlist - make this fancier - user can set more things. 
@@ -759,7 +762,10 @@ function cv_rester(channel){
 		  }
 		  
 		  //set the potential to the start
+      console.log('ocv value is ')
 		  console.log(cv_ocv_value[channel]);
+      console.log('step value is ')
+      console.log(cv_step[channel])
 		  //console.log(cv_step[channel].toString());
 		  potentiostat(channel,cv_step[channel])
       cv_finish_value[channel] = cv_step[channel] //the finish value is the same as the start value.
@@ -781,6 +787,7 @@ function cv_stepper(channel)
 		console.log("next step")
 		cv_time[channel] = time
 		cv_step[channel] = parseFloat(cv_step[channel]) + parseFloat(cv_dir[channel]*.005)
+    console.log(cv_step[channel])
 		if (cv_step[channel] > cv_max[channel] & cv_dir[channel] == 1)
 		{
 			cv_dir[channel] = -1

@@ -676,7 +676,7 @@ catch(e){alert(e);}}
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
-      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+      url: "http://25.104.125.224:4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -692,7 +692,7 @@ catch(e){alert(e);}}
           //debug
           //console.log('result from ploop');
           console.log(result);
-          imageUrl = "http://localhost:4001/"+image
+          imageUrl = "http://25.104.125.224:4001/"+image
           //document.write(imageUrl);
           first_plot = false
           changeImage("fooplotter",imageUrl)
