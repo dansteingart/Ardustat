@@ -76,7 +76,7 @@ last_comm = {};//""
 cv_comm = {};//""
 cv_settings = {};//{}
 cv_ocv_value = {};//0;
-volts_per_tick = {};//5/1023 // approx value
+volts_per_tick = 5/1023 // approx value
 cv_relative_to_ocv = {};//false
 cv_start_at_ocv = {};//false
 cv_resting = {};//false
@@ -336,7 +336,7 @@ function data_parse(channel,data)
 	//console.log("2.5 adc");
 	//console.log(out['twopointfive_adc']);
 	volts_per_tick = 	2.5/out['twopointfive_adc'] // volts_per_tick is gonna stay the same no matter what channel
-	//console.log(volts_per_tick);
+	console.log('volts_per_tick ' , volts_per_tick);
 	if (vpt == undefined) vpt = volts_per_tick;
 
 	out['cell_potential'] = (out['cell_adc'] - out['gnd_adc']) * volts_per_tick
@@ -1157,7 +1157,9 @@ function potentiostat(channel,value)
 
 function galvanostat(channel,value)
 { 
+  console.log('this is the galvanostat')
   value = value/1000
+  console.log('value ',value)
 	foovalue = Math.abs(value)
 	//First Match R
 	r_guess = 1/foovalue //used to be 0.1
