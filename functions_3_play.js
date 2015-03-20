@@ -250,7 +250,7 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-devs = ['/dev/tty.usbmodemfa131']
+devs = ['/dev/ttyACM0']
 var ports = [];
 //startserial = function() {
 for (var i = 0; i < devs.length; i++) {
