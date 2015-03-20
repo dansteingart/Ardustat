@@ -250,7 +250,7 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-devs = ['/dev/ttyACM0']
+devs = ['/dev/tty.usbmodemfa131']
 var ports = [];
 //startserial = function() {
 for (var i = 0; i < devs.length; i++) {
@@ -336,7 +336,7 @@ function data_parse(channel,data)
 	//console.log("2.5 adc");
 	//console.log(out['twopointfive_adc']);
 	volts_per_tick = 	2.5/out['twopointfive_adc'] // volts_per_tick is gonna stay the same no matter what channel
-	console.log('volts_per_tick ' , volts_per_tick);
+	//console.log('volts_per_tick ' , volts_per_tick);
 	if (vpt == undefined) vpt = volts_per_tick;
 
 	out['cell_potential'] = (out['cell_adc'] - out['gnd_adc']) * volts_per_tick
@@ -345,6 +345,7 @@ function data_parse(channel,data)
 	out['gnd_potential'] = out['gnd_adc']*volts_per_tick
 	out['working_potential'] = (out['cell_adc'] - out['ref_adc']) * volts_per_tick
 	last_potential[channel] = out['working_potential']
+  console.log('last_potential ', last_potential[channel])
 	if (calibrate[channel] != true)
 	{
 	  if (res_table[channel]  == undefined)
@@ -727,6 +728,7 @@ function cv_start_go(channel,value)
 		
 		//move the ground and set ocv
 		moveground(channel,cv_DAC2[channel]);
+
 		cv_resting[channel] = true;
 		//cv_rester(channel);
 		cv_start[channel] = parseFloat(value['cv_start'])
@@ -743,6 +745,7 @@ function cv_send_cycle(channel,cycle){
 
 function cv_rester(channel){
   //console.info("cv_rester");
+  moveground(channel,cv_DAC2[channel])
   var time = new Date().getTime()
   if ((time - cv_time[channel]) >(cv_rest_time[channel] * 1000) ) //everything is in milli seconds. 
     { 
@@ -822,10 +825,12 @@ function cv_stepper(channel)
 function cv_finisher(channel){
   console.log('cv finisher flag')
   if (cv_step[channel] < cv_finish_value[channel]){
+    console.log('direction = positive')
     cv_dir[channel] = 1
   }
   else if (cv_step[channel] > cv_finish_value[channel]){
     cv_dir[channel] = -1
+    console.log('direction = negative')
   }
   else if (cv_step[channel] == cv_finish_value[channel]){
     console.log('WOW - cv_step was the same as cv_finsih value upon entry')
@@ -840,27 +845,29 @@ function cv_finisher(channel){
     console.log("next step")
     cv_time[channel] = time
     cv_step[channel] = cv_step[channel] + cv_dir[channel]*.005
-    if (cv_dir[channel] == 1)
-    {
-      if (cv_step[channel] > cv_finish_value[channel]) {
+
+    if ( (cv_dir[channel] == 1) && (cv_step[channel] > cv_finish_value[channel]) ) {
         console.log('finsih value reached')
         console.log(cv_finish_value[channel])
-        console.log(cv_step)
-        cv_finisher_flag = false;
+        console.log(cv_step[channel])
+        cv_finisher_flag[channel] = false;
         test_finished(channel)
-      }
     }
-    else if (cv_dir[channel] == -1)
-    {
-      if (cv_step[channel] < cv_finish_value[channel]) {
+    else if ( (cv_dir[channel] == -1) &&(cv_step[channel] < cv_finish_value[channel]) ) {
         console.log('finsih value reached')
         console.log(cv_finish_value[channel])
-        console.log(cv_step)
-        cv_finisher_flag = false;
+        console.log(cv_step[channel])
+        cv_finisher_flag[channel] = false;
         test_finished(channel)
-      }
+    }
+    else{
+      console.log("cv_step of channel " + channel);
+      console.log(cv_step[channel])
+      potentiostat(channel,cv_step[channel])
     }
   }
+  else {}
+  console.log('leaving finsiher')
 }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Cycling Section
@@ -1460,6 +1467,7 @@ start_t.ch1 = function() {
     if (ports.length > 0){
       console.log('read timing of ch1 ', read_timing.ch1)
       command_list.ch1.push('s0000');
+      console.log(cv_finisher_flag)
       if (calibrate.ch1) calibrate_step('ch1')
       if (cv_resting.ch1) cv_rester('ch1')
       if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
@@ -1468,6 +1476,7 @@ start_t.ch1 = function() {
     }
   }, read_timing.ch1);
 }
+start_t.ch1()
  
 start_t.ch2 = function() {
   t.ch2 = setInterval(function(){

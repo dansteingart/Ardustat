@@ -593,7 +593,7 @@ var DataToSend;
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
-      url: "http://25.104.125.224:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -607,7 +607,7 @@ var DataToSend;
       .done(function( data ) {
           console.log('.');
           image = data
-          imageUrl = "http://25.104.125.224:4001/"+image
+          imageUrl = "http://localhost:4001/"+image
           //document.write(imageUrl);
           console.log(imageUrl);
           changeImage("fooplotter",imageUrl)
