@@ -578,7 +578,12 @@ var DataToSend;
       } 
       else what_plot = ''
 
-      url = "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+
+      this_host = document.URL.toString().split('/')[2]
+      colon_index = this_host.indexOf(':')
+      this_host = this_host.substring(0,colon_index)
+      console.log(this_host)
+      url = "http://"+this_host+":4004/filetest_showme_basic_averaging/" 
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -593,21 +598,12 @@ var DataToSend;
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
-      url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
-      + ardu_folder+"/"
-      + ardu_file+"/"
-      + cycle_min+"/"
-      + cycle_max+"/"
-      + CV_Xaxis+"/"
-      + CV_Yaxis+"/"
-      + ardustat_id+"/"
-      + countto + "/"
-      + what_plot
+      url: url
       })
       .done(function( data ) {
           console.log('.');
           image = data
-          imageUrl = "http://localhost:4001/"+image
+          imageUrl = "http://"+this_host+":4001/"+image
           //document.write(imageUrl);
           console.log(imageUrl);
           changeImage("fooplotter",imageUrl)

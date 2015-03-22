@@ -36,8 +36,8 @@ for pickled in pickled_list:
 
 to_make_list = []
 for number in id_list:
-    #if number not in string:
-    to_make_list.append(number)
+    if number not in string:
+        to_make_list.append(number)
 
 for number in to_make_list:
     json_data = open(res_dir+'unit_'+number+'.json').read()[1:-1]
@@ -56,7 +56,6 @@ for number in to_make_list:
     to_pickle = {}
     for i in range(0, len(res_val)):
         to_pickle[i] = [res_val[i],0]
-    print 'creating resistance table for ' , number
-    
+    print to_pickle
     #dump pickle to whatever I save things as
     pickle.dump( to_pickle, open(res_dir+'resistance_table_'+number+'.p' ,'wb'))

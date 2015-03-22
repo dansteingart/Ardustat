@@ -662,7 +662,11 @@ catch(e){alert(e);}}
         console.log('last plot called')
       } 
       else what_plot = ''
-      url = "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+      this_host = document.URL.toString().split('/')[2]
+      colon_index = this_host.indexOf(':')
+      this_host = this_host.substring(0,colon_index)
+      console.log(this_host)
+      url = "http://"+this_host+":4004/filetest_showme_basic_averaging/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
@@ -676,23 +680,14 @@ catch(e){alert(e);}}
       //add functionality so that can look at different plots
       var foo = "test";
       $.ajax({
-      url: "http://25.104.125.224:4004/filetest_showme_basic_averaging/" //TODO: make this more general
-      + ardu_folder+"/"
-      + ardu_file+"/"
-      + cycle_min+"/"
-      + cycle_max+"/"
-      + "t"+"/"
-      + "v"+"/"
-      + cyc_ardustat_id + "/"
-      + countto + "/"
-      + what_plot,
+      url: url,
       success: function(result){
           
           image = result
           //debug
           //console.log('result from ploop');
           console.log(result);
-          imageUrl = "http://25.104.125.224:4001/"+image
+          imageUrl = "http://"+this_host+":4001/"+image
           //document.write(imageUrl);
           first_plot = false
           changeImage("fooplotter",imageUrl)

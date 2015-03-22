@@ -95,14 +95,20 @@
 
         analysis_file_name = address
         console.log('analysis_get_image called for ' + address)
-        $.ajax({
-        url: "http://localhost:4004/filetest_showme_basic_averaging/" //TODO: make this more general
+
+        this_host = document.URL.toString().split('/')[2]
+        colon_index = this_host.indexOf(':')
+        this_host = this_host.substring(0,colon_index)
+        console.log(this_host)
+        url = "http://"+this_host+":4004/filetest_showme_basic_averaging/" 
         + analysis_folder_name+"/"
         + analysis_file_name+"/"
         + "0/"
         + "-1/"
         + "t"+"/"
         + "v"+"/",
+        $.ajax({
+        url: url,
         success: function(result){
             image = result
             imageUrl = "http://localhost:4001/"+image

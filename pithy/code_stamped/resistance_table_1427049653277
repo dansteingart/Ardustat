@@ -56,7 +56,6 @@ for number in to_make_list:
     to_pickle = {}
     for i in range(0, len(res_val)):
         to_pickle[i] = [res_val[i],0]
-    print 'creating resistance table for ' , number
-    
+    print 'creating resistance table for ' , to_pickle
     #dump pickle to whatever I save things as
     pickle.dump( to_pickle, open(res_dir+'resistance_table_'+number+'.p' ,'wb'))

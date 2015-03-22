@@ -1,6 +1,10 @@
 //requirements
 //------------------------------------------------------------------------------------------------------
 //config_page = require('./config.js')
+
+//ports to open
+
+
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -15,7 +19,7 @@ var urllib = require('urllib');
 var json2csv = require('json2csv');
 var serialport = require('serialport');
 var SerialPort = serialport.SerialPort;
-
+var childProcess = require('child_process')
 
 // each variable an associate array - with potential to store up to 3 channels worth.
 var calibrate = {};//false
@@ -130,7 +134,7 @@ var res_table = {};//;
 counter = {};//0
 calloop = {};//0
 callimit = {};//2
-callimit.ch1 = 9; callimit.ch2 = 9; callimit.ch3 = 9; //
+callimit.ch1 = 2; callimit.ch2 = 9; callimit.ch3 = 9; //
 calibration_array = {};//[]
 calibration_array.ch1 = []; calibration_array.ch2 = []; calibration_array.ch3 = [];
 rfixed = {};//10000
@@ -250,20 +254,35 @@ function io_emit(channel, msg)
   console.log(channel + ' ' +  msg)
 }
 
-devs = ['/dev/tty.usbmodemfa131']
-var ports = [];
-//startserial = function() {
-for (var i = 0; i < devs.length; i++) {
-    console.log('this is where we are opening a serial port ' + devs[i]);
-    var port = new SerialPort(devs[i],{ baudrate:57600, parser: serialport.parsers.readline("\n") });
-    ports.push(port);
-}
+var devs = []
+serialport.list(function (err, ports) {
+  ports.forEach(function(port) {
+    console.log(port.comName);
+    if ((port.comName.indexOf('usbmodem') > -1 ) || (port.comName.indexOf('ttyACM') > -1) ) {
+      console.log('putting in devs ' , port.comName)
+      devs.push('/'+port.comName)
+    }
+  });
+  startserial()
+});
 
-for (var i = 0; i < ports.length; i++) {
-  if ( i == 0 ) channel = 'ch1'
-  else if ( i == 1 ) channel = 'ch2'
-  else if ( i == 2 ) channel = 'ch3'
-  setupHandlers(channel,ports[i]);
+var ports = [];
+startserial = function() {
+  for (var i = 0; i < devs.length; i++) {
+      console.log('this is where we are opening a serial port ' + devs[i]);
+      var port = new SerialPort(devs[i],{ baudrate:57600, parser: serialport.parsers.readline("\n") });
+      ports.push(port);
+  }
+  callhandlers()
+}
+//startserial()
+function callhandlers() {
+  for (var i = 0; i < ports.length; i++) {
+    if ( i == 0 ) channel = 'ch1'
+    else if ( i == 1 ) channel = 'ch2'
+    else if ( i == 2 ) channel = 'ch3'
+    setupHandlers(channel,ports[i]);
+  }
 }
 
 ports_dict = {}
@@ -1133,6 +1152,19 @@ function calibrate_step(channel)
         console.log(ardustat_id[channel])
 				fs.writeFileSync("resistance_tables/unit_"+ardustat_id[channel].toString()+".json",JSON.stringify(final_table[channel])) //should be cool that this is synchrnous
         //TODO - child process that automagically calls the python script.
+        ls = childProcess.exec('pithy/code/resistance_table.py', function (error, stdout, stderr) {
+          if (error) {
+            console.log(error.stack);
+            console.log('Error code: '+error.code);
+            console.log('Signal received: '+error.signal);
+          }
+          console.log('Child Process STDOUT: '+stdout);
+          console.log('Child Process STDERR: '+stderr);
+        });
+
+          ls.on('exit', function (code) {
+          console.log('Child process exited with exit code '+code);
+        });
 				res_table[channel] = undefined;
 				io_emit(channel, 'calibration finished');
 			}

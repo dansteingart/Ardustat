@@ -1,1 +1,1 @@
-{"out":"","outerr":"Traceback (most recent call last):\n  File \"/Users/danny/Ardustat/pithy/code/experiement.py\", line 2, in <module>\n    plot(x,y)\nNameError: name 'x' is not defined\n","images":[],"exec_time":357}
+{"out":"hey dan\n","outerr":"","images":[],"exec_time":32}
