@@ -34,7 +34,7 @@ def finisher():
     pickle.dump('', open(pickle_file_name, 'wb'))
     #delete bigCSV (set to '')
     #open(file_name, 'w').write('')
-    to_read_from = 5
+    to_read_from = 1
         
 s = 2
 e = -1
@@ -88,7 +88,7 @@ try:
         except Exception, e:
             print 'pickle loading problem ', e
     else:
-        to_read_from = 5
+        to_read_from = 1
         time_list = []
         voltage_list = []
         current_list = []

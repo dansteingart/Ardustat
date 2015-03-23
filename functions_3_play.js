@@ -3,7 +3,7 @@
 //config_page = require('./config.js')
 
 //ports to open
-
+var debug = true
 
 var express = require('express');
 var path = require('path');
@@ -147,6 +147,8 @@ skip_flag.ch1 = false; skip_flag.ch2 =  false; skip_flag.ch3 = false;
 
 //function to reset all of the global parameters 
 function reset_globals(channel){ 
+  buf[channel] = ''
+
   calibrate[channel] = false;
   resting[channel] = false; 
   cv[channel] = false; 
@@ -167,7 +169,7 @@ function reset_globals(channel){
   cv_cycle[channel] = 0;
   last_ardu_reading[channel] = ''
   //CYCLER
-  arb_cycling_settings[channel]= []; arb_cycling_settings.ch2 = []; arb_cycling_settings.ch3 = [];
+  arb_cycling_settings[channel]= [];
   arb_cycling_step[channel] = 0
   arb_cycling_step_start_time[channel] = 0
   cycling_cycles[channel] = 0
@@ -184,7 +186,7 @@ function reset_globals(channel){
   skip_flag[channel] = false;
   
   //CALIBRATION
-  console.log('all of the globals have been reset')
+  console.log('all of the globals have been reset on channel ', channel)
 
 }
 
@@ -303,20 +305,24 @@ function setupHandlers(channel,port) {
         {
           calibration_array[channel].push(parsed_data)
         }
+
+        if((CSV_ON[channel] == true) && (kill[channel] == false)){ 
         now_time[channel] = new Date().getTime();
         ts[channel] = now_time[channel];  //some debugging
-        //console.log('now_time '+now_time.toString());
+
+        console.log('now_time ',now_time[channel]);
         //console.log('pause time '+total_pause_time.toString());
-        buf[channel] += data;
+        buf[channel] += data; //need to reset buffer on global reset.
         var n = buf[channel].indexOf("GO.");
         //console.log(ts[channel])
         //console.log(ts[channel].toString())
         buf[channel] = buf[channel].substr(0,n+2)+","+ts[channel]+","+buf[channel].substr(n+3,buf[channel].length);
         if (buf[channel].length > blen) buf[channel] = buf[channel].substr(buf[channel].length-blen,buf[channel].length);
+
         //if writing is desired write buf to current CSV_NAME file
-        if((CSV_ON[channel] == true) && (kill[channel] == false)){ 
+        
             write2CSV(channel,buf[channel]); 
-            console.log("received data and sent to write2CSV on channel " + channel);
+            //if (debug) console.log("received data and sent to write2CSV on channel " + channel);
           }
        }    
      });
@@ -364,7 +370,7 @@ function data_parse(channel,data)
 	out['gnd_potential'] = out['gnd_adc']*volts_per_tick
 	out['working_potential'] = (out['cell_adc'] - out['ref_adc']) * volts_per_tick
 	last_potential[channel] = out['working_potential']
-  console.log('last_potential ', last_potential[channel])
+  //if (debug) console.log('last_potential on  channel ', channel ,' is ' , last_potential[channel])
 	if (calibrate[channel] != true)
 	{
 	  if (res_table[channel]  == undefined)
@@ -442,6 +448,7 @@ function write2CSV(channel,chunk) {
 		            foo[j]=chunks[j];
 	            }
 	            //write data values to appropriate columns in csv 
+              if (debug) console.log(foo)
 	            json2csv({data: foo, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
 		            if (err) console.log(err);
 		            fs.appendFileSync(CSV_NAME[channel], csv)
@@ -742,7 +749,8 @@ function cv_start_go(channel,value)
     cv_send_cycle(channel,cv_cycle[channel])
     
     console.log(channel,cv_foldername[channel]+'/'+cv_filename[channel])
-		l_starter(channel,cv_foldername[channel]+'/'+cv_filename[channel],value);
+
+		l_starter(channel,cv_foldername[channel]+'/'+cv_filename[channel],value); //start logging to csv
 		cv_reading[channel] = last_ardu_reading[channel]
 		
 		//move the ground and set ocv
@@ -764,7 +772,7 @@ function cv_send_cycle(channel,cycle){
 
 function cv_rester(channel){
   //console.info("cv_rester");
-  moveground(channel,cv_DAC2[channel])
+  //moveground(channel,cv_DAC2[channel])
   var time = new Date().getTime()
   if ((time - cv_time[channel]) >(cv_rest_time[channel] * 1000) ) //everything is in milli seconds. 
     { 
@@ -1426,7 +1434,7 @@ function analysis_display(req,res,indexer)
 {
   console.log('analysis_display has been called');
 	out = fs.readdirSync('Data/')
-	console.log('the data is ' + out) ;
+	if (debug) console.log('the data is ' + out) ;
   lts = '<div id="folders" >'
   count_limit = 20;
 
@@ -1446,7 +1454,7 @@ function analysis_display(req,res,indexer)
 function file_display(req,res)
 {
   console.log('file_display called');
-  console.log(req.body.folder) 
+  if (debug) console.log(req.body.folder) 
   folder = req.body.folder
   out = fs.readdirSync('Data/'+folder)
   console.log('the files are ' + out);
@@ -1497,9 +1505,9 @@ var start_t = {}
 start_t.ch1 = function() {
   t.ch1 = setInterval(function(){
     if (ports.length > 0){
-      console.log('read timing of ch1 ', read_timing.ch1)
+      //if (debug) console.log('read timing of ch1 ', read_timing.ch1)
       command_list.ch1.push('s0000');
-      console.log(cv_finisher_flag)
+      //if (debug) console.log(cv_finisher_flag)
       if (calibrate.ch1) calibrate_step('ch1')
       if (cv_resting.ch1) cv_rester('ch1')
       if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
@@ -1508,7 +1516,7 @@ start_t.ch1 = function() {
     }
   }, read_timing.ch1);
 }
-start_t.ch1()
+
  
 start_t.ch2 = function() {
   t.ch2 = setInterval(function(){
@@ -1535,6 +1543,9 @@ start_t.ch3 = function() {
     }
   }, read_timing.ch3);
 }
+start_t.ch1()
+start_t.ch2()
+start_t.ch3()
 
 t1 = setInterval(function()
 {

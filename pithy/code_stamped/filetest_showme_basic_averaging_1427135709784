@@ -101,7 +101,7 @@ try:
     
     
     if ardustat_id == '':
-        ardustat_id = 1001
+        ardustat_id = 25
     res_table = load_resistance_table(ardustat_id)
     
     data = open(file_name).read()
