@@ -26,15 +26,15 @@ If you are using a two electrode setup be sure to tie the reference electrode to
 
 ###Installation and Setup:
 1. Clone this repository
-2. `cd` into the 'pithy' directory of this repository
-3. Start pithy by typing `forever start index.js 4001`
-4. Start the raw shower by typing `forever start raw_shower.js 4004`
-5. Connect at least one ardustat
+2. Cd into the repository
+3. Type `chmod u+x install.sh` to give your self permission to run the install
+4. Run the install.sh script `./install.sh`
+5. Connect at least one ardustat (maximum of 3 right now)
 6. Make sure the correct firmware is uploaded to the arduino. (firmware_030915)
-7. In functions_3_play.js change the port list to suit the ports that you are using. ('/devttyACM0, '/dev/tty.usbmodemfd121' etc.) (I am sorry about this, I will get around to writing an automatic port finder soon)
-8. `cd` into main directory and run `npm start` to begin the program
-9. Navigate to `http://localhost:3001` to use the Ardustat
-10. On first use, make sure to calibrate the Ardustat
+7. On first use run `./starter.sh` (This also starts the pithy server running on 4001 and 4004)
+8. Navigate to `http://localhost:3001` to use the Ardustat
+9. On first use, make sure to calibrate the Ardustat
+10. For subsequent uses - if "forever" is still running pithy server, start the program with `npm start`
 
 ####Questions, Comments, Bugs Etc.
 As the software is currently under development there are a few bugs and pieces of functionality missing. I apologise for this. I am currenlty working through a long to-do list to try and rectify this. Please feel free to email me at danielmdavies@gmail.com with any changes you would like to see. Please feel free to contribute!

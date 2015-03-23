@@ -8,7 +8,7 @@ import os
 
 cwd = os.getcwd()
 
-res_dir = "resistance_tables/"
+res_dir = "../../"+cwd.split('/')[-3]+"/resistance_tables/"
 
 json_list = []
 pickled_list = []
