@@ -294,6 +294,7 @@ function setupHandlers(channel,port) {
   port.on("open", function (path) {
     console.log('serial port ', port.path ,' is open on channel number ' , channel )
     ports_dict[channel] = port
+    start_t[channel]()
     port.on("data", function (data) {
       //console.log("here: on channel " + channel + ': ' +data);
       if (data.search('GO') > -1)
@@ -1543,9 +1544,7 @@ start_t.ch3 = function() {
     }
   }, read_timing.ch3);
 }
-start_t.ch1()
-start_t.ch2()
-start_t.ch3()
+
 
 t1 = setInterval(function()
 {
