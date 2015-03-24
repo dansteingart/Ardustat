@@ -614,7 +614,8 @@ catch(e){alert(e);}}
   }
   
   function chooseP(ptype,callback) 
-  { plot = ptype; 
+  { plot = parseInt(ptype); 
+    console.log('chooseP selected, plot is ' , plot)
     selected = true;
     if(plot == 1) { cycle_x = 'v'; cycle_y = 'c' }
     if(plot == 2) { cycle_x = 't'; cycle_y = 'c'  }
@@ -623,8 +624,8 @@ catch(e){alert(e);}}
   }
   
   // global varibles for plotting
-  var cycle_x = ''
-  var cycle_y = ''
+  cycle_x = ''
+  cycle_y = ''
   
   //live plotting stuff
   //called by goPlotting()
@@ -633,8 +634,8 @@ catch(e){alert(e);}}
   function cycle_get_image()
   {
       //TODO: add in a cycmin and cycmax thing
-      if (cycle_x = '') cycle_x = 't'
-      if (cycle_y = '') cycle_y = 'v'
+      if (cycle_x == '') {cycle_x = 't'}
+      if (cycle_y == '') {cycle_y = 'v'}
       var mintemp = 0;
       var maxtemp = -1;
       if (test_was_in_progress == false) {
@@ -671,8 +672,8 @@ catch(e){alert(e);}}
       + ardu_file+"/"
       + cycle_min+"/"
       + cycle_max+"/"
-      + "t"+"/"
-      + "v"+"/"
+      + cycle_x+"/"
+      + cycle_y+"/"
       + cyc_ardustat_id + "/"
       + countto + "/"
       + what_plot +'/';
