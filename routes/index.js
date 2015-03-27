@@ -58,6 +58,9 @@ router.get('/debug', function(req, res){
   res.send(indexer);
 });
 
+router.get('/show_setup/*',function(req,res) {
+  functions.show_setup(req,res);
+});
 
 router.get('/Analysis', function(req, res){
 	indexer = fs.readFileSync('views/Analysis/index.html').toString()

@@ -225,7 +225,8 @@
 function test_running(data){
   test_was_in_progress = true
   console.log('test_running called')
-  foo = JSON.stringify(data) 
+  //foo = JSON.stringify(data) 
+  foo = data
   console.log(foo)
   ardu_folder = foo.folder_name
   ardu_file = foo.file_name

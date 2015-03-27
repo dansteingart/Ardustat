@@ -3,7 +3,7 @@
 //config_page = require('./config.js')
 
 //ports to open
-var debug = true
+var debug = false
 
 var express = require('express');
 var path = require('path');
@@ -134,7 +134,7 @@ var res_table = {};//;
 counter = {};//0
 calloop = {};//0
 callimit = {};//2
-callimit.ch1 = 2; callimit.ch2 = 9; callimit.ch3 = 9; //
+callimit.ch1 = 9; callimit.ch2 = 9; callimit.ch3 = 9; //
 calibration_array = {};//[]
 calibration_array.ch1 = []; calibration_array.ch2 = []; calibration_array.ch3 = [];
 rfixed = {};//10000
@@ -152,7 +152,7 @@ function reset_globals(channel){
   calibrate[channel] = false;
   resting[channel] = false; 
   cv[channel] = false; 
-  cv_finisher_flag = false;
+  cv_finisher_flag[channel] = false;
   arb_cycling[channel] = false; 
   count[channel] = 0; 
   lastTime[channel] = 0;
@@ -237,7 +237,6 @@ function give_status(req,res)
     res.send('nothing happening')
     console.log('nothing happening')
   }
-
 }
 
 function blink_button(req, res)
@@ -311,7 +310,7 @@ function setupHandlers(channel,port) {
         now_time[channel] = new Date().getTime();
         ts[channel] = now_time[channel];  //some debugging
 
-        console.log('now_time ',now_time[channel]);
+        //console.log('now_time ',now_time[channel]);
         //console.log('pause time '+total_pause_time.toString());
         buf[channel] += data; //need to reset buffer on global reset.
         var n = buf[channel].indexOf("GO.");
@@ -409,7 +408,7 @@ function data_parse(channel,data)
 //TODO: if document already exists - don't overwrite?
 function write2CSV(channel,chunk) {
   //console.log('write2CSV called');
-  console.log('in write2csv channel is ', channel)
+  //console.log('in write2csv channel is ', channel)
 	if(count[channel]==0) {
 		//write column headers to csv file (optional) -- using 'writeFile' here to overwrite old data on file
 		json2csv({data: headers, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
@@ -838,7 +837,7 @@ function cv_stepper(channel)
 		{
 			cv[channel] = false
       cv_finisher_flag[channel] = true;
-      cv_finisher(channel)
+      //cv_finisher(channel)
 			//test_finished(channel)
 		}
 		else
@@ -851,7 +850,7 @@ function cv_stepper(channel)
 }
 
 function cv_finisher(channel){
-  console.log('cv finisher flag')
+  console.log('cv finisher')
   if (cv_step[channel] < cv_finish_value[channel]){
     console.log('direction = positive')
     cv_dir[channel] = 1
@@ -868,7 +867,7 @@ function cv_finisher(channel){
     throw 'Something in the cv_finisher_flag is undefined'
   }
   var time = new Date().getTime() 
-  if (time - cv_time[channel] > cv_rate[channel])
+  if ( (time - cv_time[channel]) > cv_rate[channel])
   {
     console.log("next step")
     cv_time[channel] = time
@@ -1436,18 +1435,18 @@ function analysis_display(req,res,indexer)
   console.log('analysis_display has been called');
 	out = fs.readdirSync('Data/')
 	if (debug) console.log('the data is ' + out) ;
-  lts = '<div id="folders" >'
+  lts = '<div id="folders" > <select onChange="folder_drop_change(this)"> <option value="">Select Folder</option>'
   count_limit = 20;
 
   count = 0 
   for (var i in out)
   {	
     foo = out[i]
-	  if (foo != "temper") lts += "<button id='"+foo+"'>"+foo+ "</button><br>";
+	  if ( (foo != "temper") || (foo.indexOf('DS_Store') > -1) ) lts += "<option value='"+foo+"'>"+foo+ "</option>";
 	  count +=1
 	  if (count > count_limit) break; 
   }
-  lts += '</div>'
+  lts += '</select></div>'
   indexer = indexer.replace("##_newthings_##",lts);
   res.send(indexer);
 }
@@ -1508,10 +1507,11 @@ start_t.ch1 = function() {
     if (ports.length > 0){
       //if (debug) console.log('read timing of ch1 ', read_timing.ch1)
       command_list.ch1.push('s0000');
-      //if (debug) console.log(cv_finisher_flag)
+      //console.log(cv_finisher_flag.ch1)
       if (calibrate.ch1) calibrate_step('ch1')
       if (cv_resting.ch1) cv_rester('ch1')
       if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
+      //if (cv_finisher_flag.ch1) console.log('try cv_finish')
       if ((cv_finisher_flag.ch1) && (kill.ch1 == false)) cv_finisher('ch1')
       if ((arb_cycling.ch1) && (kill.ch1 == false)) cycling_stepper('ch1')
     }
@@ -1556,7 +1556,7 @@ t1 = setInterval(function()
   	{
   	  //console.log(command_list.ch1);
   		sout = command_list.ch1.shift();
-  		//if (sout != "s0000") console.log('sout on ch1 is '+sout);
+  		if (sout != "s0000") console.log('sout on ch1 is '+sout);
       //if (ports.length > 0 ) ports[0].write(sout);	
       if (ports.length > 0 ) ports_dict.ch1.write(sout);  
       //console.log(ports_dict)
@@ -1580,7 +1580,7 @@ t1 = setInterval(function()
       if (ports.length > 1 ) ports_dict.ch3.write(sout);  
     }
   }
-},15)
+},25)
 
 function replacer_2(req,res,indexer){
   console.log('replacer called');
@@ -1600,9 +1600,21 @@ function replacer_3(req,res,indexer){
   res.send(indexer);
   console.log('replacer finished') 
 }
+
+function show_setup(req,res){
+  console.log('show setup called')
+  var temp = req.originalUrl.replace("/show_setup/","")
+  stuff = decodeURIComponent(temp);
+  setup_file = 'Data/' + stuff.replace('_clean.csv', 'setup.json')
+  console.log(setup_file)
+  data = JSON.parse(fs.readFileSync(setup_file))//shouldn't be synchronous but yolo
+  console.log(data)
+  res.send(data)
+}
 //==========================================================
 // export functionality
 module.exports = {
+  show_setup:show_setup,
   blink_button:blink_button,
   replacer_2:replacer_2,
   replacer_3:replacer_3,

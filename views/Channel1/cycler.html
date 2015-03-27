@@ -81,7 +81,7 @@
               <th>Delete</th> <th>Mode</th> <th> Value </th> <th>Time Cutoff (s)</th> <th>Voltage Cutoff (V) </th> <th>Current Cutoff (mA) </th>
             </tr>
             <tr>
-              <td><input type="checkbox" name="chk"></td> <td><select name='cyc_mode1'> <option value='galvanostatic'>Galvanostatic</option> <option value='Potentiostatic'>Potentiostatic</option> <option name='rest'>Rest</option></td> <td><input type='text' name='value' value='1' >Either V or mA</td> <td><input type='text' name='time_cutoff1' value='1111'></td> <td><input type='text' name='voltage_cutoff1' value='11'></td> <td><input type='text' name='current_cutoff1' value=''></td>
+              <td><input type="checkbox" id="chk"></td> <td><select id='cyc_mode1' onChange="drop_change(this,1)"><option value="">Select Mode</option> <option value='galvanostatic'>Galvanostatic</option> <option value='Potentiostatic'>Potentiostatic</option> <option value='rest'>Rest</option></td> <td><input type='text' id='value1' value='1' >Either V or mA</td> <td><input type='text' id='time_cutoff1' value='1111'></td> <td><input type='text' id='voltage_cutoff1' value='11'></td> <td><input type='text' id='current_cutoff1' value=''></td>
             </tr>
       </tbody></table>
 
@@ -247,9 +247,38 @@ function addRow(tableID){
     var colCount=table.rows[1].cells.length;
     console.log('colCount ' + colCount)
     console.log(table.rows[rowCount-1].innerHTML)
-    row.innerHTML = '<td><input type="checkbox" name="chk"></td> <td><select name="cyc_mode'+rowCount+'"> <option value="galvanostatic">Galvanostatic</option> <option value="Potentiostatic">Potentiostatic</option> <option name="rest">Rest</option></select></td> <td><input type="text" name="value" value="">Either V or mA</td> <td><input type="text" name="time_cutoff'+rowCount+'" value=""></td> <td><input type="text" name="voltage_cutoff'+rowCount+'" value=""></td> <td><input type="text" name="current_cutoff'+rowCount+'" value=""></td>'
+    row.innerHTML = '<td><input type="checkbox" id="chk"></td> <td><select id="cyc_mode'+rowCount+'" onchange="drop_change(this, '+rowCount+')"> <option value="">Select Mode</option><option value="galvanostatic">Galvanostatic</option> <option value="Potentiostatic">Potentiostatic</option> <option value="rest">Rest</option></select></td> <td><input type="text" id="value'+rowCount+'" value="">Either V or mA</td> <td><input type="text" id="time_cutoff'+rowCount+'" value=""></td> <td><input type="text" id="voltage_cutoff'+rowCount+'" value=""></td> <td><input type="text" id="current_cutoff'+rowCount+'" value=""></td>'
 
   }
+function drop_change(selector,rowCount){
+  console.log('drop change called for ')
+  console.log(selector.value)
+  console.log(rowCount)
+  if (selector.value == "galvanostatic"){
+    console.log('galvanostatic selected')
+    document.getElementById('current_cutoff'+rowCount).disabled=true;
+    document.getElementById('voltage_cutoff'+rowCount).disabled=false;
+    document.getElementById('value'+rowCount).disabled=false;
+  }
+  if (selector.value == "Potentiostatic"){
+    console.log('Potentiostatic selected')
+    document.getElementById('voltage_cutoff'+rowCount).disabled=true;
+    document.getElementById('current_cutoff'+rowCount).disabled=false;
+    document.getElementById('value'+rowCount).disabled=false;
+  }
+  if (selector.value == "rest"){
+    console.log('rest selected')
+    document.getElementById('current_cutoff'+rowCount).disabled=true;
+    document.getElementById('voltage_cutoff'+rowCount).disabled=true;
+    document.getElementById('value'+rowCount).disabled=true;
+  }
+  if (selector.value == ""){
+    document.getElementById('current_cutoff'+rowCount).disabled=false;
+    document.getElementById('voltage_cutoff'+rowCount).disabled=false;
+    document.getElementById('value'+rowCount).disabled=false;
+  }
+}
+
 function deleteRow(tableID){try{var table=document.getElementById(tableID);
 var rowCount=table.rows.length;
 for(var i=1;i<rowCount;i++)
@@ -513,8 +542,9 @@ catch(e){alert(e);}}
       url:'/pauser/'+channel,
       dataType: 'json',
       async: true,
-      success: function(){
+      success: function(data){
         console.log('ajax says killer called');
+        console.log(data)
       }
     });
   }

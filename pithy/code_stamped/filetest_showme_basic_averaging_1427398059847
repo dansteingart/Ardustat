@@ -26,7 +26,7 @@ def refbasis(reading,ref):
     return round((float(reading)/float(ref))*2.5,3)
     
 def finisher():
-    to_clean = str(time_list) + '\n' + str(voltage_list) + '\n' + str(current_list) + '\n' + str(cycle_list) 
+    to_clean = str(time_list) + '\n' + str(voltage_list) + '\n' + str(current_list)
     clean_file = open(clean_file_name, "w")
     clean_file.write(to_clean)
     #put in cycle
@@ -87,7 +87,6 @@ try:
             time_list = things['time_list']
             voltage_list = things['voltage_list']
             current_list = things['current_list']
-            cycle_list = things['cycle_list']
         except Exception, e:
             print 'pickle loading problem ', e
     else:
@@ -95,7 +94,6 @@ try:
         time_list = []
         voltage_list = []
         current_list = []
-        cycle_list = []
     
             
     
@@ -132,11 +130,10 @@ try:
             res = res_table[potstep][0]
             ts = int(line[0])
             timer = int(ts-first_time)/1000.0
-            cycle_number = int(line[5][1:-1])
             voltage_raw = int(line[2][1:-1]) - int(line[-2][1:-1])
             current_raw = int(line[3][1:-1]) - int(line[2][1:-1])
             voltage = adc-ref_adc
-
+            #put in cycle
             
             #REMOVE: this is only in here for running when I have a fake resistance table. this ... resistance should never be 0.
             if res == 0:
@@ -158,7 +155,7 @@ try:
                 time_list.append(timer)
                 voltage_list.append(voltage_average)
                 current_list.append(current_average)
-                cycle_list.append(cycle_number)
+                #put in cycle
     
     #update pickle file etc..
     to_pickle = {}
@@ -167,7 +164,6 @@ try:
     to_pickle['time_list'] = time_list
     to_pickle['voltage_list'] = voltage_list
     to_pickle['current_list'] = current_list
-    to_pickle['cycle_list'] = cycle_list
     
     pickle.dump(to_pickle, open(pickle_file_name, 'wb'))
     

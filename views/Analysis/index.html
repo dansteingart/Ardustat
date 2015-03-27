@@ -37,21 +37,55 @@
           </script>
       </div>
    I know this is ugly - I will make it prettier.
+      <h1>Analysis</h1>
+
+      <div class"row">
+        <div class="col-lg-4">
+  		    <h4>Folders</h4>
+  		    ##_newthings_##
+        </div>
+        <div class="col-lg-4"> 
+          <h4>Files</h4>
+          <div id='files_div'>
+            <select onChange="files_drop_change(this)" id="files">
+              <option value="">Select File</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <h4>Download File</h4>
+          Coming Soon
+           <a id="file_to_download" download style="display:none"> Select File To Download </a>
+      </div>
+
       <div class="col-lg-12">
-        <h1>Analysis</h1>
-        <div>
-		      <h4>Folders</h4>
-		      ##_newthings_##
-        </div>
-       
-        <h4>Files</h4>
-        <div id='files'>
-        </div>
+      </div>
 
-        <h4>Results</h4>
-        <img id="graph" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff>
+      <div class="row">
+        <div class="col-lg-12">
+          <h3> Setup </h3> 
+          <div id="show_setup">
 
-      </div>  
+          </div> 
+        </div>
+      </div>
+
+      <div class="row">
+        <div class ="col-lg-12">
+          <h3> Graph </h3> 
+          <img id="graph" src="http://www.herbergertheater.org/wp-content/uploads/2014/12/Image-Coming-Soon-Placeholder.png" width="800" height="678" style="display:none">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-4">
+          <table id="graph_buttons" style="display:none"><tr>
+                <td><button type="button" class="btn btn-default" id="chooseP1" onclick="chooseP(1,analysis_get_image)">Current vs. Voltage</button></td>
+                <td><button type="button" class="btn btn-default" id="chooseP2" onclick="chooseP(2,analysis_get_image)">Current vs. Time</button></td>
+                <td><button type="button" class="btn btn-default" id="chooseP3" onclick="chooseP(3,analysis_get_image)">Voltage vs. Time</button></td> </tr>
+          </table><br>
+        </div>
+      </div>
+
     </div>
   </div>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
@@ -65,34 +99,32 @@
   <script>
 
   var analysis_folder_name
-    files = '';
-    $( "#folders" ).children().on( "click", function( event ) 
-    {
-      analysis_folder_name = this.id;
-      console.log(analysis_folder_name);
-      //make an AJAX request to get file_list 
-      //display file_list
-      $.ajax({
-        type:'POST',
-        url:'/show_files',
-        async: true,
-        data: {'folder':analysis_folder_name},
-        success: function(results)
-        {
-          console.log('successful sending of things :)')
-          files = results;
-          console.log(files);
-          showFiles(files);
-        }   
-      });  
-    });
+  files = '';
     
 
+  function changePlot(xaxis,yaxis,callback)
+  {
+    callback();
+  }
+  
+  x_axis = ''
+  y_axis = ''
 
-  function analysis_get_image(address)
+  function chooseP(ptype,callback) 
+  { plot = ptype; 
+    selected = true;
+    if(plot == 1) { x_axis = 'v'; y_axis = 'c' }
+    if(plot == 2) { x_axis = 't'; y_axis = 'c'  }
+    if(plot == 3) { x_axis = 't'; y_axis = 'v'  }
+    callback()
+  }
+
+  address = ''
+  function analysis_get_image()
     {
         //TODO: add in a cycmin and cycmax thing
-
+        if (x_axis == '') x_axis = 't'
+        if (y_axis == '') y_axis = 'v'
         analysis_file_name = address
         console.log('analysis_get_image called for ' + address)
 
@@ -100,53 +132,120 @@
         colon_index = this_host.indexOf(':')
         this_host = this_host.substring(0,colon_index)
         console.log(this_host)
-        url = "http://"+this_host+":4004/filetest_showme_basic_averaging/" 
+        url = "http://"+this_host+":4004/filetest_clean/" 
         + analysis_folder_name+"/"
         + analysis_file_name+"/"
-        + "0/"
-        + "-1/"
-        + "t"+"/"
-        + "v"+"/",
+        + x_axis+"/"
+        + y_axis+"/"
+        console.log(url)
         $.ajax({
         url: url,
         success: function(result){
             image = result
             imageUrl = "http://localhost:4001/"+image
-            //document.write(imageUrl);
+            console.log(imageUrl)
+
             changeImage("graph",imageUrl)
+
         },
         async:   true,
         })
+        $.ajax({
+          type:'GET', 
+          url:'/show_setup/'+analysis_folder_name+'/'+analysis_file_name,
+          dataType: 'json',
+          async: true,
+          success: function(data){
+            console.log('show_setup called');
+            console.log(JSON.stringify(data))
+            show_setup(data)
+            show_graph_buttons()
+          }
+        });
     }
   
+  function show_graph_buttons(){
+    console.log('show_graph_buttons called')
+    document.getElementById('graph_buttons').style.display='inline-block'
+  }
+
+  function show_setup(data)
+  {
+    //display data in raw json stuff 
+    document.getElementById('show_setup').innerHTML=JSON.stringify(data)
+  }
+
+
   function changeImage(id,source)
   {
   document.getElementById(id).src=source;
   }
 
+  function folder_drop_change(selector){
+    console.log(selector.value)
+    analysis_folder_name = selector.value;
+    console.log(analysis_folder_name);
+    //make an AJAX request to get file_list 
+    //display file_list
+    $.ajax({
+      type:'POST',
+      url:'/show_files',
+      async: true,
+      data: {'folder':analysis_folder_name},
+      success: function(results)
+      {
+        console.log('successful sending of things :)')
+        files = results;
+        console.log(files);
+        showFiles_drop(files);
+      }   
+    });  
+  }
 
-  function showFiles(files){
-    dom_files = document.getElementById('files');
+  function showFiles_drop(files){
+        dom_files = document.getElementById('files');
     while (dom_files.firstChild) {
       dom_files.removeChild(dom_files.firstChild)
     }
+    first_option = document.createElement('option');
+    first_option.setAttribute('value', '')
+    first_option.text = 'Select File'
+    dom_files.appendChild(first_option);
     for (var i in files){
       foo = files[i].toString()
-      if ( (foo.indexOf('raw') > -1 ) || (foo.indexOf('setup') > -1 ) ){ }
-      else {
+      if ( (foo.indexOf('raw') > -1 ) || (foo.indexOf('setup') > -1 ) || (foo.indexOf('clean') == -1) ){ }
+      else if(foo.indexOf('clean') > -1) {
         console.log('file is '+ foo);
-        this_button = document.createElement('input');
-        this_button.type = "button"
-        this_button.setAttribute('id', foo)
-        this_button.setAttribute('value', foo)
-        this_button.onclick = function() {
-          analysis_get_image(this.value)
-        }
-        dom_files.appendChild(this_button)
-      }
+        this_option = document.createElement('option');
+        this_option.type = "option"
+        this_option.setAttribute('id', foo)
+        this_option.setAttribute('value', foo)
+        this_option.text = foo
+        dom_files.appendChild(this_option)
+      } 
     }
   }
 
+  function files_drop_change(selector){
+    console.log('files_drop_change called')
+    console.log(selector.value)
+    if (selector.value != ''){
+      address = selector.value
+      //show_download(selector.value)
+      analysis_get_image()
+      document.getElementById('graph').style.display="inline-block"
+    }
+  }
+/*
+  function show_download(selector) 
+  {
+    console.log('show_download called')
+    var x = document.getElementById('file_to_download')
+    x.setAttribute("href","../../Data/cyc/"+selector)
+    x.setAttribute("style","display:inline-block")
+    x.text = selector
+  }
+*/
 
 
 

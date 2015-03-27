@@ -1,0 +1,12 @@
+from pithy import *
+#import pandas as pd
+import numpy as np
+
+cwd = os.getcwd()
+base_file = '../../'+cwd.split('/')[-2]+'/'
+
+file_name= base_file + '/Data/cyc/t1_clean.csv'
+
+data = open(file_name).read()
+data = np.transpose(data) 
+print data

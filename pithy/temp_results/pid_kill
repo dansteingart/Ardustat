@@ -1,0 +1,2 @@
+psutil.Process(pid=5856, name='Python')
+['/usr/bin/python', '-u', '/Users/danny/Ardustat/pithy/code/pid_kill.py']

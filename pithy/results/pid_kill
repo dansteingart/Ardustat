@@ -1,1 +1,1 @@
-{"out":"","outerr":"","images":[],"exec_time":423}
+{"out":"psutil.Process(pid=5856, name='Python')\n['/usr/bin/python', '-u', '/Users/danny/Ardustat/pithy/code/pid_kill.py']\n","outerr":"","images":[],"exec_time":372}
