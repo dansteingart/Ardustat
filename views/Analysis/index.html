@@ -138,11 +138,15 @@
         + x_axis+"/"
         + y_axis+"/"
         console.log(url)
+        this_host = document.URL.toString().split('/')[2]
+        colon_index = this_host.indexOf(':')
+        this_host = this_host.substring(0,colon_index)
+        console.log(this_host)
         $.ajax({
         url: url,
         success: function(result){
             image = result
-            imageUrl = "http://localhost:4001/"+image
+            imageUrl = "http://"+this_host+":4001/"+image
             console.log(imageUrl)
 
             changeImage("graph",imageUrl)
