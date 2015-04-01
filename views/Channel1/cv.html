@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <head>
     <meta charset="utf-8">
     <meta name="description" content="">
@@ -37,57 +37,143 @@
             document.getElementById('navbar-channel1').setAttribute('class', 'active')
           </script>
         </div>
-
-          <div class="col-lg-12">
-            <h1 class="header"> Hey Dan </h1>
-          </div>
       </div>
       <div id="tabs">
         <ul class = "nav nav-tabs">
             <li class="active"><a href="#tabs-1">Setup</a></li>
             <li><a href="#tabs-2">Plotting</a></li>
         </ul>
-        
         <section id="tabs-1" class="active">
-        <div id="all_setup">
-
+        <div id="all_setup" class="input-group">
             <div class="row marketing">
                 <div class="col-lg-12">
-                    <h2>Cyclic Voltammetry Setup</h2>
+                    <h3>Cyclic Voltammetry Setup</h3>
                 </div>
             </div>
-          <form id='cv_setup_input' action='/senddata' method='post'>
-          <input type='hidden' name='electro_function' value='cyclic_voltammetry'><br>
-          <div id='not_needed' style='display:none'>
-            Http Port: <input type='text' name='http_port' value='8001' class="form-inline"><br>
-            Serial Port: <input type='text' name='serial_port' value='/dev/ttyACM0' class="form-inline"><br>
-          </div>
-          Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline">Sorry that you have to enter this again - I will fix this soon.<br> 
-          Folder Name: <input type='text' name='folder_name' value='cv' class="form-inline"> (no spaces please - will fix) <br>
-          Experiment Name: <input type='text' name='file_name' value='t1' class="form-inline"> (no spaces please - will fix) <br>
-          Rest Time: <input type='text' name='rest_time' value='10' class="form-inline"><br>
-          Number of Cycles <input type='text' name='number_of_cycles' value='2' class="form-inline"><br>
-          Minimum Potential <input type='text' name='min_potential' value='-.5' class="form-inline"><br>
-          Maximum Potential <input type='text' name='max_potential' value='1' class="form-inline"><br>
-          Rate: <input type='text' name='rate' value='1' class="form-inline"> mV/s<br>
-          DAC2 Val: <input type='text' name='DAC2_value' value='2.5'><br>
-          Max and Min Potentials relative to OCV?  <select name='relative_to_ocv' class="form-inline"> 
-          <option value='true'> True </option>
-          <option value='false'> False </option>
-          </select> <br>
-          Start test at OCV? <select name='start_at_ocv' class="form-inline"> 
-          <option value='true'> True </option>
-          <option value='false'> False </option>
-          </select> If other - Please Specify 
-          <input type='text' name='other_start_volt' class="form-inline"><br>
-          Read Timing <input type='text' name='read_timing' value='100'>(ms) This just affects how much data is taken. Use 100 for short tests. 1000 for longer ones.<br>
-          Start Direction <select name='cv_dir' class="form-inline"> 
-            <option value='charging'> Charge </option>
-            <option value='discharging'> Discharge</option>
-            </select>
-          Notes <input type='text' name='notes' value=''><br>
-          </form>
-        
+            <form id='cv_setup_input' action="/sendata" method="post" class='form-horizontal'>
+              <input type='hidden' name='electro_function' value='cyclic_voltammetry'><br>
+              <div class='form-group'>
+                <label for="ardustat_id" class='col-sm-3 control-label'>Ardustat Id</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='number' name='ardustat_id' value='25' class="form-control" required>
+                  </div>
+                </div>
+                <label for="folder_name" class='col-sm-3 control-label'>Folder Name</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' required="true" name='folder_name' value='cv' class="form-control" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="file_name" class='col-sm-3 control-label'>Experiment Name</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='file_name' value='t1' class="form-control">
+                  </div>
+                </div>
+                <label for="rest_time" class='col-sm-3 control-label'>Rest Time</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='rest_time' value='10' class="form-control">
+                    <span class="input-group-addon">s</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="number_of_cycles" class='col-sm-3 control-label'>Number of Cycles</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='number_of_cycles' value='1' class="form-control">
+                  </div>
+                </div>
+                <label for="min_potential" class='col-sm-3 control-label'>Minimum Potential</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='min_potential' value='-.1' class="form-control">
+                    <span class="input-group-addon">V</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="max_potential" class='col-sm-3 control-label'>Maximum Potential</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='max_potential' value='.1' class="form-control">
+                    <span class="input-group-addon">V</span>
+                  </div>
+                </div>
+                <label for="rate" class='col-sm-3 control-label'>Scan Rate</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='rate' value='1' class="form-control">
+                    <span class="input-group-addon">mV/s</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="DAC2_value" class='col-sm-3 control-label'>Voltage Range</label>
+                <div class="col-sm-3">
+                  <select name='DAC2_value' value='2.5' class="form-control">
+                    <option value='2.5'> -2.5V to 2.5V </option>
+                    <option value='0'> 0V to 5V </option>
+                    <option value='5'> -5V to 0V</option>
+                  </select>
+                </div>
+                <label for="relative_to_ocv" class='col-sm-3 control-label'>Potentials Set Relative to OCV?</label>
+                <div class="col-sm-3">
+                  <select name='relative_to_ocv' value='true' class="form-control">
+                    <option value='true'> True </option>
+                    <option value='false'> False </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="start_at_ocv" class='col-sm-3 control-label'>Start test at OCV?</label>
+                <div class="col-sm-3">
+                  <select name='start_at_ocv' value='true' class="form-control">
+                    <option value='true'> True </option>
+                    <option value='false'> False </option>
+                  </select>
+                </div>
+                <label for="other_start_volt" class='col-sm-3'>If other, please specify</label>
+                  <div class="col-sm-3">
+                    <div class="input-group">
+                      <input type="text" name="other_start_volt" class="form-control">
+                    </div>
+                  </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="read_timing" class='col-sm-3 control-label'>Read Timing</label>
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type='text' name='read_timing' value='100' class='form-control'>
+                    <span class="input-group-addon">ms</span>
+                  </div>
+                </div>
+                <label for="cv_dir" class='col-sm-3 control-label'>Start Direction</label>
+                <div class="col-sm-3">
+                  <select name='cv_dir' value='true' class="form-control">
+                    <option value='charging'> Charge </option>
+                    <option value='discharging'> Discharge </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class='form-group'>
+                <label for="notes" class='col-sm-3 control-label'>Notes</label>
+                <div class="col-sm-9">
+                  <input type='text' name='notes' value='' class='form-control'>
+                </div>
+              </div>
+            </form> 
 
           <br>
           <br>
@@ -136,7 +222,7 @@
         </table><br>
 
         
-        <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg">
+        <img id="fooplotter" src="http://www.herbergertheater.org/wp-content/uploads/2014/12/Image-Coming-Soon-Placeholder.png" width="534" height="432">
         
         <p><tt id="results"></tt></p>
         
@@ -587,7 +673,7 @@ var DataToSend;
       colon_index = this_host.indexOf(':')
       this_host = this_host.substring(0,colon_index)
       console.log(this_host)
-      url = "http://"+this_host+":4004/filetest_showme_basic_averaging/" 
+      url = "http://"+this_host+":4004/filetest_showme_basic_averaging_"+channel+"/" 
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"

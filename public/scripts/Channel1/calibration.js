@@ -79,6 +79,7 @@ function goCalibrationProgress()
   console.log('goCalibrationProgess called');
   $('#calibration_instructions').hide();
   $('#calibration_progress').show();
+  $('#kill_button_plot').show();
   console.log('this finished');
 }
 

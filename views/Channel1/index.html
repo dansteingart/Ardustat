@@ -40,13 +40,15 @@
       <div id="ardustat_input_div">
         <form id="ardustat_input">
             <input type='hidden' name='electro_function' value='calibration'> </input>
-            Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) </input>
-            <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+            <div class="input-group">
+              Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) </input>
+              <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+            </div>
         </form>
-      </div>
+      </div>  
       
       <div id="make_blink">
-        <button id="blink_button" class="btn btn-warning"> Blink Ardustat on This Channel </button> (I want to leave and this is easy, don't blink button while test is running)
+        <button id="blink_button" class="btn btn-warning"> Blink Ardustat on This Channel </button>
       </div>
   
       <div id="yes_res_table" style="display:none">
@@ -160,6 +162,7 @@ function blinkButton(){
       //can make multi-step pro
 function test_running(type_of_test){
   console.log('type_of_test called')
+  document.getElementById('ardustat_input_div').style.display = 'none';
   document.getElementById('test_running').style.display = 'inline-block';
   document.getElementById('what_test').innerHTML = "<a href ='/"+channel_href+"/"+type_of_test+"'>"+type_of_test+"</a>"
 }

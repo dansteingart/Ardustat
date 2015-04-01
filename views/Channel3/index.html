@@ -130,6 +130,7 @@
 
 function test_running(type_of_test){
   console.log('type_of_test called')
+  document.getElementById('ardustat_input_div').style.display = 'none';
   document.getElementById('test_running').style.display = 'inline-block';
   document.getElementById('what_test').innerHTML = "<a href ='/"+channel_href+"/"+type_of_test+"'>"+type_of_test+"</a>"
 }

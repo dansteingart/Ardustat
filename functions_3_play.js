@@ -1198,7 +1198,8 @@ function set_ocv(channel)
 
 function potentiostat(channel,value)
 {
-	value_to_ardustat = value / volts_per_tick;
+	//value_to_ardustat = value / volts_per_tick;
+  value_to_ardustat = value / (5/1023)
 	toArd(channel,"p",value_to_ardustat)
 }
 
@@ -1580,7 +1581,7 @@ t1 = setInterval(function()
       if (ports.length > 1 ) ports_dict.ch3.write(sout);  
     }
   }
-},25)
+},35)
 
 function replacer_2(req,res,indexer){
   console.log('replacer called');

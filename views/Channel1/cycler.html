@@ -63,8 +63,6 @@
         <div id="basic_setup">
           <table id="basic_setup_table" class="table">
             <input type='hidden' name='electro_function' value='cyclic_voltammetry'>
-            <tr style='display:none'> <td> <h5> Http Port: </h5> </td><td><input type='text' id='http_port' value='8001' class="form-control"></td></tr> 
-            <tr style='display:none'> <td> <h5>Serial Port:</h5> </td><td><input type='text' id='serial_port' value='/dev/ttyACM0' class="form-control"></td></tr> 
             <tr > <td><h5>Ardustat Id: </h5></td><td><input type='text' id='ardustat_id' value='25' class="form-control"></td> Sorry for having to put this in again - I will make better I promise</tr>
             <tr> <td><h5>Folder Name: </h5></td><td><input type='text' id='folder_name' value='cyc' class="form-control"></td>  <td> (No spaces please - will fix soon) </td></tr>
             <tr> <td><h5>Experiment Name: </h5></td><td><input type='text' id='file_name' value='t1' class="form-control"></td><td> (No spaces please - will fix soon)</td></tr>
@@ -78,7 +76,7 @@
       <table id="new_cycler_table" class="table">
           <tbody>
             <tr>
-              <th>Delete</th> <th>Mode</th> <th> Value </th> <th>Time Cutoff (s)</th> <th>Voltage Cutoff (V) </th> <th>Current Cutoff (mA) </th>
+              <th>Select</th> <th>Mode</th> <th> Value </th> <th>Time Cutoff (s)</th> <th>Voltage Cutoff (V) </th> <th>Current Cutoff (mA) </th>
             </tr>
             <tr>
               <td><input type="checkbox" id="chk"></td> <td><select id='cyc_mode1' onChange="drop_change(this,1)"><option value="">Select Mode</option> <option value='galvanostatic'>Galvanostatic</option> <option value='Potentiostatic'>Potentiostatic</option> <option value='rest'>Rest</option></td> <td><input type='text' id='value1' value='1' >Either V or mA</td> <td><input type='text' id='time_cutoff1' value='1111'></td> <td><input type='text' id='voltage_cutoff1' value='11'></td> <td><input type='text' id='current_cutoff1' value=''></td>
@@ -134,7 +132,7 @@
         </table><br>
 
         
-        <img id="fooplotter" src="http://coolstuffiknow.files.wordpress.com/2012/04/cool_003.jpg" width and height stuff>
+        <img id="fooplotter" src="http://www.herbergertheater.org/wp-content/uploads/2014/12/Image-Coming-Soon-Placeholder.png" width="534" height="452">
         
         <p><tt id="results"></tt></p>
         
@@ -697,7 +695,7 @@ catch(e){alert(e);}}
       colon_index = this_host.indexOf(':')
       this_host = this_host.substring(0,colon_index)
       console.log(this_host)
-      url = "http://"+this_host+":4004/filetest_showme_basic_averaging/" //TODO: make this more general
+      url = "http://"+this_host+":4004/filetest_showme_basic_averaging_"+channel+"/" //TODO: make this more general
       + ardu_folder+"/"
       + ardu_file+"/"
       + cycle_min+"/"
