@@ -100,6 +100,7 @@
 
   var analysis_folder_name
   files = '';
+  countto = ''
     
 
   function changePlot(xaxis,yaxis,callback)
@@ -167,6 +168,81 @@
           }
         });
     }
+
+function get_id_and_image()
+  {
+    analysis_file_name = address
+    $.ajax({
+      type:'GET', 
+      url:'/show_setup/'+analysis_folder_name+'/'+analysis_file_name,
+      dataType: 'json',
+      async: true,
+      success: function(data){
+        console.log('show_setup called');
+        console.log(JSON.stringify(data))
+        show_setup(data)
+        get_raw_image()
+        show_graph_buttons()
+        ardustat_id = data.ardustat_id
+        console.ardustat_id
+      }
+    });
+  }
+
+
+  function get_raw_image(){
+    console.log('get_raw_image called')
+    if (x_axis == '') { x_axis = 't'}
+    if (y_axis == '') { y_axis = 'v'}
+    var mintemp = 0;
+    var maxtemp = -1;
+
+    ardustat_id = 25
+
+    if (countto = '') countto = 1
+
+    if(mintemp != "") { cycle_min = mintemp; }
+    else { cycle_min = 0 }
+    if(maxtemp != "") { cycle_max = maxtemp; }
+    else { cycle_max = -1 }
+
+    this_host = document.URL.toString().split('/')[2]
+    colon_index = this_host.indexOf(':')
+    this_host = this_host.substring(0,colon_index)
+    console.log(this_host)
+    url = "http://"+this_host+":4004/filetest_showme_basic_averaging_analysis/" 
+    + analysis_folder_name+"/"
+    + analysis_file_name+"/"
+    + cycle_min+"/"
+    + cycle_max+"/"
+    + x_axis+"/"
+    + y_axis+"/"
+    + ardustat_id+"/"
+    + countto + "/"
+    + "end/"
+    console.log(url)
+
+    //add functionality so that can look at different plots
+    var foo = "test";
+    $.ajax({
+    url: url
+    })
+    .done(function( data ) {
+        console.log('.');
+        image = data
+        imageUrl = "http://"+this_host+":4001/"+image
+        //document.write(imageUrl);
+        console.log(imageUrl);
+        changeImage("graph",imageUrl)
+    })
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+    });
+
+  }
   
   function show_graph_buttons(){
     console.log('show_graph_buttons called')
@@ -182,10 +258,11 @@
 
   function changeImage(id,source)
   {
-  document.getElementById(id).src=source;
+    document.getElementById(id).src=source;
   }
 
-  function folder_drop_change(selector){
+  function folder_drop_change(selector)
+  {
     console.log(selector.value)
     analysis_folder_name = selector.value;
     console.log(analysis_folder_name);
@@ -217,8 +294,9 @@
     dom_files.appendChild(first_option);
     for (var i in files){
       foo = files[i].toString()
-      if ( (foo.indexOf('raw') > -1 ) || (foo.indexOf('setup') > -1 ) || (foo.indexOf('clean') == -1) ){ }
-      else if(foo.indexOf('clean') > -1) {
+      //if ( (foo.indexOf('raw') > -1 ) || (foo.indexOf('setup') > -1 ) || (foo.indexOf('clean') == -1) ){ }
+      if ( (foo.indexOf('raw') > -1 ) || (foo.indexOf('setup') > -1 ) || (foo.indexOf('pickle') > -1 ) ){ }
+      else {
         console.log('file is '+ foo);
         this_option = document.createElement('option');
         this_option.type = "option"
@@ -230,14 +308,26 @@
     }
   }
 
-  function files_drop_change(selector){
+  function files_drop_change(selector)
+  {
     console.log('files_drop_change called')
     console.log(selector.value)
-    if (selector.value != ''){
-      address = selector.value
-      //show_download(selector.value)
-      analysis_get_image()
-      document.getElementById('graph').style.display="inline-block"
+    console.log(selector.value.indexOf('_clean'))
+    if (selector.value != '') 
+    {
+      if (selector.value.indexOf('_clean') > -1)
+      {
+          address=selector.value
+          console.log('file name is ',address)
+          //show_download(selector.value)
+          analysis_get_image()
+      }
+      else 
+      {
+        address = selector.value
+        get_id_and_image()
+      }
+    document.getElementById('graph').style.display="inline-block"
     }
   }
 /*

@@ -39,7 +39,7 @@ def finisher():
     
         
 s = 2
-eol = -1
+e = -1
 y = 'v'
 x = 't'
 if len(sys.argv) > 1:
@@ -52,7 +52,7 @@ if len(sys.argv) >3:
 if len(sys.argv) >4:
     end = long(sys.argv[4])
     if(end > 0):
-        eol = end
+        e = end
 if len(sys.argv) >5:
     x = sys.argv[5]
 if len(sys.argv) >6:
@@ -89,14 +89,9 @@ try:
             current_list = things['current_list']
             cycle_list = things['cycle_list']
         except Exception, e:
-            #print 'pickle loading problem ', e
-            to_read_from = 1
-            time_list = []
-            voltage_list = []
-            current_list = []
-            cycle_list = []
+            print 'pickle loading problem ', e
     else:
-        to_read_from = 1
+        to_read_from = 5
         time_list = []
         voltage_list = []
         current_list = []
@@ -118,15 +113,11 @@ try:
     lines = data.split("\n")
     
     #print len(lines) 
-    first_time = int(lines[1].split(',')[0])
+    first_time = int(lines[5].split(',')[0])
     if (e < 0):
         e = len(lines)-1
     #print len(lines) 
-    try:
-        check_exists = to_read_from
-    except:
-        to_read_from = 1
-    for i in range (to_read_from,eol):
+    for i in range (to_read_from,e):
         line = lines[i].split(',')
         ts = int(line[0])
         if ts < 2000:
@@ -195,7 +186,7 @@ try:
     else:
         yaxis = voltage_list
         ylegend = "voltage (V)"
-    plot(xaxis,yaxis,'.')
+    plot(xaxis,yaxis,'x')
     dpi = 80
     xlabel(xlegend)
     ylabel(ylegend)
@@ -217,10 +208,8 @@ try:
     #current_list
 
         
-except Exception as e:
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(e, exc_tb.tb_lineno)
+except Exception, e:
+        print "this didn't work so good because %s" %e
 
 
 

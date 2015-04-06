@@ -79,7 +79,7 @@
               <th>Select</th> <th>Mode</th> <th> Value </th> <th>Time Cutoff (s)</th> <th>Voltage Cutoff (V) </th> <th>Current Cutoff (mA) </th>
             </tr>
             <tr>
-              <td><input type="checkbox" id="chk"></td> <td><select id='cyc_mode1' onChange="drop_change(this,1)"><option value="">Select Mode</option> <option value='galvanostatic'>Galvanostatic</option> <option value='Potentiostatic'>Potentiostatic</option> <option value='rest'>Rest</option></td> <td><input type='text' id='value1' value='1' >Either V or mA</td> <td><input type='text' id='time_cutoff1' value='1111'></td> <td><input type='text' id='voltage_cutoff1' value='11'></td> <td><input type='text' id='current_cutoff1' value=''></td>
+              <td><input type="checkbox" id="chk"></td> <td><select id='cyc_mode1' onChange="drop_change(this,1)"><option value="">Select Mode</option> <option value='galvanostatic'>Galvanostatic</option> <option value='Potentiostatic'>Potentiostatic</option> <option value='rest'>Rest</option></td> <td><input type='text' id='value1' value='' >Either V or mA</td> <td><input type='text' id='time_cutoff1' value=''></td> <td><input type='text' id='voltage_cutoff1' value=''></td> <td><input type='text' id='current_cutoff1' value=''></td>
             </tr>
       </tbody></table>
 
@@ -326,11 +326,9 @@ catch(e){alert(e);}}
         var cyc_file = document.getElementById("file_name").value;
         cyc_ardustat_id = document.getElementById("ardustat_id").value;
         var cyc_cycles = document.getElementById("number_of_cycles").value;
-        var cyc_http_port = document.getElementById("http_port").value;
-        var cyc_serial_port = document.getElementById("serial_port").value;
         var read_timing = document.getElementById("read_timing").value;
         var notes = document.getElementById("notes").value;
-        TableData.unshift({'cyc_folder':cyc_folder, 'cyc_file_name':cyc_file, 'cyc_ardustat_id':cyc_ardustat_id, 'cyc_cycles':cyc_cycles, 'cyc_http_port':cyc_http_port, 'cyc_serial_port':cyc_serial_port, 'read_timing':read_timing, 'notes':notes})
+        TableData.unshift({'cyc_folder':cyc_folder, 'cyc_file_name':cyc_file, 'cyc_ardustat_id':cyc_ardustat_id, 'cyc_cycles':cyc_cycles, 'read_timing':read_timing, 'notes':notes})
         //console.log(TableData);
         TableData.unshift({'electro_function':'cycle'});
         return TableData;

@@ -1,5 +1,7 @@
 import pickle
 from pithy import *
+import sys
+import os
 
 ardustat_id = ''
 countto = 1
@@ -89,12 +91,7 @@ try:
             current_list = things['current_list']
             cycle_list = things['cycle_list']
         except Exception, e:
-            #print 'pickle loading problem ', e
-            to_read_from = 1
-            time_list = []
-            voltage_list = []
-            current_list = []
-            cycle_list = []
+            print 'pickle loading problem ', e
     else:
         to_read_from = 1
         time_list = []
@@ -119,13 +116,18 @@ try:
     
     #print len(lines) 
     first_time = int(lines[1].split(',')[0])
-    if (e < 0):
-        e = len(lines)-1
+    if (eol < 0):
+        eol = len(lines)-1
     #print len(lines) 
     try:
-        check_exists = to_read_from
+        if type(to_read_from) == int:
+            check_exists = to_read_from
+        else: to_read_from = 1
     except:
         to_read_from = 1
+    
+    print to_read_from
+    print eol
     for i in range (to_read_from,eol):
         line = lines[i].split(',')
         ts = int(line[0])

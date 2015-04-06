@@ -146,6 +146,7 @@
                   <div class="col-sm-3">
                     <div class="input-group">
                       <input type="text" name="other_start_volt" class="form-control">
+                      <span class="input-group-addon">V</span>
                     </div>
                   </div>
               </div>
@@ -711,7 +712,10 @@ var DataToSend;
   
   function changeImage(id,source)
   {
-  document.getElementById(id).src=source;
+    console.log('image being changed')
+    console.log(id)
+    console.log(source)
+    document.getElementById(id).src=source;
   }
   
 //----------------------------------------------------------------  

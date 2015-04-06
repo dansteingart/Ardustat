@@ -3,7 +3,7 @@
 //config_page = require('./config.js')
 
 //ports to open
-var debug = false
+var debug = true
 
 var express = require('express');
 var path = require('path');
@@ -87,6 +87,7 @@ cv_resting = {};//false
 cv_rest_time = {};//0
 cv_reading = {};//'';
 cv_finish_value = {}
+cv_other_start_volt = {} //0
 
 
 
@@ -448,7 +449,7 @@ function write2CSV(channel,chunk) {
 		            foo[j]=chunks[j];
 	            }
 	            //write data values to appropriate columns in csv 
-              if (debug) console.log(foo)
+              //if (debug) console.log(foo)
 	            json2csv({data: foo, fields: ['0','1','2','3','4','5','6','7','8','9','10'], hasCSVColumnTitle: false}, function(err, csv) {
 		            if (err) console.log(err);
 		            fs.appendFileSync(CSV_NAME[channel], csv)
@@ -722,7 +723,9 @@ function cv_start_go(channel,value)
 		console.log(cv_foldername[channel]);
 		if (value['cv_dir'] == 'charging') cv_dir[channel] = 1;
 		if (value['cv_dir'] == 'discharging') cv_dir[channel] = -1;
-		cv_rate[channel] =  (1/parseFloat(value['rate']))*1000*5	//convert mV/s to a wait time
+		cv_rate[channel] =  (1.0/parseFloat(value['rate']))*1000.0*5.0	//convert mV/s to a wait time
+    if (debug) console.log('rate is ', value['rate'])
+    if (debug) console.log('so in program that is ',cv_rate[channel])
 		cv_max[channel] = parseFloat(value['max_potential'])
 		cv_min[channel] = parseFloat(value['min_potential'])
 		cv_cycle_limit[channel] = parseFloat(value['number_of_cycles']*2)
@@ -736,14 +739,12 @@ function cv_start_go(channel,value)
     cv_raw_reading[channel] = ''
     cv_rest_time[channel] = parseFloat(value['rest_time']);
     cv_relative_to_ocv[channel] = value['relative_to_ocv']; //TODO make this so you can do it for either voltage. 
+    cv_other_start_volt[channel] = value['other_start_volt']
     //flags for the starter
     console.log('start test at ocv ',value['start_at_ocv'])
-    if (value['start_at_ocv']) 
+    if (value['start_at_ocv'] == 'true') 
     { 
       cv_start_at_ocv[channel] = true
-    }
-    else{ 
-      cv_step[channel] = parseFloat(value['other_start_volt']);
     }
     //start stuff
     cv_send_cycle(channel,cv_cycle[channel])
@@ -754,6 +755,7 @@ function cv_start_go(channel,value)
 		cv_reading[channel] = last_ardu_reading[channel]
 		
 		//move the ground and set ocv
+    console.log(' ground gonna be set to ', cv_DAC2[channel])
 		moveground(channel,cv_DAC2[channel]);
 
 		cv_resting[channel] = true;
@@ -785,7 +787,16 @@ function cv_rester(channel){
 		  
 		  
 		  //TODO wishlist - make this fancier - user can set more things. 
-		  if (cv_start_at_ocv[channel] == true) cv_step[channel] = parseFloat(cv_ocv_value[channel]);
+		  if (cv_start_at_ocv[channel] == true) {
+        cv_step[channel] = parseFloat(cv_ocv_value[channel]);
+        console.log('starting test at ocv ')
+      }
+      else {
+        console.log('starting at voltage ', cv_other_start_volt[channel] , 'instead of ocv ')
+        cv_step[channel] = parseFloat(cv_other_start_volt[channel])
+      }
+
+
 		  if (cv_relative_to_ocv[channel]) {
 		    cv_max[channel] = cv_max[channel] + cv_ocv_value[channel];
 		    cv_min[channel] = cv_min[channel] + cv_ocv_value[channel];
@@ -797,25 +808,30 @@ function cv_rester(channel){
       console.log('step value is ')
       console.log(cv_step[channel])
 		  //console.log(cv_step[channel].toString());
-		  potentiostat(channel,cv_step[channel])
+		  
+      //settimeout? 
+      potentiostat(channel,cv_step[channel])
       cv_finish_value[channel] = cv_step[channel] //the finish value is the same as the start value.
 
 		  
 		  //set cv to on
 		  cv[channel] = true;
 		  cv_resting[channel] = false
+      cv_time[channel] = new Date().getTime()
   }
 }
 
 function cv_stepper(channel)
 {
 	//console.log('stepped into cv');
-	//console.log(cv_step);
+	if (debug) console.log('cv_step');
 	var time = new Date().getTime()
 	if (time - cv_time[channel] > cv_rate[channel])
 	{
 		console.log("next step")
-		cv_time[channel] = time
+		//cv_time[channel] = time
+    cv_time[channel] = cv_time[channel] + cv_rate[channel] //pausing won't work I don't think
+
 		cv_step[channel] = parseFloat(cv_step[channel]) + parseFloat(cv_dir[channel]*.005)
     console.log(cv_step[channel])
 		if (cv_step[channel] > cv_max[channel] & cv_dir[channel] == 1)
@@ -842,22 +858,22 @@ function cv_stepper(channel)
 		}
 		else
 		{
-		  console.log("cv_step of channel " + channel);
-			console.log(cv_step[channel])
+		  //console.log("cv_step of channel " + channel);
+			console.log(cv_step[channel], " " , channel)
 			potentiostat(channel,cv_step[channel])
 		}
 	}
 }
 
 function cv_finisher(channel){
-  console.log('cv finisher')
+  if (debug) console.log('cv finisher')
   if (cv_step[channel] < cv_finish_value[channel]){
-    console.log('direction = positive')
+    //console.log('direction = positive')
     cv_dir[channel] = 1
   }
   else if (cv_step[channel] > cv_finish_value[channel]){
     cv_dir[channel] = -1
-    console.log('direction = negative')
+    //console.log('direction = negative')
   }
   else if (cv_step[channel] == cv_finish_value[channel]){
     console.log('WOW - cv_step was the same as cv_finsih value upon entry')
@@ -870,7 +886,8 @@ function cv_finisher(channel){
   if ( (time - cv_time[channel]) > cv_rate[channel])
   {
     console.log("next step")
-    cv_time[channel] = time
+    //cv_time[channel] = time
+    cv_time[channel] = cv_time[channel] + cv_rate[channel]
     cv_step[channel] = cv_step[channel] + cv_dir[channel]*.005
 
     if ( (cv_dir[channel] == 1) && (cv_step[channel] > cv_finish_value[channel]) ) {
@@ -894,7 +911,7 @@ function cv_finisher(channel){
     }
   }
   else {}
-  console.log('leaving finsiher')
+  //console.log('leaving finsiher')
 }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Cycling Section
@@ -1080,7 +1097,7 @@ function cycling_mode(channel)
 		else galvanostat(channel,parseFloat(this_set['cyc_value']))
 		console.log("set galvanostat");
 	}
-	if (this_set['cyc_mode'] == 'Rest')
+	if (this_set['cyc_mode'] == 'rest')
 	{
     console.log('this is a rest step')
 	  set_ocv(channel)
@@ -1187,7 +1204,7 @@ function moveground(channel,value)
 
 	value_to_ardustat = value / volts_per_tick; //value_to_ardustat local, value is given, volts_per_tick always the same
 	toArd(channel,"d",value_to_ardustat)
-	toArd(channel,"-","0000");
+  //setTimeout(function(){ toArd(channel,"-","0000") }, 100);
 }
 
 //sets arudstat to open circuit potential
@@ -1509,12 +1526,7 @@ start_t.ch1 = function() {
       //if (debug) console.log('read timing of ch1 ', read_timing.ch1)
       command_list.ch1.push('s0000');
       //console.log(cv_finisher_flag.ch1)
-      if (calibrate.ch1) calibrate_step('ch1')
-      if (cv_resting.ch1) cv_rester('ch1')
-      if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
-      //if (cv_finisher_flag.ch1) console.log('try cv_finish')
-      if ((cv_finisher_flag.ch1) && (kill.ch1 == false)) cv_finisher('ch1')
-      if ((arb_cycling.ch1) && (kill.ch1 == false)) cycling_stepper('ch1')
+
     }
   }, read_timing.ch1);
 }
@@ -1524,11 +1536,7 @@ start_t.ch2 = function() {
   t.ch2 = setInterval(function(){
     if (ports.length > 1){
       command_list.ch2.push('s0000');
-      if (calibrate.ch2) calibrate_step('ch2')
-      if (cv_resting.ch2) cv_rester('ch2')
-      if ((cv.ch2) && (kill.ch2 == false)) cv_stepper('ch2')
-      if ((cv_finisher_flag.ch2) && (kill.ch2 == false)) cv_finisher('ch2')
-      if ((arb_cycling.ch2) && (kill.ch2 == false)) cycling_stepper('ch2')
+      
     }
   }, read_timing.ch2);
 }
@@ -1537,11 +1545,6 @@ start_t.ch3 = function() {
   t.ch3 = setInterval(function(){
     if (ports.length > 2){
       command_list.ch3.push('s0000');
-      if (calibrate.ch3) calibrate_step('ch3')
-      if (cv_resting.ch3) cv_rester('ch3')
-      if ((cv.ch3) && (kill.ch3 == false)) cv_stepper('ch3')
-      if ((cv_finisher_flag.ch3) && (kill.ch3 == false)) cv_finisher('ch3')
-      if ((arb_cycling.ch3) && (kill.ch3 == false)) cycling_stepper('ch3')
     }
   }, read_timing.ch3);
 }
@@ -1550,21 +1553,37 @@ start_t.ch3 = function() {
 t1 = setInterval(function()
 {
   //console.log('print something');
-  if (ports.length > 0)
+  if (ports.length > 0) //something should be faster than this
   {
   //console.log('got here')
+
+
+    //switched this into here because it should loop faster
+    if (calibrate.ch1) calibrate_step('ch1')
+    if (cv_resting.ch1) cv_rester('ch1')
+    if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
+    //if (cv_finisher_flag.ch1) console.log('try cv_finish')
+    if ((cv_finisher_flag.ch1) && (kill.ch1 == false)) cv_finisher('ch1')
+    if ((arb_cycling.ch1) && (kill.ch1 == false)) cycling_stepper('ch1') 
+
   	if (command_list.ch1.length > 0)
   	{
   	  //console.log(command_list.ch1);
   		sout = command_list.ch1.shift();
   		if (sout != "s0000") console.log('sout on ch1 is '+sout);
       //if (ports.length > 0 ) ports[0].write(sout);	
-      if (ports.length > 0 ) ports_dict.ch1.write(sout);  
+      if (ports.length > 0 ) ports_dict.ch1.write(sout); 
       //console.log(ports_dict)
   	}
   }
   if (ports.length > 1)
   {
+    if (calibrate.ch2) calibrate_step('ch2')
+    if (cv_resting.ch2) cv_rester('ch2')
+    if ((cv.ch2) && (kill.ch2 == false)) cv_stepper('ch2')
+    if ((cv_finisher_flag.ch2) && (kill.ch2 == false)) cv_finisher('ch2')
+    if ((arb_cycling.ch2) && (kill.ch2 == false)) cycling_stepper('ch2')
+
     if (command_list.ch2.length > 0)
     {
       sout = command_list.ch2.shift();
@@ -1574,6 +1593,11 @@ t1 = setInterval(function()
   }
   if (ports.length > 2)
   {
+    if (calibrate.ch3) calibrate_step('ch3')
+    if (cv_resting.ch3) cv_rester('ch3')
+    if ((cv.ch3) && (kill.ch3 == false)) cv_stepper('ch3')
+    if ((cv_finisher_flag.ch3) && (kill.ch3 == false)) cv_finisher('ch3')
+    if ((arb_cycling.ch3) && (kill.ch3 == false)) cycling_stepper('ch3')
     if (command_list.ch3.length > 0)
     {
       sout = command_list.ch3.shift();
@@ -1581,7 +1605,7 @@ t1 = setInterval(function()
       if (ports.length > 1 ) ports_dict.ch3.write(sout);  
     }
   }
-},35)
+},25)
 
 function replacer_2(req,res,indexer){
   console.log('replacer called');
@@ -1606,7 +1630,8 @@ function show_setup(req,res){
   console.log('show setup called')
   var temp = req.originalUrl.replace("/show_setup/","")
   stuff = decodeURIComponent(temp);
-  setup_file = 'Data/' + stuff.replace('_clean.csv', 'setup.json')
+  if (stuff.indexOf('_clean.csv') > -1) setup_file = 'Data/' + stuff.replace('_clean.csv', 'setup.json')
+  else setup_file = 'Data/' + stuff.replace('.csv', 'setup.json')
   console.log(setup_file)
   data = JSON.parse(fs.readFileSync(setup_file))//shouldn't be synchronous but yolo
   console.log(data)
