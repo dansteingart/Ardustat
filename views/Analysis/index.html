@@ -206,6 +206,8 @@ function get_id_and_image()
     if(maxtemp != "") { cycle_max = maxtemp; }
     else { cycle_max = -1 }
 
+    if (countto == '') countto = 1
+
     this_host = document.URL.toString().split('/')[2]
     colon_index = this_host.indexOf(':')
     this_host = this_host.substring(0,colon_index)

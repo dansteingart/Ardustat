@@ -216,6 +216,7 @@ try:
     savefig(imagesource,dpi=dpi)
     image = '<img '+s+' src=/'+imagesource+'>'
     print imagesource
+    print 'hello'
     
     if finish_flag :
         finisher()
@@ -227,7 +228,6 @@ try:
 
         
 except Exception as e:
-    print 'something is wrong'
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(e, exc_tb.tb_lineno)
