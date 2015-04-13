@@ -1009,10 +1009,10 @@ function cycling_stepper(channel)
     skip_flag[channel] = false;
 	  if (this_set['cyc_mode'] == 'galvanostatic') 
 	  {
-	    console.log('went into galvanostat part');
-	    console.log('direction ',direction[channel]);
-	    console.log('last_potential ', last_potential[channel]);
-	    console.log('cutoff_potential ', cutoff_potential[channel]);
+	    //console.log('went into galvanostat part');
+	    //console.log('direction ',direction[channel]);
+	    //console.log('last_potential ', last_potential[channel]);
+	    //console.log('cutoff_potential ', cutoff_potential[channel]);
 	    if ( direction[channel] == "charge" & (last_potential[channel] > cutoff_potential[channel]) )
 	    {
 	      console.log('cutoff potential reached on channel ' + channel)
