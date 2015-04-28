@@ -146,10 +146,10 @@ try:
             current_raw = int(line[3][1:-1]) - int(line[2][1:-1])
             voltage = adc-ref_adc
 
-            #print 'res ', res
+            
             #REMOVE: this is only in here for running when I have a fake resistance table. this ... resistance should never be 0.
             if res == 0:
-                res = 100
+                res = 10000
             current = (dac-adc)/res 
             
             current_total += current

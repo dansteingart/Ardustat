@@ -3,7 +3,7 @@
 //config_page = require('./config.js')
 
 //ports to open
-var debug = true
+var debug = false
 
 var express = require('express');
 var path = require('path');
@@ -741,16 +741,19 @@ function cv_start_go(channel,value)
     cv_relative_to_ocv[channel] = value['relative_to_ocv']; //TODO make this so you can do it for either voltage. 
     cv_other_start_volt[channel] = value['other_start_volt']
     //flags for the starter
+
+    //ocv stuff
     console.log('start test at ocv ',value['start_at_ocv'])
+    console.log('cv_other_start_volt ', cv_other_start_volt[channel])
     if (value['start_at_ocv'] == 'true') 
     { 
+      console.log('starting at ocv')
       cv_start_at_ocv[channel] = true
     }
+
     //start stuff
     cv_send_cycle(channel,cv_cycle[channel])
-    
     console.log(channel,cv_foldername[channel]+'/'+cv_filename[channel])
-
 		l_starter(channel,cv_foldername[channel]+'/'+cv_filename[channel],value); //start logging to csv
 		cv_reading[channel] = last_ardu_reading[channel]
 		
@@ -773,7 +776,7 @@ function cv_send_cycle(channel,cycle){
 
 
 function cv_rester(channel){
-  //console.info("cv_rester");
+  //console.log("cv_rester");
   //moveground(channel,cv_DAC2[channel])
   var time = new Date().getTime()
   if ((time - cv_time[channel]) >(cv_rest_time[channel] * 1000) ) //everything is in milli seconds. 
@@ -782,6 +785,7 @@ function cv_rester(channel){
       //take a reading
 		  cv_reading[channel] = last_ardu_reading[channel]
 		  cv_ocv_value[channel] = parseFloat(cv_reading[channel]['working_potential'])
+      console.log('cv_ocv_value is ', cv_ocv_value[channel])
       console.log('cv_rester - taking into account the cv_reading which is below')
       console.log(cv_reading[channel])
 		  
@@ -798,8 +802,11 @@ function cv_rester(channel){
 
 
 		  if (cv_relative_to_ocv[channel]) {
+        console.log('cv max and min relative to ocv')
 		    cv_max[channel] = cv_max[channel] + cv_ocv_value[channel];
 		    cv_min[channel] = cv_min[channel] + cv_ocv_value[channel];
+        console.log('new cv max is ', cv_max[channel])
+        console.log('new cv min is ', cv_min[channel])
 		  }
 		  
 		  //set the potential to the start
@@ -824,7 +831,7 @@ function cv_rester(channel){
 function cv_stepper(channel)
 {
 	//console.log('stepped into cv');
-	if (debug) console.log('cv_step');
+	//if (debug) console.log('cv_step');
 	var time = new Date().getTime()
 	if (time - cv_time[channel] > cv_rate[channel])
 	{
