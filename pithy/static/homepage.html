@@ -1,0 +1,118 @@
+<html>
+<head>
+	<LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
+	
+<script src="/static/jquery-1.9.1.js"></script>
+
+<style>
+body
+{
+	margin: 20px 20px;
+}
+
+.title
+{
+	font-family: Helvetica;
+	color:silver;
+	font-size: 40px;
+	
+}
+
+.newpage 
+{
+	color: #222222;
+	font-size: 25px;
+}
+
+.colheader
+{
+	color: #777;
+	font-size: 20px;
+	padding-bottom:5px;
+}
+
+
+.buffer {height:30px; }
+
+div#left {
+    float: left;
+    width: 33%;
+	height: 70%;
+	
+	
+}
+div#right {
+    float: right;
+    width: 33%;
+	height: 70%;
+	
+}
+div#middle {
+    padding: 0px 160px 5px 160px;
+    margin: 0px;
+	height: 70%;
+	
+	
+	
+}
+
+.rightin
+{
+}
+
+</style>
+
+</head>
+<body>
+	<div class="title" id="headface"></div>
+	<div id="news" class="newpage">  <span id="whoops"></span></div>
+	<div class="buffer"></div>
+	<div id="left">
+		<div class="colheader">New Scripts</div>
+		##_newthings_##
+	</div>
+	<div id="right">
+		<div class="colheader">New Files</div>
+		##_popthings_##
+	</div>
+	<div id="middle">
+		<div class="colheader">Heavliy Edited Scripts</div>
+		##_changethings_##
+		
+	</div>	
+	
+</body>
+
+
+<script>
+var pathname = window.location.origin;
+var page = pathname.split("//")[1].split(".")[0] //get subdomain
+
+$("#headface").html("pithy")
+$("#news").prepend("new page -> "+pathname+"/<input class='newpage' id='newpage'> </input><button onclick='goThere()'>go</button>")
+
+
+
+function goThere()
+{
+	foo = $("#newpage").val()
+	if (foo.length > 0 && foo != "files"  && foo != "files/")
+	{ 
+		destination = pathname+"/"+foo
+		window.location = destination
+	}
+	else
+	{
+		$("#whoops").hide()
+		$("#whoops").html("try again")
+		$("#whoops").fadeIn("slow")
+		$("#whoops").fadeOut("slow")
+		
+		
+	}
+	
+}
+
+</script>
+
+</html>

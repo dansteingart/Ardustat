@@ -1,0 +1,51 @@
+you are in cyclic voltammetry land now
+GO,1426128509070,1023,0,0,255,0,1,s0000,0,0,514,ST
+Original output file: "Data/untitled.csv" --> New output file: "Data/debug_stuff/resistor_2.csv"
+CSV WRITING HAS BEGUN! Current output file: Data/debug_stuff/resistor_2.csv
+adc-ref_adc 0.0
+dac2: 2.471
+max_potential  1.8
+min_potential  0.4
+attempt potential: 0.0
+attempt potential: 0.005
+attempt potential: 0.01
+attempt potential: 0.015
+attempt potential: 0.02
+attempt potential: 0.025
+attempt potential: 0.030000000000000002
+attempt potential: 0.035
+attempt potential: 0.04
+attempt potential: 0.045
+attempt potential: 0.049999999999999996
+attempt potential: 0.05499999999999999
+attempt potential: 0.05999999999999999
+attempt potential: 0.06499999999999999
+attempt potential: 0.06999999999999999
+attempt potential: 0.075
+attempt potential: 0.08
+attempt potential: 0.085
+attempt potential: 0.09000000000000001
+attempt potential: 0.09500000000000001
+attempt potential: 0.10000000000000002
+attempt potential: 0.10500000000000002
+attempt potential: 0.11000000000000003
+attempt potential: 0.11500000000000003
+attempt potential: 0.12000000000000004
+attempt potential: 0.12500000000000003
+attempt potential: 0.13000000000000003
+attempt potential: 0.13500000000000004
+attempt potential: 0.14000000000000004
+attempt potential: 0.14500000000000005
+attempt potential: 0.15000000000000005
+attempt potential: 0.15500000000000005
+attempt potential: 0.16000000000000006
+attempt potential: 0.16500000000000006
+attempt potential: 0.17000000000000007
+attempt potential: 0.17500000000000007
+attempt potential: 0.18000000000000008
+attempt potential: 0.18500000000000008
+attempt potential: 0.19000000000000009
+attempt potential: 0.1950000000000001
+attempt potential: 0.2000000000000001
+attempt potential: 0.2050000000000001
+attempt potential: 0.2100000000000001

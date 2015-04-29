@@ -1,0 +1,8 @@
+*.png
+*.dat
+*.pyc
+*.pickle
+*.ardudata
+*.csv
+*.txt
+Node_Client/resistance_tables

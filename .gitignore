@@ -1,6 +1,9 @@
+Data*
+*.txt
+*.csv
 *.png
 *.dat
-*.pyc
-*.pickle
-*.json
-*.ardudata
+*~
+resistance_tables*
+*experiment*
+*force*

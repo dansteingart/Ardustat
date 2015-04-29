@@ -1,0 +1,1 @@
+{"out":"python's resistance table called\n","outerr":"Traceback (most recent call last):\n  File \"/Users/danny/Ardustat/pithy/code/resistance_table.py\", line 16, in <module>\n    files = sorted(os.listdir(res_dir))\nOSError: [Errno 2] No such file or directory: 'resistance_tables/'\n","images":[],"exec_time":389}

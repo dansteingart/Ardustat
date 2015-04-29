@@ -1,0 +1,29 @@
+<html>
+<head>
+        <LINK REL=StyleSheet HREF="/static/style.css" TYPE="text/css" MEDIA=screen>
+        
+<script src="/static/jquery-1.9.1.js"></script>
+
+<style>
+body
+{
+        margin: 20px 20px;
+}
+</style>
+
+</head>
+<body>
+        <h2 id="headface"></h2>
+        <div id="filelist"> ##_filesgohere_## </div>
+</body>
+
+
+<script>
+var pathname = window.location.origin;
+var page = pathname.split("//")[1].split(".")[0] //get subdomain
+
+$("#headface").html(page+" File Directory")
+</script>
+
+</html>
+

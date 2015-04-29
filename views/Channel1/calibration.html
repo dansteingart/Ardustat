@@ -1,0 +1,108 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name ="viewport" content="width=device-width">
+    <title>Cyclic Voltammetry</title>
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="container">
+      <div class="row marketing">
+        <div>
+          <div class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Ardustat</a>
+              </div>
+              <nav class="collapse navbar-collapse" role="navigation">
+                <ul class="nav navbar-nav navbar-right">
+                    <li id='navbar-home'><a href="/">Home</a></li>
+                    <li id='navbar-channel1'><a href="/Channel1">Channel 1</a></li>
+                    <li id='navbar-channel2'><a href="/Channel2">Channel 2</a></li>
+                    <li id='navbar-channel3'><a href="/Channel3">Channel 3</a></li>
+                    <li id='navbar-analysis'><a href="/Analysis">Analysis</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+          <script type="text/javascript" >
+            document.getElementById('navbar-channel1').setAttribute('class', 'active')
+          </script>
+        </div>
+          <div class="col-lg-12">
+            <h1 class="header"> Hey Dan </h1>
+          </div>
+      </div>
+      <div class="row marketing">
+          <div class="col-lg-12">
+              <h2>Calibration</h2>
+          </div>
+      </div>
+      
+      <div id="ardustat_input_div">
+        <form id="ardustat_input">
+            <input type='hidden' name='electro_function' value='calibration'> </input>
+            Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) </input>
+            <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+      
+      <p id="no_resistance_table" style="display:none">No resistance table found. Calibrate to continue</p>
+      <p id="yes_resistance_table" style="display:none">Resistance table found. Click 'Calibrate' to re-calibrate, or select a different experiment</p>
+      
+      <div id="calibration_instructions" style="display:none" >
+        <p> To Calibrate, Put a known resistor (~ 10kOhm) between the positive and negative terminals of the Ardustat. Enter the resistor value in the box and hit Calibrate! </p>
+        Resistance Value <input type="text" id="resistor_value" value="10000"> </input> (Ohms)   
+        <button id="calibrate" class="btn btn-primary">Calibrate!</button>
+      </div>
+      
+      <div id="progress_stuff">
+        <p id="calibration_progress" style="display:none"> Calibration in progress. This takes about five minutes. </p>
+        <button type = "kill_button_plot" onclick="goKill()" class="btn btn-danger" id="kill_button_plot" style="display:none">Stop Test</button>
+        <p> <h3 id="calibration_finished" style="display:none"> Calibration Finished! Time to do some testing! </h3> </p>
+      </div>
+      
+        
+
+  </div>
+</div>
+  <script> channel='ch1' </script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="/javascripts/flot/jquery.flot.js"></script>
+	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/Channel1/calibration.js"></script>
+  <script src="/scripts/Channel1/socket_1.js"></script>
+  
+  <script>
+  console.log("this is the calibration page, scripts are working");
+  function goKill(){
+    console.log('goKill called')
+    $.ajax({
+      type:'GET',
+      url:'/killing/'+channel,
+      dataType: 'json',
+      async: true,
+      success: function(){
+        console.log('ajax says killer called');
+      }
+    });
+    console.log("goKill clicked");
+    if (channel == 'ch1') location.href='/Channel1'
+    else if (channel == 'ch2') location.href = '/Channel2'
+    else if (channel == 'ch3') location.href = '/Channel3'
+    else alert('channel not set correctly - tell Dan please')
+  }
+
+  </script>
+</body>

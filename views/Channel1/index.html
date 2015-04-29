@@ -1,0 +1,172 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name ="viewport" content="width=device-width">
+    <title>Channel 1</title>
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="row marketing">
+    
+      <div class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Ardustat</a>
+          </div>
+          <nav class="collapse navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav navbar-right">
+                <li id='navbar-home'><a href="/">Home</a></li>
+                <li id='navbar-channel1'><a href="/Channel1">Channel 1</a></li>
+                <li id='navbar-channel2'><a href="/Channel2">Channel 2</a></li>
+                <li id='navbar-channel3'><a href="/Channel3">Channel 3</a></li>
+                <li id='navbar-analysis'><a href="/Analysis">Analysis</a></li>
+            </ul>
+          </nav>
+        </div>
+        <script type="text/javascript" >
+            document.getElementById('navbar-channel1').setAttribute('class', 'active') //TODO: copy this puppy
+          </script>
+      </div>
+      
+      <div id="ardustat_input_div">
+        <form id="ardustat_input">
+            <input type='hidden' name='electro_function' value='calibration'> </input>
+            <div class="input-group">
+              Ardustat Id: <input type='text' name='ardustat_id' value='25' class="form-inline"> (Number on Ardustat) </input>
+              <button id="ardustat_id_submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+      </div>  
+      
+      <div id="make_blink">
+        <button id="blink_button" class="btn btn-warning"> Blink Ardustat on This Channel </button>
+      </div>
+  
+      <div id="yes_res_table" style="display:none">
+        <p> There is a resistance table. Proceed to do some testing </p>
+        <div class="col-lg-12">
+          <h1>Channel 1</h1>
+          <ul class="nav nav-pills">
+            <li><a href="/Channel1/CV">Cyclic Voltammetry</a></li>
+            <li><a href="/Channel1/Cycler">Cell Cycling</a></li>
+            <li><a href="/Channel1/Calibration">Calibration</a></li>
+          </ul>
+        </div>
+      </div>
+ 
+      <div id="no_res_table" style="display:none">
+        <p> This Ardustat has not been calibrated. Please <a href="/Channel1/Calibration">calibrate</a> to continue </p>
+      </div>
+
+      <div id="test_running" style="display:none">
+        <p> There is a test currently running. Click below to view the test </p>
+        <p id="what_test" > </p>
+      </div>
+      
+    </div>
+  </div>
+  <script> channel = 'ch1' </script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="/javascripts/flot/jquery.flot.js"></script>
+	<script src="/javascripts/flot/jquery.flot.time.js"></script>
+	<script src="/javascripts/jquery-json/src/jquery.json.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="/scripts/Channel1/test.js"></script>
+  <script src="/scripts/Channel1/socket_1.js"></script>
+  <script src="/scripts/Channel1/channel1.js"></script>
+  <script>
+  console.log('channel is ' + channel)
+  if (channel == 'ch1') channel_href = 'Channel1'
+  else if (channel == 'ch2') channel_href = 'Channel2'
+  else if (channel == 'ch3') channel_href = 'Channel3'
+  else alert('The channel has not been set correctly. Please tell Dan.')
+
+  $( document ).ready(function() {
+    $.ajax({
+    type:'GET',
+    url:'/getstatus',
+    async: true,
+    data: {channel:channel},     
+    })
+    .done(function( data ) {
+      //can make multi-step process
+
+      //establish whether cv or cycle
+      //then send to correct page
+      console.log('data below')
+      console.log(data)
+      console.log('parsed')
+      data = JSON.parse(data)
+      console.log(data)
+      
+      if (data[0] == undefined){
+        if (data.electro_function == 'cyclic_voltammetry') {
+          console.log('this is a cv on channel ' + channel)
+          test_running('CV')
+        }
+        else if (data.electro_function == 'calibration'){
+          console.log('there is a calibration running on channel ' + channel)
+          test_running('Calibration')
+        }
+      }
+      else if (data[0].electro_function == 'cycle' ) {
+        console.log('this is a cycle on channel ' + channel)
+        test_running('Cycler')
+      }
+      else { 
+        console.log('there is no test running - as you were')
+      }
+      
+    })
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+    })
+  });
+
+
+  $('#blink_button').click(function() {
+    console.log('blink button called');
+    blinkButton()
+  });
+
+function blinkButton(){
+  $.ajax({
+    type:'GET',
+    url:'/blink_button',
+    async: true,
+    data: {channel:channel},     
+    })
+    .done(function( data ) {
+      console.log(data) 
+    })
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log('something went wrong');
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+    })
+  }
+      //can make multi-step pro
+function test_running(type_of_test){
+  console.log('type_of_test called')
+  document.getElementById('ardustat_input_div').style.display = 'none';
+  document.getElementById('test_running').style.display = 'inline-block';
+  document.getElementById('what_test').innerHTML = "<a href ='/"+channel_href+"/"+type_of_test+"'>"+type_of_test+"</a>"
+}
+  
+  </script>
+</body>
+
