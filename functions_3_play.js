@@ -1125,7 +1125,7 @@ function calibrator(channel, value)
 	counter[channel] = 0
 	calloop[channel] = 0
   toArd(channel,"R","0255");
-	setTimeout(function(){calibrate[channel] = true},100)
+	setTimeout(function(){calibrate[channel] = true},50)
 	console.log("this is the calibrator on channel " + channel);
 }
 
@@ -1531,7 +1531,8 @@ start_t.ch1 = function() {
   t.ch1 = setInterval(function(){
     if (ports.length > 0){
       //if (debug) console.log('read timing of ch1 ', read_timing.ch1)
-      command_list.ch1.push('s0000');
+        command_list.ch1.push('s0000');
+        if (calibrate.ch1) calibrate_step('ch1')
       //console.log(cv_finisher_flag.ch1)
 
     }
@@ -1542,7 +1543,10 @@ start_t.ch1 = function() {
 start_t.ch2 = function() {
   t.ch2 = setInterval(function(){
     if (ports.length > 1){
-      command_list.ch2.push('s0000');
+
+        command_list.ch2.push('s0000');
+          
+        if (calibrate.ch2) calibrate_step('ch2')
       
     }
   }, read_timing.ch2);
@@ -1551,7 +1555,10 @@ start_t.ch2 = function() {
 start_t.ch3 = function() {
   t.ch3 = setInterval(function(){
     if (ports.length > 2){
-      command_list.ch3.push('s0000');
+
+        command_list.ch3.push('s0000');
+        if (calibrate.ch3) calibrate_step('ch3')
+      
     }
   }, read_timing.ch3);
 }
@@ -1566,7 +1573,8 @@ t1 = setInterval(function()
 
 
     //switched this into here because it should loop faster
-    if (calibrate.ch1) calibrate_step('ch1')
+    //calibration part moved into other loop because it has to be there
+    
     if (cv_resting.ch1) cv_rester('ch1')
     if ((cv.ch1) && (kill.ch1 == false)) cv_stepper('ch1')
     //if (cv_finisher_flag.ch1) console.log('try cv_finish')
@@ -1585,7 +1593,7 @@ t1 = setInterval(function()
   }
   if (ports.length > 1)
   {
-    if (calibrate.ch2) calibrate_step('ch2')
+    
     if (cv_resting.ch2) cv_rester('ch2')
     if ((cv.ch2) && (kill.ch2 == false)) cv_stepper('ch2')
     if ((cv_finisher_flag.ch2) && (kill.ch2 == false)) cv_finisher('ch2')
