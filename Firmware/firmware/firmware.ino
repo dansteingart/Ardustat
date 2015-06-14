@@ -719,11 +719,29 @@ int checkvolt(int volt)
 
 void sendout()
 {
-  adc = analogRead(0);
-  dac = analogRead(1);
-  adcgnd = analogRead(2);
-  adcref = analogRead(3);
-  refvolt = analogRead(5);
+
+  float fadc = 0;
+  float fdac = 0;
+  float fgnd = 0;
+  float fref = 0;
+  float frefvolt = 0;
+  int cUP = 50;
+  for (int ii = 0; ii < cUP; ii++)
+  {
+    fadc = fadc+analogRead(0);
+    fdac = fdac+analogRead(1);
+    fgnd = fgnd+analogRead(2);
+    fref = fref+analogRead(3);
+    frefvolt = frefvolt+analogRead(5);
+  }
+    fadc = fadc/cUP;
+    fdac = fdac/cUP;
+    fgnd = fgnd/cUP;
+    fref = fref/cUP;
+    frefvolt = frefvolt/cUP;
+  
+  
+  
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
@@ -736,9 +754,9 @@ void sendout()
   Serial.print("GO,");
   Serial.print(outvolt, DEC);
   Serial.print(",");
-  Serial.print(adc);
+  Serial.print(fadc);
   Serial.print(",");
-  Serial.print(dac);
+  Serial.print(fdac);
   Serial.print(",");
   Serial.print(res);
   Serial.print(",");
@@ -752,11 +770,11 @@ void sendout()
   Serial.print(holdString[3]);
   Serial.print(holdString[4]);
   Serial.print(",");
-  Serial.print(adcgnd);
+  Serial.print(fgnd);
   Serial.print(",");
-  Serial.print(adcref);
+  Serial.print(fref);
   Serial.print(",");
-  Serial.print(refvolt);
+  Serial.print(frefvolt);
   Serial.print(",");
   Serial.print(int(EEPROM.read(32)));
   Serial.println(",ST");
