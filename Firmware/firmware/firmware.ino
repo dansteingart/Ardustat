@@ -22,21 +22,21 @@ int adcgnd; //adc at ground
 int adcref; //ref electrode
 int refvolt;//ref voltage 2.5V
 int wep; //working electrode potential (adc - adcref)
-int firstdac= 0;
+int firstdac = 0;
 int seconddac = 0;
 int dacaddr = 0;
-int dacmode=3;
+int dacmode = 3;
 boolean dactest = false;
 boolean rtest = false;
 int testcounter = 0;
 int testlimit = 0;
-int outvolt=1023;
-byte pot= 0;
+int outvolt = 1023;
+byte pot = 0;
 int temp;
-byte resistance1=0;
-int res=0;
-int fixedres=0;
-int cl=2;
+byte resistance1 = 0;
+int res = 0;
+int fixedres = 0;
+int cl = 2;
 int pdl = 4;
 int counter = 0;
 int sign = 1;
@@ -72,45 +72,45 @@ void setup()
 {
   //Startup Serial
   Serial.begin(57600);
-//  Serial.println("Hi Dan!");
+  //  Serial.println("Hi Dan!");
   //SPI
   byte i;
   //byte clr;
   pinMode(DATAOUT, OUTPUT);
-  pinMode(3,OUTPUT);
+  pinMode(3, OUTPUT);
   pinMode(DATAIN, INPUT);
-  pinMode(SPICLOCK,OUTPUT);
-  pinMode(SLAVESELECTD,OUTPUT);
-  pinMode(5,OUTPUT);
-  pinMode(6,OUTPUT);
-  pinMode(SLAVESELECTP,OUTPUT);
+  pinMode(SPICLOCK, OUTPUT);
+  pinMode(SLAVESELECTD, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(SLAVESELECTP, OUTPUT);
   pinMode(cl, OUTPUT);
-  digitalWrite(SLAVESELECTD,HIGH); //disable device
-  digitalWrite(SLAVESELECTP,HIGH); //disable device
+  digitalWrite(SLAVESELECTD, HIGH); //disable device
+  digitalWrite(SLAVESELECTP, HIGH); //disable device
   digitalWrite(cl, LOW);
   delay(1000);
-  digitalWrite(cl,HIGH);
+  digitalWrite(cl, HIGH);
   //SPCR is 01010000.  write_pot turns off the SPI interface,
   // which means SPCR becomes 00010000 temporarily
   //SPCR = (1<<SPE)|(1<<MSTR);
   SPCR = B00010000;
-  clr=SPSR;
-  clr=SPDR;
+  clr = SPSR;
+  clr = SPDR;
   delay(10);
   // power on reset
-  pot=144;
-  resistance1=0;
-  res=0;
-  write_pot(pot,resistance1,res);
+  pot = 144;
+  resistance1 = 0;
+  res = 0;
+  write_pot(pot, resistance1, res);
   // wakeup
-  pot=B00010000;
-  write_pot(pot,resistance1,res);
+  pot = B00010000;
+  write_pot(pot, resistance1, res);
   // set resistance to High
-  pot=B01000000;
-  resistance1=B00000000;
-  res=255;
-  write_pot(pot,resistance1,res);
-  for (int i=1;i<11;i++) lastData[i]=0;
+  pot = B01000000;
+  resistance1 = B00000000;
+  res = 255;
+  write_pot(pot, resistance1, res);
+  for (int i = 1; i < 11; i++) lastData[i] = 0;
   watchdog = millis();
 }
 
@@ -119,7 +119,7 @@ void loop()
 
   //read the serial port and create a string out of what you read
   readSerialString(serInString);
-  if( isStringEmpty(serInString) == false) { //this check is optional
+  if ( isStringEmpty(serInString) == false) { //this check is optional
     watchdog = millis();
     //delay(500);
     holdString[0] = serInString[0];
@@ -129,7 +129,7 @@ void loop()
     holdString[4] = serInString[4];
 
     //try to print out collected information. it will do it only if there actually is some info.
-    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112|| serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100)
+    if (serInString[0] == 43 || serInString[0] == 45 || serInString[0] == 114 || serInString[0] == 103 || serInString[0] == 112 || serInString[0] == 80 ||  serInString[0] == 82 || serInString[0] == 99 || serInString[0] == 100)
     {
       if (serInString[0] == 43) positive = true;
       else if (serInString[0] == 45) positive = false;
@@ -141,28 +141,28 @@ void loop()
       sign = 1;
       for (int i = 0; i < 98; i++)
       {
-        sendString [i] = serInString[i+1];
+        sendString [i] = serInString[i + 1];
       }
-      int out =  stringToNumber(sendString,4);
+      int out =  stringToNumber(sendString, 4);
       //Serial.print(out,DEC);
       if (serInString[0] != 112)
-     {
-      pMode = 0;
-     } 
+      {
+        pMode = 0;
+      }
       if (serInString[0] == 43)
       {
         outvolt = out;
 
-        send_dac(0,outvolt);
-        digitalWrite(3,HIGH);
+        send_dac(0, outvolt);
+        digitalWrite(3, HIGH);
         speed = 1;
         countto = 10;
       }
       if (serInString[0] == 100) //d
       {
         outvolt = out;
-        send_dac(1,outvolt);
-        digitalWrite(3,LOW); //changed this to prevent current spikes
+        send_dac(1, outvolt);
+        digitalWrite(3, LOW); //changed this to prevent current spikes
         speed = 1;
         countto = 10;
         ocv = true;
@@ -172,7 +172,7 @@ void loop()
         //outvolt = -1;
         ocv = true;
         //if(out >= 1) write_dac(1,out);
-        digitalWrite(3,LOW);
+        digitalWrite(3, LOW);
         //speed = 5;
         //countto = 10;
 
@@ -201,16 +201,16 @@ void loop()
       {
 
         res = out;
-        write_pot(pot,resistance1,res);
+        write_pot(pot, resistance1, res);
       }
-      
+
       //Write ID to EEPROM
       if (serInString[0] == 86)  // V
       {
         Serial.println("fudge");
         Serial.println(out);
 
-        EEPROM.write(32,byte(out)) ;
+        EEPROM.write(32, byte(out)) ;
 
       }
 
@@ -220,7 +220,7 @@ void loop()
         gstat = true;
 
         outvolt = analogRead(0);
-        write_dac(0,outvolt);
+        write_dac(0, outvolt);
         //speed = 5;
         //countto = 20;
 
@@ -238,12 +238,12 @@ void loop()
         }
 
         setting = out;
-        outvolt = analogRead(0)+(sign*out);
+        outvolt = analogRead(0) + (sign * out);
         if (outvolt > 1023) outvolt = 1023;
         if (outvolt < 0) outvolt = 0;
-        write_dac(0,outvolt);
+        write_dac(0, outvolt);
 
-        digitalWrite(3,HIGH);
+        digitalWrite(3, HIGH);
 
       }
       //potentiostat
@@ -254,7 +254,7 @@ void loop()
           dacon();
         }
         //Serial.println("ser in string = p");
-        //Serial.println(); 
+        //Serial.println();
         pflag = 1;
         pstat = true;
         pMode = 1;
@@ -270,12 +270,12 @@ void loop()
           sign = 1;
         }
 
-        setting = out*sign;
-        outvolt = (sign*out);
+        setting = out * sign;
+        outvolt = (sign * out);
         //speed = 5;
         //countto = 20;
         //outvolt = setting; //initial guess
-        digitalWrite(3,HIGH);
+        digitalWrite(3, HIGH);
         //if ( mode != 2)
         //write_dac(0,outvolt+adcgnd);
         //Serial.print("outvolt from top ");
@@ -291,21 +291,21 @@ void loop()
         setting = out;
         //outvolt = setting; //initial guess
         dacon();
-        digitalWrite(3,HIGH);
+        digitalWrite(3, HIGH);
       }
     }
 
     else if (serInString[0] == 32)
     {
-      digitalWrite(5,HIGH);
-      digitalWrite(6,LOW);
+      digitalWrite(5, HIGH);
+      digitalWrite(6, LOW);
       delay(100);
-      digitalWrite(5,LOW);
-      digitalWrite(6,LOW);
+      digitalWrite(5, LOW);
+      digitalWrite(6, LOW);
 
     }
-    
-    
+
+
     else if (serInString[0] == 115) //s
     {
       sendout();
@@ -315,22 +315,22 @@ void loop()
 
     flushSerialString(serInString);
   }
-    else if (millis()-watchdog > watchdogdiff)
+  else if (millis() - watchdog > watchdogdiff)
   {
 
     ocv = true;
     gstat = false;
     pstat = false;
-    digitalWrite(3,LOW);
+    digitalWrite(3, LOW);
 
     //blink 3 times
     for (int i = 0; i < 3; i++)
     {
-      digitalWrite(5,HIGH);
-      digitalWrite(6,LOW);
+      digitalWrite(5, HIGH);
+      digitalWrite(6, LOW);
       delay(100);
-      digitalWrite(5,LOW);
-      digitalWrite(6,LOW);
+      digitalWrite(5, LOW);
+      digitalWrite(6, LOW);
       delay(100);
     }
   }
@@ -362,43 +362,43 @@ void loop()
   if (counter > countto)
   {
 
-    dac = dacrun/counter;
+    dac = dacrun / counter;
 
-    adc = adcrun/counter;
+    adc = adcrun / counter;
 
-  
-    
+
+
     counter = 0;
-    adcrun =0;
+    adcrun = 0;
     dacrun = 0;
 
-  } 
- //sendout();
- //delay(50);
- //FLAG STUFF
+  }
+  //sendout();
+  //delay(50);
+  //FLAG STUFF
   if (pstat) mode = 2;
   else if (gstat) mode = 3;
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
   else mode = 0;
- if ((mode == 3) || (mode == 1)){
+  if ((mode == 3) || (mode == 1)) {
     //Serial.println("i havent gone into this bs have i?");
     oldsetting = dac;
   }
-  else{
+  else {
     //Serial.println("i've gone into something");
     oldsetting = setting;
   }
   oldmode = mode;
 
- //delay(100);
+  //delay(100);
 }
 
 
 char spi_transfer(volatile char data)
 {
   SPDR = data;                    // Start the transmission
-  while (!(SPSR & (1<<SPIF)))     // Wait the end of the transmission
+  while (!(SPSR & (1 << SPIF)))   // Wait the end of the transmission
   {
   };
   return SPDR;                    // return the received byte
@@ -408,18 +408,18 @@ void write_dac(int address, int value)
 {
   //This function replaces the old write_dac, which
   //is named send_dac now.
-  send_dac(address,value);
+  send_dac(address, value);
 }
 byte send_dac(int address, int value)
 {
   SPCR = B01010000;
   firstdac = (address << 6) + (3 << 4) + (value >> 6);
-  seconddac = (value << 2 )&255;
-  digitalWrite(SLAVESELECTD,LOW);
+  seconddac = (value << 2 ) & 255;
+  digitalWrite(SLAVESELECTD, LOW);
   //2 byte opcode
   spi_transfer(firstdac);
   spi_transfer(seconddac);
-  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
+  digitalWrite(SLAVESELECTD, HIGH); //release chip, signal end transfer
   //delay(3000);*/
   SPCR = B00010000;
 }
@@ -429,11 +429,11 @@ byte dacoff()
   SPCR = B01010000;
   firstdac = (3 << 6) ;
   seconddac = 0;
-  digitalWrite(SLAVESELECTD,LOW);
+  digitalWrite(SLAVESELECTD, LOW);
   //2 byte opcode
   spi_transfer(firstdac);
   spi_transfer(seconddac);
-  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
+  digitalWrite(SLAVESELECTD, HIGH); //release chip, signal end transfer
   //delay(3000);*/
   SPCR = B00010000;
 }
@@ -443,11 +443,11 @@ byte dacon()
   SPCR = B01010000;
   firstdac = (1 << 6) ;
   seconddac = 0;
-  digitalWrite(SLAVESELECTD,LOW);
+  digitalWrite(SLAVESELECTD, LOW);
   //2 byte opcode
   spi_transfer(firstdac);
   spi_transfer(seconddac);
-  digitalWrite(SLAVESELECTD,HIGH); //release chip, signal end transfer
+  digitalWrite(SLAVESELECTD, HIGH); //release chip, signal end transfer
   //delay(3000);*/
   SPCR = B00010000;
 }
@@ -460,7 +460,7 @@ byte write_pot(int address, int value1, int value2)
   spi_transfer(value1);
   spi_transfer(value2);
   digitalWrite(SLAVESELECTP,HIGH);*/ //release chip, signal end transfer
-  sendValue(0,255-value2);
+  sendValue(0, 255 - value2);
 }
 
 
@@ -479,9 +479,9 @@ boolean isStringEmpty(char *strArray) {
 
 //Flush String
 void flushSerialString(char *strArray) {
-  int i=0;
+  int i = 0;
   if (strArray[i] != 0) {
-    while(strArray[i] != 0) {
+    while (strArray[i] != 0) {
       strArray[i] = 0;                  // optional: flush the content
       i++;
     }
@@ -489,25 +489,27 @@ void flushSerialString(char *strArray) {
 }
 
 //Read String In
+
+
+int nowdog = 0;
 void readSerialString (char *strArray) {
   int i = 0;
-  if(Serial.available() > 4) {
-    //Serial.println("    ");  //optional: for confirmation
-    while (Serial.available()){
+  if (Serial.available() > 4) {
+    while (Serial.available()) {
       strArray[i] = Serial.read();
       i++;
-
     }
   }
+
 }
 
 int stringToNumber(char thisString[], int length) {
   int thisChar = 0;
   int value = 0;
 
-  for (thisChar = length-1; thisChar >=0; thisChar--) {
+  for (thisChar = length - 1; thisChar >= 0; thisChar--) {
     char thisByte = thisString[thisChar] - 48;
-    value = value + powerOfTen(thisByte, (length-1)-thisChar);
+    value = value + powerOfTen(thisByte, (length - 1) - thisChar);
   }
   return value;
 }
@@ -523,7 +525,7 @@ long powerOfTen(char digit, int power) {
     return digit;
   }
   else {
-    for (int i = power; i >=1 ; i--) {
+    for (int i = power; i >= 1 ; i--) {
       val = 10 * val;
     }
     return digit * val;
@@ -541,7 +543,7 @@ void pot_dan()
   // might just have to stop the thing from changing it prematurely
   // anyway. Might not need to do it right now anyway - lets see if
   // this is quicker...
-  if (oldmode == 1){
+  if (oldmode == 1) {
     //Serial.println("old mode was ocv");
     outvolt = olddac; // little hack here
   }
@@ -558,11 +560,11 @@ void pot_dan()
   //Serial.println(outvolt);
   //Serial.print("writing to outvolt ");
   //Serial.println(outvolt);
-  write_dac(0,outvolt); // should just work...
+  write_dac(0, outvolt); // should just work...
   //need to keep this next line in so that it breaks out of pot_dan
   //and into potentiostat
 }
-//when something changes - take average of last x readings. adjust the setting based on this average. set the buffer to ''. repeat. if pot_dan is called - then 
+//when something changes - take average of last x readings. adjust the setting based on this average. set the buffer to ''. repeat. if pot_dan is called - then
 void potentiostat()
 {
   //read in values
@@ -571,8 +573,8 @@ void potentiostat()
   adc = analogRead(0);
   dac = analogRead(1);
   adcref = analogRead(3);
-//  Serial.println("potentiostat called");
-//  Serial.println(dac);
+  //  Serial.println("potentiostat called");
+  //  Serial.println(dac);
 
   wep = adc - adcref; // wep = working electrode potential
   //Serial.print("wep ");
@@ -582,37 +584,26 @@ void potentiostat()
   //Serial.println(wept);
   if (wepcounter == wepcounterlimit)
   {
-    wept = wept/wepcounter;
-//Serial.print("control wept ");
-    //Serial.println(wept);
-    //Serial.print("wept ");
-    //Serial.print(wept);
-    //Serial.print(", wepcounter ");
-    //Serial.println(wepcounter);
-    //Serial.print(wept);
-    //Serial.print(",");
-    //Serial.println("hopefully doing control with wept");
-    //Serial.print("wept is this ");
-    //Serial.println(wept);
+    wept = wept / wepcounter;
     int resmove = 0;
     int move = 0;
     //if potential is too high
     if ((wept > setting) && (outvolt > 0))
     {
-      move = gainer(wept,setting);
-      outvolt=outvolt-move;
-      write_dac(0,outvolt);
-  
+      move = gainer(wept, setting);
+      outvolt = outvolt - move;
+      write_dac(0, outvolt);
+
     }
-  
+
     //if potential is too low
     else if ((wept < setting) && (outvolt < 1023))
     {
-      move = gainer(wept,setting);
-      outvolt=outvolt+move;
-      write_dac(0,outvolt);
+      move = gainer(wept, setting);
+      outvolt = outvolt + move;
+      write_dac(0, outvolt);
     }
-  
+
     // if range is limited decrease R
     if ((outvolt > 1022) && (res > 0))
     {
@@ -626,9 +617,9 @@ void potentiostat()
       ranger_positive = 0;
       resgainer_dd(ranger_positive);
     }
-  
+
     //if range is truncated increase R
-    int dude = abs(dac-adc);
+    int dude = abs(dac - adc);
     if ((dude < 50) && (res < 255) && (((sign ==  1) && (dac < 850)) || ((sign == -1) && (dac > 150)) ))
     {
       //Serial.println("the truncatonator has been called ");
@@ -636,9 +627,9 @@ void potentiostat()
       //Serial.print(sign);
       //Serial.print(", dac: ");
       //Serial.println(dac);
-      res = res+1;
-      res = constrain(res,1,255);
-      write_pot(pot,resistance1,res);
+      res = res + 1;
+      res = constrain(res, 1, 255);
+      write_pot(pot, resistance1, res);
       delay(waiter);
     }
     //Serial.print("wept ");
@@ -676,21 +667,21 @@ void galvanostat()
   {
     diff = dac - adc;
     //if over current step dac down
-    if( ((diff) > (setting)) && (outvolt > 0))
+    if ( ((diff) > (setting)) && (outvolt > 0))
     {
-     
-      move = gainer(diff,setting);
-      outvolt = outvolt-move;
-      write_dac(0,outvolt);
+
+      move = gainer(diff, setting);
+      outvolt = outvolt - move;
+      write_dac(0, outvolt);
 
     }
 
     //if under current step dac up
-    if (((diff) <(setting)) && (outvolt < 1023))
+    if (((diff) < (setting)) && (outvolt < 1023))
     {
-      move = gainer(diff,setting);
-      outvolt = outvolt+move;
-      write_dac(0,outvolt);
+      move = gainer(diff, setting);
+      outvolt = outvolt + move;
+      write_dac(0, outvolt);
 
     }
   }
@@ -700,19 +691,19 @@ void galvanostat()
   {
     diff = adc - dac;
     //if over current step dac up
-    if( (diff) > (setting) && (outvolt < 1023))
+    if ( (diff) > (setting) && (outvolt < 1023))
     {
-      move = gainer(diff,setting);
-      outvolt =outvolt+move;
-      write_dac(0,outvolt);
+      move = gainer(diff, setting);
+      outvolt = outvolt + move;
+      write_dac(0, outvolt);
     }
 
     //if under current step dac down
     if ((diff) < (setting) && (outvolt > 0))
     {
-      move = gainer(diff,setting);
-      outvolt = outvolt-move;
-      write_dac(0,outvolt);
+      move = gainer(diff, setting);
+      outvolt = outvolt - move;
+      write_dac(0, outvolt);
 
     }
   }
@@ -738,12 +729,12 @@ void sendout()
   else if (ocv) mode = 1;
   else if (dactest) mode = 4;
   else mode = 0;
-  int setout = sign*setting;
+  int setout = sign * setting;
   //DEBUG
   //taken out pstat - in 112 - taken out the write to the dac -- see if performance goes to shit or improves...
   //Serial.println();
-  Serial.print("GO.");
-  Serial.print(outvolt,DEC);
+  Serial.print("GO,");
+  Serial.print(outvolt, DEC);
   Serial.print(",");
   Serial.print(adc);
   Serial.print(",");
@@ -766,14 +757,15 @@ void sendout()
   Serial.print(adcref);
   Serial.print(",");
   Serial.print(refvolt);
+  Serial.print(",");
+  Serial.print(int(EEPROM.read(32)));
+  Serial.println(",ST");
+  //dmdavies what gives below?
   //Serial.print(",");
-  //Serial.print(int(EEPROM.read(32)));
-  Serial.print(",ST");
-  Serial.print(",");
-  Serial.print(adc-adcref);
-  Serial.print(",");
-  Serial.println(dac-adc);
-  
+  //Serial.print(adc - adcref);
+  //Serial.print(",");
+  //Serial.println(dac - adc);
+
   //res=res+1;
   //if (res > 255) res = 0;pt
   //sendValue(0,1);
@@ -782,8 +774,8 @@ void sendout()
 
 void testdac ()
 {
-  digitalWrite(3,LOW);
-  write_dac(0,testcounter);
+  digitalWrite(3, LOW);
+  write_dac(0, testcounter);
   outvolt = testcounter;
   testcounter = testcounter + 1;
   if (testcounter > testlimit) testcounter = 0;
@@ -793,11 +785,11 @@ void testdac ()
 
 void testr ()
 {
-  digitalWrite(3,HIGH);
-  write_dac(0,1023);
+  digitalWrite(3, HIGH);
+  write_dac(0, 1023);
   outvolt = 1023;
   res = testcounter;
-  write_pot(pot,resistance1,res);
+  write_pot(pot, resistance1, res);
   testcounter = testcounter + 1;
   if (testcounter > testlimit) testcounter = 0;
 
@@ -805,60 +797,58 @@ void testr ()
 
 int gainer(int whatitis, int whatitshouldbe)
 {
-      int move = abs(whatitis-whatitshouldbe);
-      move = constrain(move,1,100);
-      return move;
+  int move = abs(whatitis - whatitshouldbe);
+  move = constrain(move, 1, 100);
+  return move;
 }
 
 int resgainer(int whatitis, int whatitshouldbe)
 {
-      int move = 0;
-      int diff = abs(whatitis-whatitshouldbe); 
-      if (diff > 20) move = 30;
-      else move = 10;
-      //move = constrain(move,1,100);
-      return move;
+  int move = 0;
+  int diff = abs(whatitis - whatitshouldbe);
+  if (diff > 20) move = 30;
+  else move = 10;
+  //move = constrain(move,1,100);
+  return move;
 }
 int resgainer_dd(int ranger_positive) //don't actually need to be sending and receiving this but yolo i cant be bothered.
 {
   //Serial.println("Res_gainer was called yay ------------------------------");
 
-  
-  
+
+
   dac = analogRead(1);
   adc = analogRead(0);
-  
+
   //Serial.print("dac ");
   //Serial.print(dac);
   //Serial.print(", adc ");
   //Serial.print(adc);
-  float est_current = ((dac) - (adc))/float(res);
+  float est_current = ((dac) - (adc)) / float(res);
   //Serial.print(", current ");
   //Serial.print(est_current);
   res =  1;
-  write_pot(pot,resistance1,res);
-  outvolt = adc + est_current * res *2.5;
+  write_pot(pot, resistance1, res);
+  outvolt = adc + est_current * res * 2.5;
   if (outvolt < 0) {
     outvolt = 0;
   }
- // trying to mimic res_table just guess though
+  // trying to mimic res_table just guess though
   //corner cases - not actually sure if these will work but yolo
   if (ranger_positive == 1) {
     if (outvolt < 50) {
       outvolt = 55;
     }
   }
-    if (ranger_positive == 0) {
+  if (ranger_positive == 0) {
     if (outvolt > 950) {
       outvolt = 945;
     }
   }
-  //Serial.print(", outvolt ");
-  //Serial.println(outvolt);
-  write_dac(0,outvolt);
+  write_dac(0, outvolt);
 }
-  
-  
+
+
 
 //Barry's hacky functions
 
@@ -866,10 +856,10 @@ byte value;
 
 byte sendBit(boolean state)
 {
-  digitalWrite(SPICLOCK,LOW);
+  digitalWrite(SPICLOCK, LOW);
   delayMicroseconds(10);
-  digitalWrite(DATAOUT,state);
-  digitalWrite(SPICLOCK,HIGH);
+  digitalWrite(DATAOUT, state);
+  digitalWrite(SPICLOCK, HIGH);
   delayMicroseconds(10);
 }
 
@@ -879,17 +869,17 @@ byte sendValue(int wiper, int val)
   value =  byte(val);
   //digitalWrite(SPICLOCK,LOW);
   //digitalWrite(DATAOUT,LOW);
-  digitalWrite(SLAVESELECTP,LOW);
+  digitalWrite(SLAVESELECTP, LOW);
   delayMicroseconds(10);
-  
+
   //Select wiper
-  for(int i=0;i<3;i++){
+  for (int i = 0; i < 3; i++) {
     sendBit(false);
   }
   sendBit(wiper);
-  
+
   //write command
-  for(int i=0;i<4;i++){
+  for (int i = 0; i < 4; i++) {
     sendBit(false);
   }
   //data
@@ -902,7 +892,7 @@ byte sendValue(int wiper, int val)
   sendBit(HIGH && (value & B00000010));
   sendBit(HIGH && (value & B00000001));
   //sendBit(true);  //fudge
-  digitalWrite(SLAVESELECTP,HIGH);
+  digitalWrite(SLAVESELECTP, HIGH);
   //Serial.println(in);
   delayMicroseconds(10);
 }
@@ -910,7 +900,7 @@ byte sendValue(int wiper, int val)
 byte readWiper()
 {
   //send read command
-  digitalWrite(SLAVESELECTP,LOW);
+  digitalWrite(SLAVESELECTP, LOW);
   delayMicroseconds(10);
   sendBit(false);
   sendBit(false);
@@ -918,21 +908,21 @@ byte readWiper()
   sendBit(false);
   sendBit(true);
   sendBit(true);
-  
+
   //get data
   int data[9];
   Serial.print("  ");
-  for(int i=0;i<9;i++)
+  for (int i = 0; i < 9; i++)
   {
-    digitalWrite(SPICLOCK,LOW);
+    digitalWrite(SPICLOCK, LOW);
     delayMicroseconds(10);
-    digitalWrite(DATAOUT,LOW);
+    digitalWrite(DATAOUT, LOW);
     delayMicroseconds(10);
     data[i] = digitalRead(DATAIN);
-    digitalWrite(SPICLOCK,HIGH);
+    digitalWrite(SPICLOCK, HIGH);
     delayMicroseconds(10);
     Serial.print(data[i]);
   }
-  digitalWrite(SLAVESELECTP,HIGH);
+  digitalWrite(SLAVESELECTP, HIGH);
 }
 
