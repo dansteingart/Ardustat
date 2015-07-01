@@ -1,4 +1,30 @@
-#Ardustat Code
+#Ardustat
+
+Under reconstruction, what you need to know is this: the node interface is deprecated and being reconsidered now.
+
+##Connect to your ardustat
+1) download this gist: https://gist.github.com/dansteingart/8a6b7ba2f98b89aaf700
+2) run the following commands to get the required libs (only need to do once)
+```
+npm install serialport
+npm install express
+npm install sleep
+npm install socket.io
+npm install cors
+```
+3) start a nodeforwarder to connect to your ardustat with the following command
+
+ ```node nodeforwader.js [HTTP PORT] [SERIAL PORT] 57600 1000```
+
+##Control your ardustat to your ardustat
+
+https://gist.github.com/dansteingart/d3b4127ef76a0d5230c4
+
+
+example code here.  more to come, I promise
+
+
+
 
 Authors:
 - Dan Steingart <dan.steingart@gmail.com>
@@ -9,61 +35,3 @@ Past Contributors:
 - Rigers Qeraj 
 - Susan Tan 
 
-Rigers, Susan and Eddie were able to work on this because of inspiration by NSF CMMI 1031208  
-
-###Installation:
-####Software that you need to have installed to use the ardustat:
-- Arduino (http://arduino.cc/en/Main/Software)
-- FTDI Drivers / Arduino Uno Drivers, depending on which version of arduino you are using (see Getting Started guide for arduino at http://arduino.cc/en/Guide/HomePage).
-- We're now a node shop.  
-   - Get node [here](http://nodejs.org/)
-   - Get mongodb [here](http://www.mongodb.org/downloads):
-
-
-Note: This software is not tested with Internet Explorer or older versions of Firefox, Safari, Chrome, etc. To avoid preditable results, please use a modern browser.
-	
-###General Ardustat Instructions (tested against mac os x)
-1. Install Version of Firmware 7s on your ardustat (Firmware/Firmware 7_s/)
-2. In the NodeJS directory, type  
-	- npm install serialport (only on the first go)
-3. Then type  
-	- node expresserver.js <serial port> <tcpport e.g. 8888>
-	where serial port is COMX for windows, /dev/tty.usb-whatever for mac, /dev/ttyUSBX for linux
-4. In a browser, go to http://localhost:8888/debug
-	(stuff should be happening)
-5. We now need to calibrate the ardustat.  Put a quality resistor of known value between the working and counter clips, and then attach the reference clip to the counter clip
-6. Give your ardustat an id: in the "Ardustat Commands"  box type   
-	 - V0XXX  
-	where XXX is an integer between 0 and 240, and hit send
-	(you only have to do this once as well, the id will persist in EEPROM)
-7. Under calibration resistor value, enter the value of your resistor in ohms, and hit send
-8. You should see the graph changing, the yellow line should slope downwards and then reset 3 time. 
-9. Your ardustat is now calibrated.  You won't have to do this again (unless you delete the calibration file or feel that the values were inaccurate)
-10.  Now go to http://localhost:8888.  You should now see the Potential and Current trace.  Play with the the potentiostsat and galvanostat settings.
-	
-From here on out, all you need to down is start expresserver.js and then go to http://localhost:8888
-
-
-##Now with basic cycling
-
-go to http://localhost:port/cycler
-
-enter the following format to cycle
-
-{"mode":"galvanostat","value":0.004,"cutoff\_time":0,"direction":"charge","cutoff_potential":1.5}
-{"mode":"galvanostat","value":-0.002,"cutoff\_time":0,"direction":"discharge","cutoff_potential":0.6}
-
-a cutoff\_time of 0 means there is no cutoff time.  be careful!  
-
-logs log to mongo
-
-potential value = Volts
-current value = Amps
-time value = milliseconds
-
-Enjoy!
-
-##Now with basic viewing
-from Ardustat\_Viewer start node view_server.js 
-
-go to localhost:8000
