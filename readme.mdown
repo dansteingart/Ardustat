@@ -21,6 +21,7 @@ example code here.  more to come, I promise
 Authors:
 - Dan Steingart <dan.steingart@gmail.com>
 - Barry Van Tassell <bajavata@gmail.com>
+- Dan Davies <dmdavies@gmail.com>
 
 Past Contributors:
 - Eddie Nolan 
