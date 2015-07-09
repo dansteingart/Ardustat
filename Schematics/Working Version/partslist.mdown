@@ -9,6 +9,7 @@ Any Arduino compatible circuit -> board layouts from arduino v3 on up
 - POT
     - Microchip MCP4261 
         - http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en531252
+	- Better yet: use a fixed resistor across pins 7 and 8!
 
 - Relay  
     - R561D.56 NTE General Purpose Relays 
@@ -26,6 +27,8 @@ Any Arduino compatible circuit -> board layouts from arduino v3 on up
         - Cut into 8-8-6-4
 
 	
-
+- 2.5 V Reference
+	- Texas Instruments LM4050CIM3-2.5/NOPB
+		- http://www.digikey.com/product-detail/en/LM4050CIM3-2.5%2FNOPB/LM4050CIM3-2.5%2FNOPBCT-ND/364037
 	
 
