@@ -1,3 +1,0 @@
-[submodule "nodeforwarder"]
-	path = nodeforwarder
-	url = git@github.com:dansteingart/nodeforwarder.git
