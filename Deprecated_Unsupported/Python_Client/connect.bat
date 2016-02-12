@@ -1,1 +1,0 @@
-python tcp_serial_redirect.py COM3 57600
