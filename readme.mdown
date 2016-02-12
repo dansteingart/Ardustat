@@ -1,21 +1,17 @@
+<<<<<<< Local Changes
 #Ardustat
 
 Under reconstruction, what you need to know is this: the node interface is deprecated and being reconsidered now.
 
 ##Connect to your Ardustat
-1) download this thing: https://github.com/dansteingart/nodeforwader
+1) download this thing: https://github.com/dansteingart/nodeforwarder
 2) start a nodeforwarder to connect to your ardustat with the following command
 
  ```node nodeforwader.js [HTTP PORT] [SERIAL PORT] 57600 1000```
 
 ##Control your Ardustat
 
-https://gist.github.com/dansteingart/d3b4127ef76a0d5230c4
-
-
-example code here.  more to come, I promise
-
-
+See the code in the examples directory.  
 
 
 Authors:
@@ -28,3 +24,5 @@ Past Contributors:
 - Rigers Qeraj 
 - Susan Tan 
 
+=======
+>>>>>>> External Changes
