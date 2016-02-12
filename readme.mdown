@@ -1,5 +1,29 @@
 #Ardustat
+###What?
 
+The Ardustat is my ([in progress](/archive/how-open-is-open)) open source successor to Jonny Galvo.  It uses a standard USB-Arduino unit with a custom designed daughterboard to provide:
+
+- A galvanostat with a current range from  .1 microA to 10 mA
+- A potentiostat with a potential range from 0 to 5V with 5 mV resolution or -2.5 to 2.5 V Range
+
+The Ardustat is a *three electrode* system, but can be used in two electrode mode as well.
+
+These features are provided from a single USB port on a testing computer.  A node.js program interaces the ardustat with the computer, but you can use anything that speaks serial.  
+
+Each Ardustat costs ~$60 in parts and involves minimal, simple soldering (no surface mount parts, etc).  The software runs on just about _any_ modern platform (tested on Windows XP, 2000, Mac OS X, Ubuntu Linux, Fedora Linux).  
+
+###Why?
+
+Email any major manufacturer of battery testing equipment for a quote, wait three days, and see that a basic galvanostat/potentiostat costs at least $1,000 a channel, without software.  *The Ardustat does not replace these units (completely, at least).*  The Ardustat _does_ enable easy, accurate and cheap long term cycling and pulse testing far more easily than most commercial solutions, and again, at a fraction of the price.
+
+###How? 
+
+The theory of operation can be found [here](/ardustat-theory).
+
+###Why should I build this?
+
+1. The Arduino board is a great way to learn about microcontroller programming and design
+2. The Ardustat daughterboard/software provides an excellent tutorial on how to create flexible, useful scientific testing and data-logging devices. 
 ##Connect to your Ardustat   
 
 1) download this thing: https://github.com/dansteingart/nodeforwarder  
