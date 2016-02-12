@@ -22,14 +22,15 @@ The potentiostat / galvanostat takes advantage of the relatively slow electrode 
 
 The potentiostatic feedback is triggered by a user's request for a given potential across the cell.  The relay closes, and the ADC measures the actual potential across the cell, and the microcontroller increments the DAC in the direction that will adjust the cell to the desired potential.  The DVR set between the ADC and DAC determines the current via Ohm's law:
 
-<center><img src="http://steingart.princeton.edu/static/goodies/eqn1.png">  
-Equation 1</center>
-Which relates to: <center><img src="http://steingart.princeton.edu/static/goodies/eqn2.png">  
-Equation 2</center>
+<img src="http://steingart.princeton.edu/static/goodies/eqn1.png">
+
+Which relates to: 
+
+<img src="http://steingart.princeton.edu/static/goodies/eqn2.png">
 
 If the DAC is adjusted to its maximum or minimum, the microcontroller will reduce the resistance of the DVR to allow more current to pass according to Equation 2.  Alternatively, if the difference between the DAC and the ADC is insubstantial the microcontroller will increment the DVR to increase the resistance, thereby reducing the current through the cell.  The speed at which this feedback loop occurs is only limited by the microcontroller, and most modern microcontrollers can complete this loop in fewer than 500 microS.  After each loop the microcontroller may report the setting of the DAC and the DVR, and the reading of the ADC from which a computer program can compute the current instantaneously via Equation 2.
 
-<center><img src="http://steingart.princeton.edu/static/goodies/scheme.png"><br>Circuit Schematic</center>
+<img src="http://steingart.princeton.edu/static/goodies/scheme.png">
 
 In the case of the galvanostatic loop, the user enters a desired current, and the feedback loop optimizes around a difference between the ADC and the DAC rather than the ADC alone.  To read an open circuit potential, the microcontroller opens the relay and the ADC measures the potential.
 ###Why should I build this?
