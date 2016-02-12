@@ -1,9 +1,8 @@
 #Ardustat
 
-Under reconstruction, what you need to know is this: the node interface is deprecated and being reconsidered now.
-
 ##Connect to your Ardustat   
-1) download this thing: https://github.com/dansteingart/nodeforwarder
+
+1) download this thing: https://github.com/dansteingart/nodeforwarder  
 2) start a nodeforwarder to connect to your ardustat with the following command
 
  ```node nodeforwader.js [HTTP PORT] [SERIAL PORT] 57600 1000```
