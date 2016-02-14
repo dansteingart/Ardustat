@@ -13,9 +13,12 @@ def write(ss):
     #sleep(.1)
 
 
-lin_pot = [99.0 for x in range(256)] #linspace(100,10000,255)
 
-lin_pot = [float(x) for x in open("resistance").readlines()]
+#lin_pot = [99.0 for x in range(256)] #
+
+#If we have a resistance table great, otherwise, make a linear map from 100 to 10000 kohm
+try: lin_pot = [float(x) for x in open("resistance").readlines()]
+except:  lin_pot = linspace(100,10000,255)
 
 def parse(reading):
     res = lin_pot
@@ -37,27 +40,46 @@ ref = parse(read())['ref']
 
 
 def setPot(val):
+    #set potential in volts
     bval = int(round(val/ref))
     if bval < 0: bval = abs(bval)+2000
     bval = "p"+str(bval).rjust(4,"0")
     write(bval)
     return bval
 
-def setCur(pot,res):
-    #bval = int(pot/5.0*1023)
-    write("r"+str(res).rjust(4,"0"))
-    bval = int(round(pot/ref))
-    if bval < 0: bval = abs(bval)+2000
-    bval = "g"+str(bval).rjust(4,"0")
-    write(bval)
-    return bval
+def setCur(current,fix_res=None):
+    """Set current in amps"""
+    #if variable pot
+    if fix_res == None:
+        #V = IR
+        #target 100 mV difference (10 ticks)
+        tV = .1
+        R =  tV/abs(current)  #V/I
+        maxdiff = 10000
+        res = 0
+        for i in range(len(x)):
+            if abs(R-x[i]) < maxdiff: 
+                maxdiff = abs(R-x[i])
+                res = i
+        outr = "r"+str(res).rjust(4,"0")
+        write(outr)
+        r = x[res]
+    #If fixed resistor
+    else: r = fix_res
+
+    #now calculate real potential difference
+    outv = r*current
+    outv = int(round(outv/ref))
+    if outv < 0: outv = abs(outv)+2000
+    gset = "g"+str(outv).rjust(4,"0")
+    write(gset)
+
 
 
 def setOCV():
     write("-0000")
 
 #some basic control code
-write("r0026")  #set resistance to 26th value out of 255
 write("d0512")  #set the ardustat to work at +/- 2.5 V
 setPot(.1)
 setOCV()
