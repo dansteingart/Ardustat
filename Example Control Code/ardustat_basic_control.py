@@ -68,7 +68,7 @@ def setCur(current,fix_res=None):
     outv = int(round(outv/ref))
     if outv < 0: outv = abs(outv)+2000
     gset = "g"+str(outv).rjust(4,"0")
-    delay(.1)
+    sleep(.1)
     write(gset)
 
 def setOCV():
