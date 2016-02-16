@@ -54,12 +54,12 @@ def setCur(current,fix_res=None):
         maxdiff = 10000
         res = 0
         for i in range(len(x)):
-            if abs(R-x[i]) < maxdiff: 
-                maxdiff = abs(R-x[i])
+            if abs(R-lin_pot[i]) < maxdiff: 
+                maxdiff = abs(R-lin_pot[i])
                 res = i
         outr = "r"+str(res).rjust(4,"0")
         write(outr)
-        r = x[res]
+        r = lin_pot[res]
     #If fixed resistor
     else: r = fix_res
 
