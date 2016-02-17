@@ -1,6 +1,6 @@
 from urllib import urlopen as uo
 from time import *
-url = "http://localhost:8888" #replace with whatever your port is
+url = "http://localhost:9001" #replace with whatever your port is
 
 def read():
     uo(url+"/write/s0000").read()
@@ -16,12 +16,16 @@ def write(ss):
 
 #If we have a resistance table great, otherwise, make a linear map from 100 to 10000 kohm
 try: lin_pot = [float(x) for x in open("resistance").readlines()]
-except:  lin_pot = linspace(100,10000,255)
+except:  
+    lin_pot = range(100,10000,10000/255)
+    lin_pot.append(10000)
 
+res = lin_pot
+print len(res)
 def parse(reading):
     res = lin_pot
     p = reading.split(",")
-    #print p
+    print p
     out ={}
     out['ref'] = 2.5/float(p[-2])
     ref = out['ref']
@@ -30,7 +34,8 @@ def parse(reading):
     out['RES'] = float(p[3])
     out['REF'] = float(p[-3])*ref
     out['GND'] = float(p[-4])*ref
-    out['RR'] = res[int(out['RES'])]
+    out['RR'] = res[int(out['RES'])-1]
+    print out
     return out
     
 ref = parse(read())['ref']
@@ -53,7 +58,7 @@ def setCur(current,fix_res=None):
         R =  tV/abs(current)  #V/I
         maxdiff = 10000
         res = 0
-        for i in range(len(x)):
+        for i in range(len(lin_pot)):
             if abs(R-lin_pot[i]) < maxdiff: 
                 maxdiff = abs(R-lin_pot[i])
                 res = i
@@ -80,10 +85,10 @@ header = 'time_s,potential_V,current_A\n'
 open(fn,'w').write(header)
 
 def writereading():
-    p = parse(read())
+    out = parse(read())
     current = (out['ADC']-out['DAC'])/out['RR']
     potential = out['ADC']-out['REF']
-    ts = time.time()-t0
+    ts = time()-t0
     out = "%f,%f,%f\n"
     open(fn,'a').write(out)
 
@@ -93,8 +98,7 @@ write("d0512")  #set the ardustat to work at +/- 2.5 V
 setCur(.0001) #set to 100uA
 
 #take readings for 100 seconds
-while time.time() < (t0+100):
+while time() < (t0+100):
     sleep(1)
     writereading()    
 setOCV()
-
